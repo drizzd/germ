@@ -1,0 +1,102 @@
+HTTP_UI: libcgicc1, cgilib?, libwww?, [need parser], session management?
+DBMS_IF: libgql (GQL), mysqlcppapi?, libgdamm!
+CMS: libstdc++ (STL)
+
+
+*** Hypertext User Interface (ui_ht) ***
+
+o libwww
+
+  + standard
+  + maintained
+  - intended for browsers?
+
+o libcgicc1
+
+  + native C++ support
+  - no common use
+
+o session management
+
+  + do it yourself
+
+o SGML parser
+
+  o bison/lexx/yacc? BNF?
+
+
+*** Database Management System Interface (db_iface) ***
+
+o libgql
+
+  + native C++ support
+  - not maintained
+  - depends on non-standard libraries (it's quite a mess)
+  - UNIX/Linux platform dependant?
+
+o mysqlcppapi
+
+  + native C++ support
+  + maintained
+  - MySQL only
+
+o libgdamm
+
+  + uses standard (gnome) libraries
+  + maintained
+  + many supported database systems
+  - C++ wrappers for C library libgda
+  - UNIX/Linux platform dependant
+
+
+*** Generic Entity Relationship Model (GERM) ***
+
+o libstdc++
+
+  + standard
+  + maintained
+  + platform independent
+
+
+*** General Notes ***
+
+GERM:
+
+- Clean interface between GUI and DBMS
+  
+  o check validity
+  
+    * ranges limited by constraints and permissions
+    * database contraints?
+    * user interface (e.g. using Java Script)
+
+  o use generic input types (selection, text, textarea, integer [with range?],
+    boolean, date)
+
+GUI:
+
+- interdependent/prerequisite selections/references?
+
+DB:
+
+- change of database structure:
+
+  o Don't handle data type manipulation automatically (too dangerous). Database
+    administrator has to handle that manually:
+    a) implement conversion (database and code)
+    b) freeze system
+    c) create backup
+    d) move old table
+    e) create new (changed) table
+    f) execute conversion (database and code)
+    g) check result
+    h) delete old table
+    i) reactivate system
+
+  o backup generation
+
+  o integrity checks
+
+  o system freeze
+
+  o initialization of nonexistent tables
