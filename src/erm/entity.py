@@ -122,10 +122,13 @@ class entity:
 	def accept(self, action):
 		raise error(err_fail, errmsg.abstract_func)
 
+	def get_attr_vec(self):
+		return self._attr_vec
+
 	def get_attr(self, attr_name):
 		if not self.__attr_map.has_key(attr_name):
-			raise error(err_fail, errmsg.nonexisting_attr % (self.__name,
-					attr_name))
+			raise error(err_fail, errmsg.nonexisting_attr,
+				'table: %s, attribute: %s' % (self.__name, attr_name))
 
 		return self.__attr_map[attr_name]
 

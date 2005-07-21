@@ -4,8 +4,6 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from lib.db_iface import *
-
 class ref_group:
 	""" reference groups are used to identify the relevant relations for a
 	particular action on-the-fly """
@@ -38,7 +36,6 @@ class ref_group:
 				self.__rel_map[key] = None
 
 	def generate_keylist(self, act_str, attr_vec, attr_map, lock_map):
-		import string
 
 		# generate table references
 
@@ -47,7 +44,7 @@ class ref_group:
 			table_ref_vec.append(
 				rel.get_table_spec() +
 				rel.get_join_cond(self.__rel_map, attr_map, lock_map))
-		table_ref = string.join(table_ref_vec, "\n\tJOIN ")
+		table_ref = "\n\tJOIN ".join(table_ref_vec)
 
 		for rel in self.__outer_joins:
 			table_ref += \
@@ -62,7 +59,7 @@ class ref_group:
 			if self.__rel_map.has_key(attr):
 				self.__fk_vec.append(attr)
 
-		sort_spec = string.join(self.__fk_vec, ", ")
+		sort_spec = ", ".join(self.__fk_vec)
 
 		# generate column specification
 
@@ -72,7 +69,7 @@ class ref_group:
 			col_spec_vec.append(
 				"\n\t%s.%s AS %s" %
 				(rel.get_alias(), rel.get_realkey(key), key))
-		col_spec = string.join(col_spec_vec, ", ")
+		col_spec = ", ".join(col_spec_vec)
 
 		# generate search condition
 
@@ -87,11 +84,12 @@ class ref_group:
 					["%s = '%s'" % \
 					(self.__rel_map[key].get_colref(key), attr.sql_str())]
 
-		search_cond = "\n\t(" + string.join(cond, ") AND \n\t(") + ")"
+		search_cond = "\n\t(" + ") AND \n\t(".join(cond) + ")"
 
 		sql_query = \
 			"SELECT %s \nFROM %s \nWHERE %s \nORDER BY %s" % \
 			(col_spec, table_ref, search_cond, sort_spec)
 
-		print sql_query
-#		self.__keylist = db_iface.query(sql_query)
+		from lib.db_iface import *
+
+		self.__keylist = db_iface.query(sql_query)

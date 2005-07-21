@@ -18,7 +18,6 @@ class ent_table(entity):
 	# create database table
 	def init(self):
 		from lib.db_iface import *
-		import string
 
 		create_defs = []
 		for a in self._attr_vec
@@ -34,10 +33,10 @@ class ent_table(entity):
 
 			create_defs.append(col_def)
 
-		pk_def = string.join(self._pk_vec, ', ')
+		pk_def = ', '.join(self._pk_vec)
 		create_defs.append(pk_def)
 
-		create_def = string.join(create_defs, ', ')
+		create_def = ', '.join(create_defs)
 
 		sql_query = "CREATE TABLE IF NOT EXISTS " + create_def
 

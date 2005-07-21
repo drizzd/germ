@@ -55,8 +55,6 @@ class relation:
 		return "%s.%s" % (self.get_alias(), self.get_realkey(key))
 
 	def get_join_cond(self, rel_map, attr_map, lock_map):
-		import string
-
 		join_cond = []
 		for key in self.get_keys():
 			if rel_map[key] is None:
@@ -67,7 +65,7 @@ class relation:
 					(self.get_colref(key), rel_map[key].get_colref(key)))
 
 		if len(join_cond) > 0:
-			return " ON " + string.join(join_cond, " AND ")
+			return " ON " + " AND ".join(join_cond)
 		else:
 			return ""
 
