@@ -9,3 +9,5 @@ db_host = 'localhost'
 db_database = 'tilt_new'
 db_user = 'tilt'
 db_password = 'gfx17'
+
+ht_docpath = 'htdocs'

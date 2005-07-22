@@ -2,7 +2,7 @@
 #  db_iface.py: database interface
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
-# 
+#
 
 import MySQLdb
 import cf

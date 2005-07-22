@@ -132,6 +132,30 @@ class entity:
 
 		return self.__attr_map[attr_name]
 
+	def __get_attr_items(self):
+		return self.__attr_map.iteritems()
+
+	def __get_attr_items_nopk(self):
+		return [i for i in self.__attr_map if i[0] not in self._pk_vec]
+
+	def __get_attr_items_pk(self):
+		return [(pk, self.__attr_map[pk]) for pk in self._pk_vec]
+
+	def get_attr_sql(self):
+		return self.__sql_str(self.get_attr_items())
+
+	def get_attr_sql_nopk(self):
+		return self.__sql_str(self.get_attr_items_nopk())
+
+	def get_attr_sql_pk(self):
+		return self.__sql_str(self.get_attr_items_pk())
+
+	def __sql_str(self, attr_items)
+		sql_vec = ["%s='%s'" % (name, attr.sql_str())
+			for (name, attr) in attr_items]
+
+		return ", ".join(sql_vec)
+
 	# this has to be run after each configuration change
 	def init(self):
 		pass

@@ -8,9 +8,10 @@ from error import *
 import text.errmsg
 
 class table_action:
-	def __init__(self, act_str, table):
+	def __init__(self, act_str, table, require_pk_locks):
 		self.__act_str = act_str
-		self.__tbl = table
+		self._tbl = table
+		self.__require_pk_locks = require_pk_locks
 
 	def execute(self):
 		# check permissions
@@ -18,30 +19,32 @@ class table_action:
 		# create reference groups
 		self.__analyze()
 		# execute pre-action function
-		self.__tbl.pre(self.__act_str)
+		self._tbl.pre(self.__act_str)
 		# execute SQL query
 		self.__doit()
 		# execute post-action function
-		self.__tbl.post(self.__act_str)
+		self._tbl.post(self.__act_str)
 
 	def __check_perm(self):
-		if not self.__tbl.perm(self.__act_str):
+		if not self._tbl.perm(self.__act_str):
 			raise error(err_error, errmsg.permission_denied)
 
 	def __analyze(self):
 		# add primary key relation
-		self.add_pk_rel()
-		self.__tbl.generate_keylists(self.__act_str)
-		self.check_pk_locks(self.__tbl)
+		self.__add_pk_rel()
+		self._tbl.generate_keylists(self.__act_str)
+
+		if self.__require_pk_locks:
+			self._tbl.require_pk_locks()
 		
-	def add_pk_rel(self):
-		self.__tbl.add_rel(self.__get_pk_rel())
+	def __add_pk_rel(self):
+		self._tbl.add_rel(self.__get_pk_rel())
 
 	def __get_pk_rel(self):
 		from relation import *
 
-		pk_vec = self.__tbl.get_pk_vec()
-		table = self.__tbl.get_name()
+		pk_vec = self._tbl.get_pk_vec()
+		table = self._tbl.get_name()
 		cond, outer_join = self.get_pk_cond_join(table, pk_vec[0])
 
 		return relation(
@@ -50,11 +53,14 @@ class table_action:
 			cond = { self.__act_str: cond },
 			outer_join = outer_join)
 		
-	def check_pk_locks(self, tbl):
+	def _get_sql_query(self, table, sql_str):
 		raise error(err_error, errmsg.abstract_func)
 
-	def get_pk_cond_join(self, table, pk0):
+	def _get_pk_cond_join(self, table, pk0):
 		raise error(err_error, errmsg.abstract_func)
 
 	def __doit(self):
-		pass
+		sql_query = self._get_sql_query()
+
+		import lib.db_iface
+		db_iface.query(sql_query)

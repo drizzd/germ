@@ -23,32 +23,26 @@ def handler(req):
 	try:
 		form = util.FieldStorage(req, keep_blank_values = True)
 
-		# hmm. first we need to know the action, then possibly an entity, then
-		# the parameters
-		# no action means 'just display the page', i.e. we need the 'page'
+		# Hmm. First we get the action object, then possibly an entity, then
+		# the parameters. The action object will complain if the entity or
+		# parameters are missing
+		# No action means 'just display the page', i.e. we need the 'page'
 		# parameter
 
-		entity = form.getfirst('entity')
-		if entity is None:
-			page = form.getfirst('page', 'index')
-		else:
-			# make this a default template if no custom html file exists
-			page = entity
-
 		action = form.getfirst('action')
+		entity = form.getfirst('entity')
+
+		if action is not None and entity is not None:
+			import cf
+			if readable("%s/%s.html" % (cf.ht_docpath, entity)
+				page = entity
 
 #		cookies = Cookie.get_cookies(req)
 
-		req.content_type = "text/html"
-
-		if entity is not None:
-			if action is None:
-				import text.errmsg
-				raise error(err_fail, errmsg.missing_parm, 'action')
-			else:
-				entity_actions = ['edit', 'submit', 'delete', 'view', 'list', 'listedit']
-				if action not in entity_actions
-
+		if action is None:
+			page = form.getfirst('page', 'index')
+		else:
+			if entity is not None:
 			__import__('entity.' + entity)
 
 			ent = eval(entity + '.' + entity + '()')
@@ -84,11 +78,11 @@ def handler(req):
 
 			ent.accept(act)
 
-			...
-			req.write("entity = " + entity + "\n")
-		if action is not None:
-			req.write("action = " + action + "\n")
-		test_fn(req)
+			#...
+
+		req.content_type = "text/html"
+
+		req.write("action = " + str(action) + "\n")
 
 	except error, e:
 		# TODO: Log errors and inform administrator. Only inform user that this
