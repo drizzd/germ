@@ -5,12 +5,11 @@
 #
 
 from erm.ent_table import *
-import text.label
-from attribute.string import *
-from erm.relation import *
-import erm.perm
 
-from erm.attribute import *
+import text.label
+from erm.relation import *
+from attr.attribute import perm
+from attr.string import *
 
 class users(ent_table):
 	opt_status = [
@@ -21,11 +20,11 @@ class users(ent_table):
 
 	def __init__(self):
 		ent_table.__init__(self, name = __name__, attributes = [
-			init('name', string(label.party, perm.submit, None, 10)),
-			init('status', choice(label.party_status, perm.edit, 0, opt_status)),
-			init('date', date(label.date, perm.all)),
-			init('location', string(label.location, perm.all, None, 128)),
-			init('entry_fee_advance', string(label.entry_fee_advance, perm.all, None, 16)),
-			init('entry_fee', string(label.entry_fee, perm.all, None, 16))
+			('name', string(label.party, perm.submit, None, 10)),
+			('status', choice(label.party_status, perm.edit, 0, opt_status)),
+			('date', date(label.date, perm.all)),
+			('location', string(label.location, perm.all, None, 128)),
+			('entry_fee_advance', string(label.entry_fee_advance, perm.all, None, 16)),
+			('entry_fee', string(label.entry_fee, perm.all, None, 16))
 			],
 			primary_keys = [ 'name' ])

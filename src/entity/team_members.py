@@ -6,18 +6,18 @@
 
 from erm.ent_table import *
 import text.label
-from attribute.string import *
 from erm.relation import *
 
-from erm.attribute import *
+from attr.attribute import perm
+from attr.string import *
 
 class team_members(ent_table):
 	def __init__(self):
 		ent_table.__init__(self, name = __name__, attributes = [
-			init('party', string(label.party, perm.submit, None, 10)),
-			init('username', string(label.username, perm.submit, None, 10)),
-			init('tourney', string(label.tourney, perm.submit, None, 32)),
-			init('team', string(label.team, perm.all, None, 32))
+			('party', string(label.party, perm.submit, None, 10)),
+			('username', string(label.username, perm.submit, None, 10)),
+			('tourney', string(label.tourney, perm.submit, None, 32)),
+			('team', string(label.team, perm.all, None, 32))
 			],
 			primary_keys = [ 'party', 'username', 'tourney' ],
 			relations = [

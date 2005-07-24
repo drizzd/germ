@@ -10,7 +10,6 @@ from mod_python import util
 #from Cookie import SimpleCookie
 #from mod_python import Cookie
 
-from ui_ht_test import test_fn
 from lib.error import *
 
 def get_parm_val(parm):
@@ -21,66 +20,128 @@ def get_parm_val(parm):
 
 def handler(req):
 	try:
+		import cf
+
 		form = util.FieldStorage(req, keep_blank_values = True)
 
-		# Hmm. First we get the action object, then possibly an entity, then
-		# the parameters. The action object will complain if the entity or
-		# parameters are missing
+		# Hmm. First we get the action object and an entity, then the
+		# parameters.
 		# No action means 'just display the page', i.e. we need the 'page'
 		# parameter
 
-		action = form.getfirst('action')
-		entity = form.getfirst('entity')
-
-		if action is not None and entity is not None:
-			import cf
-			if readable("%s/%s.html" % (cf.ht_docpath, entity)
-				page = entity
+		action = form.getfirst('action', None)
+		entity = form.getfirst('entity', None)
+		page = form.getfirst('page', cf.ht_default_page)
 
 #		cookies = Cookie.get_cookies(req)
 
 		if action is None:
-			page = form.getfirst('page', 'index')
-		else:
 			if entity is not None:
-			__import__('entity.' + entity)
+				raise error(err_fail, "Request for an entity without an " +
+					"action to act on it", "entity = %s" % entity)
 
-			ent = eval(entity + '.' + entity + '()')
+			action = cf.ht_default_action
+			entity = cf.ht_default_entity
 
-			for a in ent.get_attr_vec():
-				val = None
-				lock = False
+		if action is None:
+			if page is None:
+				raise error(err_fail, "No action and no page to display. I " +
+					"don't know what to do!")
 
-				for parm in form.list:
-					name = parm.name
-					if name.startswith('a_' + a):
-						# handle locks and multivalued parameters
-						if name == a:
-							val = get_parm_val(parm)
-							break
-						elif len(name) > len(a) + 1 and parm[len(a)] == '_':
-							if val is None:
-								val = {}
-							val[name[len(a)+1:]] = get_parm_val(parm)
-					elif name == 'l_' + a:
-						lock = True
+			path = cf.ht_docpath + '/' + page + '.html'
 
-				if val is not None:
-					attr = ent.get_attr(a)
-					attr.accept(attr_act_set(val))
-					if lock:
-						attr.lock()
+			try:
+				page_file = file(path)
+			except IOError, e:
+				raise error(err_fail, "IOError: " + str(e), "path = " + path)
 
-			act_cls = 'act_' + action
-			__import__('erm.' + act_cls)
+			req.content_type = "text/html"
 
-			act = eval(act_cls + '.' + act_cls + '(%s)' % action)
+			while len(text = page_file.read(cf.buflen_max)) > 0:
+				req.write(text)
 
-			ent.accept(act)
+			return apache.OK
 
-			#...
+		if entity is None:
+			raise error(err_fail, "Request for an action without an " +
+				"entity to act on", "action = %s" % action)
 
-		req.content_type = "text/html"
+		if readable("%s/%s.html" % (cf.ht_docpath, entity)
+			page = entity
+
+		__import__('entity.' + entity)
+
+		ent = eval(entity + '.' + entity + '()')
+
+		attr_map = {}
+		attr_locks = []
+		for parm in form.list:
+			name = parm.name
+
+			if name.startswith('a_'):
+				val = get_parm_val(parm)
+
+				# handle multivalued parameters
+				pos = name.find('__', 2)
+
+				if pos < 0:
+					attr = name[2:]
+
+					if attr_map.has_key(attr)
+						raise error(err_warn, "Overwriting multi-valued " +
+							"with single-valued parameter",
+							"attribute = %s" % attr)
+					attr_map[attr] = val
+
+					break
+				else:
+					attr = name[2:pos]
+
+					if not attr_map.has_key(attr)
+						attr_map[attr] = {}
+					attr_map[attr][name[pos+2:]] = val
+			elif name.startswith('l_'):
+				attr_locks.append(name[2:])
+
+		for name, value in attr_map:
+			# TODO: Don't raise an error if attribute doesn't exist. We
+			# don't want the user to spy on secret attributes
+			attr = ent.get_attr(name)
+			attr.accept(attr_act_set(value))
+
+		for a in parm_locks:
+			attr = ent.get_attr(a)
+			attr.lock()
+
+		act_cls = 'act_' + action
+		__import__('erm.' + act_cls)
+
+		act = eval(act_cls + '.' + act_cls + '(%s)' % action)
+
+		ent.accept(act)
+
+		# *** response ***
+		#
+		# o check for errors/success
+		# o display type (form/view/listing)
+		# o get possible variables, like user id and such
+		#
+		# display type: form as long as there are missing parameters (pk for a
+		# view, ...), view as soon as everything is okay, or a listing for
+		# result sets
+		#
+		# maybe we could implement all this by giving the action a display
+		# object which will then be called for generating a form/view/listing
+		# as appropriate
+		# => bad idea. this would require knowledge of the user interface in
+		# the germ part
+		#
+		# we will simply have to handle the result ourselves
+		#
+		# In the hypter text user interface we need a HTML listing to
+		# substitute the content tag and a possibly a title
+
+
 
 		req.write("action = " + str(action) + "\n")
 

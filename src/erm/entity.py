@@ -14,10 +14,9 @@ class entity:
 			relations = [], perm = {}, pre = {}, post = {}):
 		self.__name = name
 		self._attr_vec = []
-		self.__attr_map = {}
+		self.__attr_map = dict(attributes)
 		for a in attributes:
-			self.__attr_vec.append(a['name'])
-			self.__attr_map[a['name']] = a['attr']
+			self.__attr_vec.append(a[0])
 
 		self._pk_vec = primary_keys
 		self.__rel_vec = relations
@@ -113,7 +112,7 @@ class entity:
 		for ref_grp in self.__ref_group_vec:
 			ref_grp.generate_keylist(act_str, self.__attr_vec,
 					self.__attr_map, self.__lock_map)
-	
+
 	def require_pk_locks(self):
 		for key in self._pk_vec:
 			if not self.__attr_map[key].is_locked():

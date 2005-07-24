@@ -5,12 +5,11 @@
 #
 
 from erm.ent_table import *
-import text.label
-from attribute.string import *
-from erm.relation import *
-import erm.perm
 
-from erm.attribute import *
+import text.label
+from erm.relation import *
+from attr.attribute import perm
+from attr.string import *
 
 class users(ent_table):
 	opt_rank = [
@@ -34,17 +33,17 @@ class users(ent_table):
 
 	def __init__(self):
 		ent_table.__init__(self, name = __name__, attributes = [
-			init('username', string(label.username, perm.submit, None, 10)),
-			init('rank', choice(label.rank, perm.view, 0, opt_rank)),
-			init('genre', choice(label.genre, perm.all, 0, opt_genre)),
-			init('privacy', string(label.privacy, perm.all, 1, opt_privacy)),
-			init('forename', string(label.forename, perm.all, None, 64)),
-			init('surname', string(label.surname, perm.all, None, 64)),
-			init('address', string(label.address, perm.all, None, 128)),
-			init('email', string(label.email, perm.all, None, 128)),
-			init('icquin', string(label.icquin, perm.all, None, 16)),
-			init('homepage', string(label.homepage, perm.all, None, 128)),
-			init('passwd', string(label.passwd, [ 'edit', 'submit' ], None, 30)),
-			init('last_activity', date(label.last_activity, perm.view, None))
+			('username', string(label.username, perm.submit, None, 10)),
+			('rank', choice(label.rank, perm.view, 0, opt_rank)),
+			('genre', choice(label.genre, perm.all, 0, opt_genre)),
+			('privacy', string(label.privacy, perm.all, 1, opt_privacy)),
+			('forename', string(label.forename, perm.all, None, 64)),
+			('surname', string(label.surname, perm.all, None, 64)),
+			('address', string(label.address, perm.all, None, 128)),
+			('email', string(label.email, perm.all, None, 128)),
+			('icquin', string(label.icquin, perm.all, None, 16)),
+			('homepage', string(label.homepage, perm.all, None, 128)),
+			('passwd', string(label.passwd, [ 'edit', 'submit' ], None, 30)),
+			('last_activity', date(label.last_activity, perm.view, None))
 			],
 			primary_keys = [ 'username' ])

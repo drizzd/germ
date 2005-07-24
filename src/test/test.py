@@ -2,7 +2,7 @@
 #  db_class_test.py: test the DB class
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
-# 
+#
 
 print "-> Importing modules ..."
 

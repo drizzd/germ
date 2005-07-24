@@ -5,19 +5,19 @@
 #
 
 from erm.ent_table import *
-import text.label
-from attribute.string import *
-from erm.relation import *
 
-from erm.attribute import *
+import text.label
+from erm.relation import *
+from attr.attribute import perm
+from attr.string import *
 
 class gamer(ent_table):
 	def __init__(self):
 		ent_table.__init__(self, name = __name__, attributes = [
-			init('party', string(label.party, perm.submit, None, 10)),
-			init('username', string(label.username, perm.submit, None, 10)),
-			init('seat', int(label.tourney, perm.edit)),
-			init('paid', bool(label.team, perm.view, 0))
+			('party', string(label.party, perm.submit, None, 10)),
+			('username', string(label.username, perm.submit, None, 10)),
+			('seat', int(label.tourney, perm.edit)),
+			('paid', bool(label.team, perm.view, 0))
 			],
 			primary_keys = [ 'party', 'username' ],
 			relations = [
