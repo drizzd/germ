@@ -6,43 +6,49 @@
 
 import MySQLdb
 import cf
-from error import *
 
 class db_iface:
-	type = cf.db_type
-	host = cf.db_host
-	user = cf.db_user
-	database = cf.db_database
-	password = cf.db_password
+	__db_type = cf.db_type
+	__host = cf.db_host
+	__user = cf.db_user
+	__database = cf.db_database
+	__password = cf.db_password
 
 	def sql_query(cls, query):
-		if type == 'mysql':
-			res = db_iface.sql_query_mysql(query)
+		if cls.__db_type == 'mysql':
+			rset = cls.__sql_query_mysql(query)
 		else:
-			raise error(err_fail, 'Unkown database type: %s' % type)
+			from error import *
+			from text import errmsg
+			raise error(err_fail, errmsg.unknown_db_type,
+				'db_type: %s' % db_type)
 
-		return res
+		return rset
 
 	sql_query = classmethod(sql_query)
 
-	def sql_query_mysql(cls, query):
-		cls.mysql_connect()
+	def __sql_query_mysql(cls, query):
+		conn = cls.__mysql_connect()
 
-		c = cls.conn.cursor()
+		c = conn.cursor()
+		# TODO: check for errors
 		c.execute(query)
-		res = c.fetchall()
+
+		rset = c.fetchall()
 		c.close()
 
-		return res
+		return rset
 
-	sql_query_mysql = classmethod(sql_query_mysql)
+	__sql_query_mysql = classmethod(__sql_query_mysql)
 
-	def mysql_connect(cls):
+	def __mysql_connect(cls):
 		if not isinstance(cls.conn, Connection):
-			cls.conn = MySQLdb.connect(
-				host=cls.host,
-				user=cls.user,
-				db=cls.database,
-				passwd=cls.password)
+			cls.__conn = MySQLdb.connect(
+				host=cls.__host,
+				user=cls.__user,
+				db=cls.__database,
+				passwd=cls.__password)
 
-	mysql_connect = classmethod(mysql_connect)
+		return cls.__conn
+
+	__mysql_connect = classmethod(__mysql_connect)

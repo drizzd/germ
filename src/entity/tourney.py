@@ -17,7 +17,7 @@ class tourney(ent_table):
 			{ 'en': 'single elimination' },
 			{ 'en': 'double elimination' },
 			{ 'en': 'manual', 'de': 'manuell' } ]
-		
+
 		opt_phase = [
 			{ 'en': 'announced' ,
 			  'de': 'angek"undigt' },

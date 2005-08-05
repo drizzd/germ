@@ -18,10 +18,8 @@ class int(attribute):
 	def sql_type(self):
 		return 'INT(%u)' % self.__length
 
-	def do_set(self, val):
+	def set(self, val):
 		self.__val = val
-
-		return True
 
 	def accept(self, attr_act):
 		attr_act.visit_int(self)

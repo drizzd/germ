@@ -6,8 +6,8 @@
 
 from attribute import *
 
-from lib.error import *
-import text.errmsg
+from error.error import *
+from text import errmsg
 
 class choice(attribute):
 	def __init__(self, label, perm = {}, default = 0, options):
@@ -24,10 +24,8 @@ class choice(attribute):
 	def sql_type(self):
 		return 'TINYINT'
 
-	def do_set(self, val):
+	def set(self, val):
 		self._val = val
-
-		return True
 
 	def prnt(self, str):
 		return self.__options[self._val]

@@ -4,8 +4,8 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from lib.error import *
-import text.errmsg
+from error.error import *
+from text import errmsg
 
 class attr_action:
 	def __init__(self):

@@ -17,10 +17,8 @@ class string(attribute):
 	def sql_type(self):
 		return 'VARCHAR(%u)' % self.__length
 
-	def do_set(self, val):
+	def set(self, val):
 		self._val = val
-
-		return True
 
 	def accept(self, attr_act):
 		attr_act.visit_string(self)

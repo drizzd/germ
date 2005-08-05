@@ -25,7 +25,7 @@ class users(ent_table):
 		{ 'en': 'Sport (NHL, FIFA, NFS, ...)' },
 		{ 'en': 'Simulation (Commanche 4, ...)' },
 		{ 'en': 'Adventure (Auryns Quest, Diablo, ...)' } ]
-	
+
 	opt_privacy = [
 		{ 'en': 'show all', 'de': 'Alles anzeigen' },
 		{ 'en': 'hide name and address', 'de': 'Name und Adresse geheimhalten' }

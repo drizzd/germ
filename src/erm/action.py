@@ -4,12 +4,14 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from lib.error import *
-import text.errmsg
+from error.error import *
+from text import errmsg
 
 class action:
-	def __init__(self, act_str):
-		self.act_str = act_str
+	def __init__(self, act_str, session, do_exec):
+		self._act_str = act_str
+		self._session = session
+		self._do_exec = do_exec
 
 	def visit_table(self, entity):
 		raise error(err_fail, errmsg.unimplemented)

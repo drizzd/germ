@@ -5,9 +5,8 @@
 #
 
 class relation:
-	def __init__(
-			self, table, keys,
-			alias = None, cond = None, outer_join = None):
+	def __init__(self, table, keys, alias = None, cond = {},
+			outer_join = None):
 		self.__table = table
 		self.__alias = alias
 		self.__cond = cond
@@ -27,16 +26,14 @@ class relation:
 		return self.__outer_join
 
 	def get_alias(self):
-		if self.__alias is not None:
-			return self.__alias
-		else:
-			return self.__table
+		return self.__alias is None and self.__table or self.__alias
 
 	def has_alias(self):
 		return self.__alias is not None
 
-	def get_table(self):
-		return self.__table
+# TODO: remove
+#	def get_table(self):
+#		return self.__table
 
 	def get_table_spec(self):
 		table_spec = self.__table
@@ -54,20 +51,5 @@ class relation:
 	def get_colref(self, key):
 		return "%s.%s" % (self.get_alias(), self.get_realkey(key))
 
-	def get_join_cond(self, rel_map, attr_map, lock_map):
-		join_cond = []
-		for key in self.get_keys():
-			if rel_map[key] is None:
-				self.handle_unknown_key(
-					key, rel_map, attr_map, lock_map, join_cond)
-			else:
-				join_cond.append("\n\t\t%s = %s" %
-					(self.get_colref(key), rel_map[key].get_colref(key)))
-
-		if len(join_cond) > 0:
-			return " ON " + " AND ".join(join_cond)
-		else:
-			return ""
-
-	def handle_unknown_key(self, key, rel_map, attr_map, lock_map, join_cond):
-		rel_map[key] = self
+	def handle_unknown_key(self, key, attr_map, join_cond):
+		return self

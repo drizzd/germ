@@ -4,7 +4,7 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from attribute.attr_action import *
+from attr.attr_action import *
 
 class attr_act_set(attr_action):
 	def __init__(self, val):

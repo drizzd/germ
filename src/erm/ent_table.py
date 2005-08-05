@@ -21,7 +21,7 @@ class ent_table(entity):
 
 		create_defs = []
 		for a in self._attr_vec
-			attr = __attr_map[a]
+			attr = _attr_map[a]
 
 			# TODO: add REFERENCES?
 			type = attr.sql_type()
@@ -38,6 +38,31 @@ class ent_table(entity):
 
 		create_def = ', '.join(create_defs)
 
-		sql_query = "CREATE TABLE IF NOT EXISTS " + create_def
+		sql_query = "CREATE TABLE IF NOT EXISTS (%s)" % create_def
 
 		db_iface.query(sql_query)
+
+	# retrieve record specified by primary key and fill table
+	def fill_pk(self):
+		# in order to fill the table with values we need an entry, identified
+		# by its primary key
+		self._require_pk_locks()
+
+		from lib.db_iface import *
+
+		rset = db_iface.query("SELECT * FROM %s WHERE %s" % \
+			(self._name, self.get_attr_sql_pk()))
+
+		if len(rset) != 1:
+			from error.error import *
+
+			# TODO: Make this an invalid_key exception. This could very well
+			# occur by a user 'mistake'. On the other hand, can it still occur
+			# if ref_group.generate_keylist did not complain?
+			raise error(err_fail, "Invalid primary key: result is empty " + \
+				"or multiple result sets", "number of result sets: %s" % \
+				len(rset))
+
+		rec = rset[0]
+
+		self._fill(rec)

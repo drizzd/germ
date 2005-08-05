@@ -16,10 +16,8 @@ class bool(attribute):
 	def sql_type(self):
 		return 'BOOLEAN'
 
-	def do_set(self, val):
+	def set(self, val):
 		self._val = val and 1 or 0
-
-		return True
 
 	def get(self, str):
 		return self._val != 0
