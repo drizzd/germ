@@ -1,0 +1,5 @@
+split germ action and entity files into different directories, like this:
+
+action/* (action specific implementation)
+entity/* (entity specific implementation)
+erm/* (entity specifications)
