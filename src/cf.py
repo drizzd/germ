@@ -11,13 +11,15 @@ db_user = 'tilt'
 db_password = 'gfx17'
 
 buflen_max = 1024
-logfile = '/var/log/germ.log'
+log_file_path = '/var/log/germ.log'
 # de, en
 lang = 'en'
 admin_name = 'Clemens Buchacher'
 admin_email = 'drizzd@aon.at'
 
+ht_root = '/var/www'
+ht_path = 'lpms'
+ht_index = 'ui_ht/handler.py'
 ht_docpath = 'htdocs'
-ht_default_page = None
 ht_default_entity = 'users'
 ht_default_action = 'submit'
