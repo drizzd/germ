@@ -6,10 +6,11 @@
 
 from erm.ent_table import *
 
-import text.label
+import txt.label
 from erm.relation import *
 from attr.attribute import perm
 from attr.string import *
+from attr.date import *
 
 class users(ent_table):
 	opt_status = [
@@ -19,7 +20,7 @@ class users(ent_table):
 		{ 'en': 'Party has ended', 'de': 'Party ist vor"uber' } ]
 
 	def __init__(self):
-		ent_table.__init__(self, name = __name__, attributes = [
+		ent_table.__init__(self, attributes = [
 			('name', string(label.party, perm.submit, None, 10)),
 			('status', choice(label.party_status, perm.edit, 0, opt_status)),
 			('date', date(label.date, perm.all)),

@@ -1,5 +1,5 @@
 #
-#  team_members.py
+#  team.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
@@ -11,40 +11,32 @@ from erm.relation import *
 from attr.attribute import perm
 from attr.string import *
 
-class team_members(ent_table):
+class team(ent_table):
 	def __init__(self):
 		ent_table.__init__(self, attributes = [
 			('party', string(label.party, perm.submit, None, 10)),
-			('username', string(label.username, perm.submit, None, 10)),
 			('tourney', string(label.tourney, perm.submit, None, 32)),
-			('team', string(label.team, perm.all, None, 32))
+			('name', string(label.teamname, perm.submit, None, 32)),
+			('leader', string(label.leader, perm.submit, None, 10)),
 			],
-			primary_keys = [ 'party', 'username', 'tourney' ],
+			primary_keys = [ 'party', 'tourney', 'name' ],
 			relations = [
 				relation(
-			table =	'gamer',
-			keys = {	'party':		'party',
-						'username':	'username' },
-						# users can only subscribe themselves
-			cond = {	'submit':	"gamer.username = '$userid'" } ),
-				relation(
-			table =	'team',
-			keys = {	'party':		'party',
-						'tourney':	'tourney',
-						'team':		'name' },
-						# only the team leader can change member settings
-			cond = {	'edit':	"team.leader = '$userid'" } ),
-				relation(
-			table =	'tourney',
-			alias =	'tn',
-			keys = {	'party':		'party',
-						'tourney':	'name' },
+			table = 'tourney',
+			alias = 'tn',
+			keys = {	'party':	'party',
+						'name':		'tourney' },
 						# make sure tournament is in preparation phase
 			cond = {	'submit':	"tn.phase = '2'",
 						'edit':		"tn.phase = '2'" } ),
 				relation(
+			table = 'gamer',
+			keys = {	'party':	'party',
+						'username':	'leader' },
+			cond = {	'submit':	"gamer.username = '$userid'" } ),
+				relation(
 			table =	'users',
-			keys = {	'username':		'username' },
+			keys = {	'username':		'leader' },
 						# make sure user has paid
 			cond = {	'submit':	"gamer.paid = TRUE OR users.rank > 1" } ),
 				relation(
@@ -52,9 +44,11 @@ class team_members(ent_table):
 			alias =	'lt',
 			keys = {	'party':	'party',
 						'tourney':	'tourney',
-						'username':	'leader' },
+						'leader':	'leader' },
 						# make sure user is not a leader of another team
 						# already
-			cond = {	'submit':	"lt.leader IS NULL OR team.name = lt.name" },
+			cond = {	'submit':	"lt.leader IS NULL OR team.name = lt.name",
+						'edit':		"lt.leader IS NULL OR team.name = lt.name"
+					},
 			outer_join =	"LEFT" )
 				])

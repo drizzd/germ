@@ -5,12 +5,11 @@
 #
 
 from error.error import *
-from text import errmsg
+from txt import errmsg
 
 class table_action:
-	def __init__(self, act_str, session, table, fill_table, save_rset = False):
+	def __init__(self, act_str, table, fill_table, save_rset = False):
 		self.__act_str = act_str
-		self.__session = session
 		self._tbl = table
 		self.__fill_table = fill_table
 		self.__save_rset = save_rset
@@ -20,19 +19,32 @@ class table_action:
 	def execute(self, do_exec = True):
 		# check permissions
 		self.__check_perm()
-		# create reference groups
-		self.__analyze()
+
 		# set default values
 		self._set_default()
 
+		# create reference groups
+		missing_lock = self.__analyze()
+
+		# Fill the table with existing values. For some actions, such as 'list'
+		# or 'submit' this would not make any sense.
+		if self.__fill_table:
+			self._tbl.fill_pk()
+
+		if missing_lock:
+			from error.missing_lock import missing_lock
+			raise missing_lock()
+
 		if not do_exec:
-			from error.do_not_exec import *
+			from error.do_not_exec import do_not_exec
 			raise do_not_exec()
 
 		# execute pre-action function
 		self._tbl.pre(self.__act_str)
+
 		# execute SQL query
 		self.__doit()
+
 		# execute post-action function
 		self._tbl.post(self.__act_str)
 
@@ -51,38 +63,33 @@ class table_action:
 
 		missing_lock = False
 
-		for ref_grp in self.__ref_group_vec:
-			if ref_grp.generate_keylist(self.__act_str, self.__session,
-					self._tbl):
+		for ref_grp in self._tbl.get_ref_group_vec():
+			if ref_grp.generate_keylist(self.__act_str):
 				# If we need the primary key, we have to prompt for PKs only.
-				if self.__fill_table and
-						ref_grp.has_key(self._tbl.get_pk_vec()[0]):
-					from error.missing_pk_lock import *
-					raise missing_pk_lock()
+				if self.__fill_table:
+					pk0 = self._tbl.get_pk_set().copy().pop()
+
+					if ref_grp.has_key(pk0):
+						from error.missing_pk_lock import missing_pk_lock
+						raise missing_pk_lock()
 
 				missing_lock = True
 
-		# Fill the table with existing values. For some actions, such as 'list'
-		# or 'submit' this would not make any sense.
-		if self.__fill_table:
-			self._tbl.fill_pk()
-
-		if missing_lock:
-			from error.missing_lock import *
-			raise missing_lock()
+		return missing_lock
 
 	def __get_pk_rel(self):
-		pk_vec = self._tbl.get_pk_vec()
+		pk_set = self._tbl.get_pk_set()
 		table = self._tbl.get_name()
-		cond, outer_join = self._get_pk_cond_join(table, pk_vec[0])
+		cond, outer_join = self._get_pk_cond_join(table, pk_set.copy().pop())
 
-		__import__(self._relation_class)
+		rel_cls = eval("__import__('%s', globals(), locals(), ['%s']).%s" % \
+				(3*(self._relation_class,)))
 
-		return eval(self._relation_class + "(" + \
-			"table = table, " + \
-			"keys = dict(zip(pk_vec, pk_vec)), " + \
-			"cond = cond is None and {} or { self.__act_str: cond }, " + \
-			"outer_join = outer_join)")
+		return rel_cls(
+			table = table,
+			keys = dict(zip(pk_set, pk_set)),
+			cond = cond is None and {} or { self.__act_str: cond },
+			outer_join = outer_join)
 
 	def _get_sql_query(self, table, sql_str):
 		raise error(err_error, errmsg.abstract_func)
@@ -99,7 +106,7 @@ class table_action:
 		if sql_query is None:
 			return
 
-		import lib.db_iface
+		from lib.db_iface import *
 		rset = db_iface.query(sql_query)
 
 		if self.__save_rset:

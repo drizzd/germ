@@ -6,14 +6,14 @@
 
 from erm.ent_table import *
 
-import text.label
+import txt.label
 from erm.relation import *
 from attr.attribute import perm
 from attr.string import *
 
 class gamer(ent_table):
 	def __init__(self):
-		ent_table.__init__(self, name = __name__, attributes = [
+		ent_table.__init__(self, attributes = [
 			('party', string(label.party, perm.submit, None, 10)),
 			('username', string(label.username, perm.submit, None, 10)),
 			('seat', int(label.tourney, perm.edit)),
@@ -23,11 +23,11 @@ class gamer(ent_table):
 			relations = [
 				relation(
 			table =	'users',
-			keys =	{ 'username':	'username' },
-			cond =	{ 'submit':	"users.username = '$userid'" } ),
+			keys = {	'username':	'username' },
+			cond = {	'submit':	"users.username = '$userid'" } ),
 				relation(
 			table =	'party',
-			keys =	{ 'party':		'name' },
+			keys = {	'party':		'name' },
 			# party has to be in registration phase
-			cond =	{ 'submit':	"party.status = 1 OR users.rank > 1" } )
+			cond = {	'submit':	"party.status = 1 OR users.rank > 1" } )
 				])

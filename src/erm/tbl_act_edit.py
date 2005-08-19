@@ -7,8 +7,8 @@
 from table_action import *
 
 class tbl_act_edit(table_action):
-	def __init__(self, act_str, session, table):
-		table_action.__init__(self, act_str, session, table, fill_table = True)
+	def __init__(self, act_str, table):
+		table_action.__init__(self, act_str, table, fill_table = True)
 
 	def _get_sql_query(self):
 		name = self._tbl.get_name()

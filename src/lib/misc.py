@@ -16,6 +16,15 @@ def always_true():
 def do_nothing():
 	pass
 
+# Direct use of datetime.date.today as default callable doesn't work. I have no
+# idea why.
+def today():
+	import datetime
+	return datetime.date.today()
+
+def date_sqlstr(day):
+	return day.strftime("%Y%m%d")
+
 # same as [i for i in a_vec if i not in b_vec]
 # or list(Set(a) - Set(b))
 # which is faster?
@@ -29,6 +38,6 @@ def vec_sub(a, b):
 		if a[i] in b:
 			a.pop(i)
 		else:
-			i++
+			i += 1
 
 	return a

@@ -10,17 +10,15 @@ from mod_python import util
 #from Cookie import SimpleCookie
 #from mod_python import Cookie
 
-from error.error import *
+from error import *
 
-def parm_val(parm):
-	if isinstance(parm.file, FileType):
-		return parm
-	else:
-		return StringField(parm.value)
+parm_prefix_attr = 'a_'
 
 def handler(req):
 	try:
 		import cf
+
+		req.content_type = "text/html"
 
 		form = util.FieldStorage(req, keep_blank_values = True)
 
@@ -29,49 +27,49 @@ def handler(req):
 		# No action means 'just display the page', i.e. we need the 'page'
 		# parameter
 
-		action = form.getfirst('action', None)
-		entity = form.getfirst('entity', None)
-		page = form.getfirst('page', cf.ht_default_page)
+		p_action = form.getfirst('action', None)
+		p_entity = form.getfirst('entity', None)
+		p_page = form.getfirst('page', None)
 
 #		cookies = Cookie.get_cookies(req)
 
-		if action is None:
-			if entity is not None:
+		if p_action is None:
+			if p_entity is not None:
 				raise error(err_fail, "Request for an entity without an " +
-						"action to act on it", "entity: %s" % entity)
+						"action to act on it", "entity: %s" % p_entity)
 
-			action = cf.ht_default_action
-			entity = cf.ht_default_entity
+			p_action = cf.ht_default_action
+			p_entity = cf.ht_default_entity
 
-		if action is None:
-			if page is None:
-				raise error(err_fail, "No action to execute and no page " + \
-						"to display. I have nothing to do!")
+		# get page
 
-			path = cf.ht_docpath + '/' + page + '.html'
+		try:
+			path = cf.ht_root + '/' + cf.ht_path + '/' + cf.ht_docpath + '/'
 
-			try:
-				page_file = file(path)
-			except IOError, e:
-				raise error(err_fail, "IOError: " + str(e), "path: " + path)
+			if p_page is not None:
+				page = file(path + p_page + '.html')
+			elif p_entity is not None:
+				try:
+					page = file(path + p_entity + '.html')
+				except IOError:
+					page = file(path + 'index.html')
+			else:
+				page = file(path + 'index.html')
+		except IOError, e:
+			raise error(err_fail, e, 'path: %s, page: %s, entity: %s' % \
+					(path, p_page, p_entity))
 
-			req.content_type = "text/html"
+		text = ''
 
-			while len(text = page_file.read(cf.buflen_max)) > 0:
+		if p_action is None:
+			while len(text = page.read(cf.buflen_max)) > 0:
 				req.write(text)
 
 			return apache.OK
 
-		if entity is None:
+		if p_entity is None:
 			raise error(err_fail, "Request for an action without an " + \
-					"entity to act on", "action: %s" % action)
-
-		if readable("%s/%s.html" % (cf.ht_docpath, entity)
-			page = entity
-
-		__import__('entity.' + entity)
-
-		ent = eval(entity + '.' + entity + '()')
+					"entity to act on", "action: %s" % p_action)
 
 		from sets import Set
 
@@ -81,25 +79,29 @@ def handler(req):
 		attr_to_lock = Set()
 		do_exec = False
 		for name, val in [(parm.name, parm_val(parm)) for parm in form.list]:
-			if name.startswith('a_'):
+			if name.startswith(parm_prefix_attr):
 				# handle multivalued parameters
-				pos = name.find('__', 2)
+				pos = name.find('__', len(parm_prefix_attr))
 
 				if pos < 0:
-					attr = name[2:]
+					attr = name[len(parm_prefix_attr):]
 
-					if attr_map.has_key(attr)
+					if attr_map.has_key(attr):
 						raise error(err_warn, "Multi-valued parameter " + \
 								"overwritten with single-valued parameter",
 								"attribute: %s" % attr)
+
 					attr_map[attr] = val
-
-					break
 				else:
-					attr = name[2:pos]
+					attr = name[len(parm_prefix_attr):pos]
 
-					if not attr_map.has_key(attr)
+					if not attr_map.has_key(attr):
 						attr_map[attr] = {}
+					elif not isinstance(attr_map, dict):
+						raise error(err_warn, "Multi-valued parameter " + \
+								"overwritten with single-valued parameter",
+								"attribute: %s" % attr)
+
 					attr_map[attr][name[pos+2:]] = val
 			elif name.startswith('v_'):
 				# TODO: implement authentication
@@ -111,13 +113,28 @@ def handler(req):
 			elif name == 'do_exec':
 				do_exec = True
 
-		invalid_parm = False
-		for attr, value in attr_map:
-			from error.invalid_parm import *
+		mod = __import__('entity.' + p_entity, globals(), locals(),
+				[p_entity])
+		entity_class = getattr(mod, p_entity)
+
+		entity = entity_class()
+
+		entity.add_session_vars(session_vars)
+
+		found_invalid_parm = False
+
+		for attr, value in attr_map.iteritems():
+			from error.invalid_parm import invalid_parm
+			from attr_act_set import attr_act_set
 			try:
-				ent.attr_accept(attr, attr_act_set(value))
+				a = entity.get_attr(attr, p_action)
+
+				a.accept(attr_act_set(value))
+#				error(err_debug, 'setting attribute', 'attr: %s, val: %s' % \
+#						(attr, a.get()))
 			except invalid_parm, e:
-				invalid_parm = True
+				found_invalid_parm = True
+
 				if attr in attr_locks:
 					raise error(err_fail, "Locked attribute has invalid value",
 							"attr: %s, error: %s" % (attr, e))
@@ -125,20 +142,21 @@ def handler(req):
 					attr_to_lock.remove(attr)
 
 		for attr in attr_locks:
-			ent.attr_lock(attr)
+			entity.get_attr(attr, p_action).lock()
 
 		for attr in attr_to_lock:
-			ent.attr_to_lock(attr)
+			entity.get_attr(attr, p_action).to_lock()
 
-		act_cls = 'act_' + action
+		action_class_str = 'act_' + p_action
 		try:
-			__import__('erm.' + act_cls)
+			mod = __import__('erm.' + action_class_str, globals(), locals(),
+					[action_class_str])
+			action_class = getattr(mod, action_class_str)
 		except ImportError, e:
 			raise error(err_fail, "Could not perform action. " + \
-					"ImportError: " + str(e), "action: " + action)
+					"ImportError: " + str(e), "action: " + p_action)
 
-		act = eval(act_cls + '.' + act_cls + '(%s, %s, %s)' % \
-				(action, session_vars, do_exec))
+		action = action_class(p_action, do_exec and not found_invalid_parm)
 
 		# o check for errors/success
 		# o display type (form/view/listing)
@@ -147,192 +165,315 @@ def handler(req):
 		# display type: form as long as there are missing parameter (PK for a
 		# view, ...), view as soon as everything is okay, or a listing for
 		# result sets
-		#
-		# maybe we could implement all this by giving the action a display
-		# object which will then be called for generating a form/view/listing
-		# as appropriate
-		# => bad idea. this would require knowledge of the user interface in
-		# the germ part
-		#
-		# we will simply have to handle the result ourselves
-		#
-		# In the hypter text user interface we need a HTML listing to
-		# substitute the content tag and a possibly a title
 
-		# TODO: First, search for required locks (-> form). After that we still
-		# need to find out if we are supposed to display the whole thing as
-		# form or view/listing (distinguish view/listing by the number of
-		# result sets).
+		# First, search for required locks (-> form). After that we still need
+		# to find out if we are supposed to display the whole thing as form or
+		# view/listing (distinguish view/listing by the number of result sets).
 		#
-		# Idea: Introduce a success flag. As soon as the operation has
-		# succeeded, we display the result as a view/listing (even for
-		# edit/delete/submit)
+		# As soon as the operation has succeeded, we display the result as a
+		# view/listing (even for edit/delete/submit)
 
 		# Note: Always display locked values as disabled form elements
 		# (shouldn't happen for listings)
 
-		# Possible exceptions: missing_lock, missing_pk_lock, do_not_exec (=
-		# assert), perm_denied, error (general failure; should not happen),
-		# invalid_parm (handled above)
-
 		print_handler = print_form
 
-		from error.do_not_exec import *
-		from error.missing_lock import *
-		from error.missing_pk_lock import *
-		from error.perm_denied import *
-		prompt_pk_only = True
+		from error.do_not_exec import do_not_exec
+		from error.missing_lock import missing_lock
+		from error.missing_pk_lock import missing_pk_lock
+		from error.no_valid_keys import no_valid_keys
+		from error.perm_denied import perm_denied
+		from error.invalid_parm import invalid_parm
+		prompt_pk_only = False
 		try:
-			try:
-				ent.accept(act)
+			entity.accept(action)
 
-				if not invalid_parm:
-					if ent.has_rset():
-						print_handler = print_list
-					else:
-						print_handler = print_view
-			except error, e:
-				req.write(e + "<br>")
-				raise e
-		except do_not_exec, e:
-			pass
-		except missing_lock, e:
-			pass
-		except missing_pk_lock, e:
-			prompt_pk_only = True
-		except no_valid_keys, e:
-			error(err_warn, e, "action: %s, entity: %s" % (action, entity))
-			return apache.OK
-		except perm_denied, e:
-			error(err_warn, e, "action: %s, entity: %s" % (action, entity))
-			return apache.OK
+			if entity.has_rset():
+				print_handler = print_list
+			else:
+				print_handler = print_view
+		except error, e:
+			if not (isinstance(e, do_not_exec) and found_invalid_parm):
+				text += str(e) + "<BR />\n<BR />\n"
 
-		for attr in attr_to_lock:
-			if ent.attr_is_locked(attr):
-				attr_locks.append(attr)
+			if isinstance(e, missing_lock) or isinstance(e, invalid_parm):
+				pass
+			elif isinstance(e, do_not_exec):
+				pass
+			elif isinstance(e, missing_pk_lock):
+				prompt_pk_only = True
+			elif isinstance(e, no_valid_keys) or isinstance(e, perm_denied):
+				error(err_warn, e, "action: %s, entity: %s" % \
+						(p_action, p_entity))
+				return apache.OK
+			else:
+				return boil_out(req, e)
 
-		print_handler(req, ent, attr_locks, prompt_pk_only)
+		text += print_handler(entity, p_action, prompt_pk_only)
 
-	except error, e:
-		# TODO: Log errors and inform administrator. Only inform user that this
-		# should not happen and a bug report has been filed. Encourage user to
-		# offer assistance (contact administrator, describe problem).
-		req.content_type = "text/plain"
-		req.write("Unhandled Exception: " + str(e))
+		req.write(text)
 
-		from text import errmsg
-		req.write(errmsg.failure)
-		import cf
-		req.write("\nSystem Administrator: %s <%s>" % \
-			(cf.admin_name, cf.admin_email))
+	except Exception, e:
+		return boil_out(req, e)
+
 	return apache.OK
 
-	def print_view(req, ent, attr_locks, prompt_pk_only):
-		req.write("The following entry has been &lt;whatever&gt;<BR />")
+def boil_out(req, e):
+	# TODO: Log errors and inform administrator. Only inform user that this
+	# should not happen and a bug report has been filed. Encourage user to
+	# offer assistance (contact administrator, describe problem).
+	#req.content_type = "text/html"
+	req.write('<B>Unhandled Exception:</B> <I>%s</I>' % e)
 
-		viewtext = ""
+	if isinstance(e, error):
+		req.write(' (%s)' % e.err_lvl())
 
-		from attr_act_view import *
-		act_view = attr_act_view(viewtext)
+	req.write('<BR />\n')
 
-		viewtext += "<TABLE>"
+	from txt import errmsg
+	req.write(errmsg.failure)
 
-		for attr in ent.get_attr_vec():
-			viewtext += "<TR><TH>%s:</TH><TD>" % attr.label()
+	req.write('<BR />\n')
 
-			ent.attr_accept(attr, act_view)
+	req.write("<PRE>")
+	import traceback
+	traceback.print_exc(file=req)
+	req.write("</PRE>")
 
-			viewtext += "</TD></TR>"
+	import cf
+	req.write('<BR />\n<HR>System Administrator: ' \
+			'<A href="mailto:%s">%s</A>' % (cf.admin_email, cf.admin_name))
 
-		viewtext += "</TABLE>"
+	return apache.OK
 
-	def print_list(req, ent, attr_locks, prompt_pk_only):
-		listtext = ""
+def print_view(entity, act_str, prompt_pk_only):
+	last_ch = act_str[-1]
+	suffix = ''
 
-		from attr_act_list import *
-		act_list = attr_act_view(listtext)
+	if last_ch in ['t'] and act_str not in ['edit']:
+		suffix += last_ch
+	
+	if last_ch != 'e':
+		suffix += 'e'
 
-		listtext += "<TABLE>\n"
+	viewtext = "The following entry has been %sd<BR />\n<BR />\n" % \
+			(act_str + suffix)
 
+	from attr_act_view import attr_act_view
+	act_view = attr_act_view()
+
+	viewtext += '<TABLE border="1">\n'
+
+	for attr in entity.attr_iter('view'):
+		viewtext += '<TR><TH align="left">%s:</TH>' % attr.label()
+
+		viewtext += get_cell(attr, act_view)
+
+		viewtext += "</TR>\n"
+
+	viewtext += "</TABLE>"
+
+	return viewtext
+
+def get_cell(attr, act_get):
+	text = '<TD>'
+
+	attr.accept(act_get)
+	attr_text = act_get.get_text()
+
+	if attr_text == '':
+		attr_text = '&nbsp;'
+	
+	text += attr_text
+
+	text += '</TD>'
+
+def print_list(entity, act_str, prompt_pk_only):
+	from attr_act_view import attr_act_view
+	act_view = attr_act_view()
+
+	listtext = "<TABLE>\n"
+
+	listtext += "\t<TR>"
+
+	for attr in entity.attr_iter('view'):
+		listtext += "<TH>%s</TH>" % attr.label()
+
+	listtext += "</TR>\n"
+
+	for rec in entity.rsets():
 		listtext += "\t<TR>"
 
-		for attr in rec.get_attr_vec():
-			listtext += "<TH>%s</TH>" % attr.label()
+		for attr in rec.attr_iter('view'):
+			listtext += get_cell(attr, act_view)
 
 		listtext += "</TR>\n"
 
-		for rec in ent.rsets()
-			listtext += "\t<TR>"
+	listtext += "</TABLE>"
 
-			for attr in rec.get_attr_vec():
-				listtext += "<TD>"
-				ent.attr_accept(attr, act_view)
-				listtext += "</TD>"
+	return listtext
 
-			listtext += "</TR>\n"
+def print_form(entity, act_str, prompt_pk_only):
+	import cf
+	formtext = '<FORM method="GET" action="%s">\n' % ('/' + cf.ht_path + \
+			'/' + cf.ht_index)
 
-		listtext += "</TABLE>"
+	if not prompt_pk_only:
+		formtext += '<INPUT type="hidden" name="do_exec">\n'
 
-	def print_form(req, ent, attr_locks, prompt_pk_only):
-		formtext = ""
-		error_vec = []
+	formtext += '<INPUT type="hidden" name="entity" value="%s">\n' % \
+			entity.get_name() + \
+			'<INPUT type="hidden" name="action" value="%s">\n' % act_str
 
-		act_form_field = attr_act_form_field(formtext, error_vec, attr_locks)
-		act_form_key = attr_act_form_key(formtext, error_vec, attr_locks)
+	formtext += '<TABLE>\n'
 
-		attr_vec = ent.get_attr_vec()[:]
-		from sets import Set
-		pk_set = Set(ent.get_pk_vec())
-		cnt = 0
-		while len(attr_vec) > 0:
-			attr = attr_vec.pop(0)
-			group = ent.get_ref_group(attr)
+	error_vec = []
 
-			if group is None:
-				if prompt_pk_only:
-					continue
+	from attr_act_form_field import attr_act_form_field
+	act_form_field = attr_act_form_field()
+	from attr_act_form_key import attr_act_form_key
+	act_form_key = attr_act_form_key()
 
-				act_form_field.set_parm_name(attr)
-				ent.attr_accept(attr, act_form_field)
-			else:
-				cnt++
-				j = 0
-				while True:
-					locked = attr in attr_locks
+	attr_vec = entity.get_attr_vec(act_str)
+	pk_set = entity.get_pk_set()
+	cnt = 0
+	while len(attr_vec) > 0:
+		attr_id = attr_vec.pop(0)
+		attr = entity.get_attr_nocheck(attr_id)
 
-					if locked:
-						formtext += '<INPUT type="hidden" ' + \
-								'name="lock" value="%s">' % attr
+		group = entity.get_ref_group(attr_id)
 
-					formtext += '<INPUT type="radio" name="to_lock%u" ' + \
-							'value="%s"%s>' % (cnt, attr,
-								locked and ' diabled' or '')
+		if group is None:
+			if prompt_pk_only:
+				continue
 
-					if group.has_fk(attr):
-						if prompt_pk_only and attr not in pk_vec:
-							continue
+			formtext += '<TR><TD colspan="2">%s:</TD><TD>' % attr.label()
 
-						act_form = act_form_key
-					else:
-						act_form = act_form_field
+			parm_name = parm_prefix_attr + attr_id
 
-					act_form.set_parm_name(attr)
-					ent.attr_accept(attr, act_form)
+			act_form_field.set_parm_name(parm_name)
+			attr.accept(act_form_field)
 
-					# also display remaining attributes of the same reference
-					# group
-					while j < len(attr_vec) and not group.has_key(attr_vec[j]):
-						j++
+			formtext += act_form_field.get_text()
 
-					if not (j < len(attr_vec)):
-						break
+			formtext += get_error(attr, error_vec)
 
-					attr = attr_vec.pop(j)
+			formtext += '</TD></TR>\n'
+		else:
+			cnt += 1
+			j = 0
+			first = True
+			while True:
+				locked = attr.is_locked()
 
-		if len(error_vec) > 0:
-			req.write("The following attributes caused errors:<BR />")
+				formtext += '<TR><TD>%s:</TD><TD><INPUT ' \
+						'type="radio" name="to_lock%u" value="%s"%s%s>' \
+						'</TD><TD>' % \
+							(attr.label(), cnt, attr_id,
+							locked and ' disabled' or '',
+							(not locked and first) and ' checked' or '')
+				if locked:
+					formtext += '<INPUT type="hidden" name="lock" ' \
+							'value="%s">' % attr_id
 
-		for i, e in enumerate(error_vec):
-			req.write("%s: %s", (i+1, "<br>".join(e)))
+				if first:
+					first = False
 
-		req.write(formtext)
+				parm_name = parm_prefix_attr + attr_id
+
+				if group.has_fk(attr_id):
+					if prompt_pk_only and attr_id not in pk_set:
+						continue
+
+					formtext += '<SELECT name="%s"%s>' % (parm_name,
+							locked and ' disabled' or '')
+
+					cur_key = attr.sql_str()
+
+					tmp_attr = attr.copy()
+
+					for key in group.get_keys(attr_id):
+						formtext += '\t<OPTION value="%s"%s>' % \
+								(key, key == cur_key and ' selected' or '')
+
+						tmp_attr.set_sql(key)
+
+						error(err_debug, 'act_form_key', 'attr_id: %s, ' \
+								'key: %s, attr value: %s' % \
+								(attr_id, key, tmp_attr.get()))
+
+						tmp_attr.accept(act_form_key)
+						formtext += act_form_key.get_text()
+
+						formtext += '</OPTION>\n'
+
+					formtext += '</SELECT>'
+				else:
+					act_form_field.set_parm_name(parm_name)
+					attr.accept(act_form_field)
+					formtext += act_form_field.get_text()
+
+				if attr.is_locked():
+					# TODO: make sure this is also necessary for disabled
+					# <SELECT> elements
+					formtext += '<INPUT type="hidden" name="%s" value="%s">' \
+							% (parm_name, attr.get())
+
+				formtext += get_error(attr, error_vec)
+
+				formtext += '</TD></TR>\n'
+
+				# also display remaining attributes of the same reference
+				# group
+				while j < len(attr_vec) and not group.has_key(attr_vec[j]):
+					j += 1
+
+				if not (j < len(attr_vec)):
+					break
+
+				attr_id = attr_vec.pop(j)
+				attr = entity.get_attr_nocheck(attr_id)
+
+			if len(attr_vec) > 0:
+				formtext += '<TR><TD colspan="2"></TD><TD><HR></TD></TR>\n'
+	
+	from txt import misc
+	import cf
+
+	formtext += '<TR><TD colspan="2"></TD>' \
+			'<TD><INPUT type="submit" value="%s"></TD>' \
+			'</TR>\n' % misc.action[act_str][cf.lang]
+
+	formtext += '</TABLE>\n</FORM>'
+
+	errortext = ''
+	errortext += len(error_vec) > 0 and \
+			"The following attributes caused errors:<BR />\n" or ''
+
+	for i, e_vec in enumerate(error_vec):
+		err_str = ''
+		for e in e_vec:
+			err_str += "%s<BR />\n" % e
+
+		errortext += '<SPAN style="color: red"><SUP>%s</SUP></SPAN> %s' % (i+1, err_str)
+
+	errortext += len(error_vec) > 0 and \
+			"<BR />\n" or ''
+
+	return errortext + formtext
+
+def get_error(attr, error_vec):
+	error = attr.get_error()
+
+	if len(error) > 0:
+		error_vec.append(error)
+
+		return '<SPAN style="color: red"><SUP>%s</SUP></SPAN>' % len(error_vec)
+
+	return ''
+
+def parm_val(parm):
+	if isinstance(parm.file, util.FileType):
+		return parm
+	else:
+		return util.StringField(parm.value)

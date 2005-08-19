@@ -7,25 +7,35 @@
 from attribute import *
 
 class date(attribute):
-	import datetime
-	py_date = datetime.date
-
-	def __init__(self, label, perm = {}, default = None):
-		attribute.__init__(self, label, perm, default)
+	def __init__(self, label, perm = {}, default = None, chk_func_vec = []):
+		attribute.__init__(self, label, perm, default, chk_func_vec)
 
 	def sql_str(self):
-		return self._val.strftime("%Y%m%d")
+		from lib import misc
 
-	def set(self, val):
-		if not isinstance(val, dict):
-			self._format_error()
+		return misc.date_sqlstr(self._val)
 
-		try:
-			self._val = py_date(int(val['year']), int(val['month']),
-				int(val['day']))
-		except ValueError, e:
-			self._error(e)
-		except IndexError:
+	def sql_type(self):
+		return 'DATE'
+
+	def _do_set(self, val):
+		import datetime
+		py_date = datetime.date
+
+		if val is None:
+			return
+
+		if isinstance(val, py_date):
+			self._val = val
+		elif isinstance(val, dict):
+			try:
+				self._val = py_date(int(val['year']), int(val['month']),
+						int(val['day']))
+			except ValueError, e:
+				self._error(e)
+			except IndexError:
+				self._format_error()
+		else:
 			self._format_error()
 
 	def accept(self, attr_act):

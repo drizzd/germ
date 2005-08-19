@@ -6,7 +6,7 @@
 
 from erm.ent_table import *
 
-import text.label
+import txt.label
 from erm.relation import *
 from attr.attribute import perm
 from attr.string import *
@@ -19,16 +19,20 @@ class tourney(ent_table):
 			{ 'en': 'manual', 'de': 'manuell' } ]
 
 		opt_phase = [
+			# 1
 			{ 'en': 'announced' ,
 			  'de': 'angek"undigt' },
+			# 2
 			{ 'en': 'in preparation',
 			  'de': 'in Vorbereitung' },
+			# 3
 			{ 'en': 'started',
 			  'de': 'gestartet' },
+			# 4
 			{ 'en': 'finished',
 			  'de': 'beendet' } ]
 
-		ent_table.__init__(self, name = __name__, attributes = [
+		ent_table.__init__(self, attributes = [
 			('party', string(label.party, perm.submit, None, 10)),
 			('name', string(label.tourney, perm.submit, None, 32)),
 			('organizer', string(label.organizer, perm.all, None, 10)),

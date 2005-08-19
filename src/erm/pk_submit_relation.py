@@ -54,7 +54,7 @@ class pk_submit_relation(relation):
 	# kind of attribute that's not a foreign key (i.e. for which there is no
 	# list of available items to choose from) but that has to meet some kind of
 	# condition, like uniquess.
-	def handle_unknown_key(self, key, attr_map, join_cond):
+	def handle_unknown_key(self, ent, key, act_str, join_cond):
 		# Here we check if the key is locked. It is a primary key, and it is
 		# not a relation because if it was, this function would never be
 		# called. We always add the primary key relation to the reference
@@ -62,7 +62,7 @@ class pk_submit_relation(relation):
 		# key would already point to another relation, if another relation
 		# for this key existed.
 
-		attr = attr_map[key]
+		attr = ent.get_attr_nocheck(key)
 
 		if attr.is_locked():
 			# exclude all matches for this key (this condition is used in a

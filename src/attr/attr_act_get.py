@@ -8,21 +8,31 @@ from attr_action import *
 
 class attr_act_get(attr_action):
 	def __init__(self):
-		self.value = None
+		self._text = None
 
-	def visit_string(attr):
-		self.value = attr.get()
+	def get_text(self):
+		return self._text
 
-	def visit_int(attr):
-		self.value = str(attr.get())
+	def visit_passwd(self, attr):
+		self._text = ''
 
-	def visit_date(attr):
-		self.value = attr.get().strftime("%e. %b %Y")()
+	def visit_string(self, attr):
+		val = attr.get()
+		if val is None:
+			val = ''
 
-	def visit_bool(attr):
-		import text.misc
+		self._text = val
+
+	def visit_int(self, attr):
+		self._text = str(attr.get())
+
+	def visit_date(self, attr):
+		self._text = attr.get().strftime("%e. %b %Y")()
+
+	def visit_bool(self, attr):
+		import txt.misc
 
 		if attr.get():
-			self.value = misc.yes
+			self._text = misc.yes
 		else:
-			self.value = misc.no
+			self._text = misc.no

@@ -4,22 +4,28 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from attr_act_form import *
+from attr.attr_act_get import *
 
-class attr_act_view:
-	def __init__(self, htmltext):
-		self.__htmltext = htmltext
+class attr_act_view(attr_act_get):
+	def __init__(self):
+		attr_act_get.__init__(self)
+	
+	def visit_passwd(self, attr):
+		self._text = 8*'*'
 
-	def visit_string(attr):
-		self.__htmltext += attr.sql_str()
+	def visit_string(self, attr):
+		self._text = attr.sql_str()
 
-	def visit_int(attr):
-		self.__htmltext += attr.sql_str()
+	def visit_choice(self, attr):
+		self._text = str(attr)
 
-	def visit_date(attr):
+	def visit_int(self, attr):
+		self._text = attr.sql_str()
+
+	def visit_date(self, attr):
 		date = attr.get()
-		self.__htmltext += date.strftime("%Y-%m-%d")
+		self._text = date.strftime("%Y-%m-%d")
 
-	def visit_bool(attr):
-		self.__htmltext += '<INPUT type="checkbox"%s disabled>' % \
+	def visit_bool(self, attr):
+		self._text = '<INPUT type="checkbox"%s disabled>' % \
 				attr.get() and ' checked' or ''

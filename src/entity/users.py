@@ -6,10 +6,13 @@
 
 from erm.ent_table import *
 
-import text.label
+from txt import label
 from erm.relation import *
 from attr.attribute import perm
 from attr.string import *
+from attr.passwd import *
+from attr.choice import *
+from attr.date import *
 
 class users(ent_table):
 	opt_rank = [
@@ -19,31 +22,39 @@ class users(ent_table):
 		{ 'en': 'Admin', 'de': 'Admin' } ]
 
 	opt_genre = [
-		{ 'en': 'indecisive', 'de': 'unentschlossen' },
+		{ 'en': '-' },
 		{ 'en': 'Action (CS, UT, Q3, ...)' },
 		{ 'en': 'Strategy (C&C, Dune, SC, ...)' },
 		{ 'en': 'Sport (NHL, FIFA, NFS, ...)' },
-		{ 'en': 'Simulation (Commanche 4, ...)' },
-		{ 'en': 'Adventure (Auryns Quest, Diablo, ...)' } ]
+		{ 'en': 'Simulation (Comanche 4, ...)' },
+		{ 'en': 'Adventure (Auryns Quest, ...)' } ]
 
 	opt_privacy = [
-		{ 'en': 'show all', 'de': 'Alles anzeigen' },
-		{ 'en': 'hide name and address', 'de': 'Name und Adresse geheimhalten' }
-		{ 'en': 'hide all but nickname', 'de': 'Nur Nickname anzeigen' }
+		{	'en': 'show all',
+			'de': 'Alles anzeigen' },
+		{	'en': 'hide name and residence',
+			'de': 'Name und Wohnort geheimhalten' },
+		{	'en': 'hide all but nickname',
+			'de': 'Nur Nickname anzeigen' } ]
 
 	def __init__(self):
-		ent_table.__init__(self, name = __name__, attributes = [
-			('username', string(label.username, perm.submit, None, 10)),
-			('rank', choice(label.rank, perm.view, 0, opt_rank)),
-			('genre', choice(label.genre, perm.all, 0, opt_genre)),
-			('privacy', string(label.privacy, perm.all, 1, opt_privacy)),
-			('forename', string(label.forename, perm.all, None, 64)),
+		from lib import chk
+		from lib import misc
+
+		ent_table.__init__(self, attributes = [
+			('username', string(label.username, perm.submit, None, 10,
+				[chk.identifier])),
+			('passwd', passwd(label.passwd, [ 'edit', 'submit' ], None, 30)),
+			('rank', choice(label.rank, self.opt_rank, perm.view, 0)),
+			('privacy', choice(label.privacy, self.opt_privacy, perm.all, 1)),
 			('surname', string(label.surname, perm.all, None, 64)),
-			('address', string(label.address, perm.all, None, 128)),
+			('forename', string(label.forename, perm.all, None, 64)),
+			('residence', string(label.residence, perm.all, None, 128)),
 			('email', string(label.email, perm.all, None, 128)),
 			('icquin', string(label.icquin, perm.all, None, 16)),
 			('homepage', string(label.homepage, perm.all, None, 128)),
-			('passwd', string(label.passwd, [ 'edit', 'submit' ], None, 30)),
-			('last_activity', date(label.last_activity, perm.view, None))
+			('genre', choice(label.genre, self.opt_genre, perm.all, 0)),
+			('last_activity', date(label.last_activity, perm.view,
+				misc.today))
 			],
 			primary_keys = [ 'username' ])

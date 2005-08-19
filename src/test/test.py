@@ -4,30 +4,20 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-print "-> Importing modules ..."
+from attr.attribute import *
+from attr.date import date
 
-from erm.act_submit import *
-from erm.ent_table import *
-from erm.tbl_act_view import *
+from lib import misc
+from ui_ht.attr_act_set import *
+import datetime
 
-entity = 'team_members'
-__import__('entity.%s' % entity, globals(), locals(), [])
+#print misc.today()
 
-print "-> Instantiating entity ..."
+attr = date('huhy', [ 'view'], None)
+#attr.set_default()
 
-t1 = team_members()
+attr.accept(attr_act_set(datetime.date(1975,1,1)))
 
-print "-> Setting attributes ..."
+print attr.get()
 
-t1._entity__attr_map['party'].set('tilt7')
-t1._entity__attr_map['party'].lock()
-
-print "-> Instantiating action ..."
-
-a1 = act_submit('submit')
-
-print "-> Executing action ..."
-
-t1.accept(a1)
-
-print "-> All done."
+print attr.sql_str()

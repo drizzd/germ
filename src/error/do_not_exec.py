@@ -4,9 +4,9 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from error.error import *
+from error import *
 
 class do_not_exec(error):
 	def __init__(self):
-		from text import errmsg
-		error.__init__(self, errmsg.do_not_exec, do_log = False)
+		from txt import errmsg
+		error.__init__(self, err_notice, errmsg.do_not_exec, do_log = False)

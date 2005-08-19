@@ -5,12 +5,11 @@
 #
 
 from error.error import *
-from text import errmsg
+from txt import errmsg
 
 class action:
-	def __init__(self, act_str, session, do_exec):
+	def __init__(self, act_str, do_exec):
 		self._act_str = act_str
-		self._session = session
 		self._do_exec = do_exec
 
 	def visit_table(self, entity):

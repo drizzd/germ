@@ -13,19 +13,23 @@ class db_iface:
 	__user = cf.db_user
 	__database = cf.db_database
 	__password = cf.db_password
+	__conn = None
 
-	def sql_query(cls, query):
+	def query(cls, query):
+		from error import *
+		error(err_debug, 'db_iface query', query)
+
 		if cls.__db_type == 'mysql':
 			rset = cls.__sql_query_mysql(query)
 		else:
-			from error import *
-			from text import errmsg
+			import error
+			from txt import errmsg
 			raise error(err_fail, errmsg.unknown_db_type,
 				'db_type: %s' % db_type)
 
 		return rset
 
-	sql_query = classmethod(sql_query)
+	query = classmethod(query)
 
 	def __sql_query_mysql(cls, query):
 		conn = cls.__mysql_connect()
@@ -42,7 +46,7 @@ class db_iface:
 	__sql_query_mysql = classmethod(__sql_query_mysql)
 
 	def __mysql_connect(cls):
-		if not isinstance(cls.conn, Connection):
+		if cls.__conn is None:
 			cls.__conn = MySQLdb.connect(
 				host=cls.__host,
 				user=cls.__user,

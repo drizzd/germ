@@ -8,17 +8,18 @@ class ref_group:
 	""" reference groups are used to identify the relevant
 	relations for a particular action on-the-fly """
 
-	def __init__(self, rel):
+	def __init__(self, rel, ent):
 		self.__joins = []
 		self.__outer_joins = []
 		self.__rel_map = {}
-		self.__keylist = None
-		self.__session = None
+		self.__key_map = None
+		self.__ent = ent
+		self.__session = ent.get_session()
 
 		self.add_rel(rel)
 
-	def get_keylist(self, attr):
-		self.__keylist(
+	def get_keys(self, key):
+		return self.__key_map[key]
 
 	def has_key(self, key):
 		return self.__rel_map.has_key(key)
@@ -43,13 +44,19 @@ class ref_group:
 		for key in rel.get_keys():
 			self.__rel_map[key] = None
 
-	def __get_join_cond(self, rel, attr_map):
+	def __get_join_cond(self, rel, act_str):
 		join_cond = []
 		for key in rel.get_keys():
 			if self.__rel_map[key] is None:
-				self.__rel_map[key] = rel.handle_unknown_key(key, attr_map,
-						join_cond)
+				self.__rel_map[key] = rel.handle_unknown_key(self.__ent, key,
+						act_str, join_cond)
+				#from error import *
+				#error(err_debug, 'handling unknown key', 'key: %s, ' \
+				#		'rel_map: %s, join_cond: %s' % (key, self.__rel_map,
+				#			join_cond))
 			else:
+				#error(err_debug, 'adding join condition', 'key: %s, ' \
+				#		'rel_map: %s' % (key, self.__rel_map))
 				join_cond.append("\n\t\t%s = %s" % (rel.get_colref(key),
 						self.__rel_map[key].get_colref(key)))
 
@@ -58,29 +65,79 @@ class ref_group:
 		else:
 			return ""
 
-	def generate_keylist(self, act_str, session, ent):
-		self.__session = session
-		self.__attr_map = ent.get_attr_map()
+	def get_colref(self, key, rel):
+		if rel is not None:
+			return rel.get_colref(key)
+
+		return '%s.%s' % (self.__ent.get_name(), key)
+
+	def generate_keylist(self, act_str):
+		# generate search condition
+
+		search_cond = []
+		for rel in self.__joins + self.__outer_joins:
+			cond_str = rel.get_cond(act_str)
+			if cond_str is not None:
+				search_cond.append('(%s)' % self.__substitute_vars(cond_str))
+
+		missing_lock = False
+		to_lock_vec = []
+		lock_cond = []
+		to_lock_cond = []
+		for key, rel in self.__rel_map.iteritems():
+			attr = self.__ent.get_attr_nocheck(key)
+
+			if attr.is_locked():
+				lock_cond.append("%s = '%s'" % (self.get_colref(key, rel),
+						attr.sql_str()))
+			elif attr.is_to_be_locked():
+				to_lock_vec.append(key)
+				to_lock_cond.append("%s = '%s'" % \
+						(self.get_colref(key, rel), attr.sql_str()))
+			else:
+				missing_lock = True
 
 		# generate table references
 
 		table_ref_vec = []
 		for rel in self.__joins:
 			table_ref_vec.append(rel.get_table_spec() + \
-				self.__get_join_cond(rel, attr_map))
+					self.__get_join_cond(rel, act_str))
 
 		table_ref = "\n\tJOIN ".join(table_ref_vec)
 
-		for rel in self.__outer_joins:
-			table_ref += "\n\t" + rel.get_outer_join() + " JOIN " + \
-				rel.get_table_spec() + \
-				self.__get_join_cond(rel, attr_map)
+		if len(self.__joins) == 0:
+			# This should only happen if there are only non-relational
+			# PKs.
+
+			# TODO: find out if this is possible and handle it appropriately
+			if len(self.__outer_joins) > 1:
+				from error import *
+				raise error(err_warn, "No inner joins, multiple outer joins",
+						'number of outer joins: %s' % len(self.__outer_joins))
+
+			if missing_lock:
+				return True
+
+			#table_ref_vec = []
+			#for rel in self.__outer_joins:
+			#	table_ref_vec.append(rel.get_table_spec() + \
+			#			self.__get_join_cond(rel, act_str))
+
+			#table_ref += "\n\tJOIN ".join(table_ref_vec)
+
+			table_ref = self.__outer_joins[0].get_table_spec()
+		else:
+			for rel in self.__outer_joins:
+				table_ref += "\n\t" + rel.get_outer_join() + " JOIN " + \
+					rel.get_table_spec() + \
+					self.__get_join_cond(rel, act_str)
 
 		# generate sort order specification
 
 		# preserve order given by entity definition
 		key_vec = []
-		for attr in ent.get_attr_vec():
+		for attr in self.__ent.get_attr_ids():
 			if self.has_fk(attr):
 				key_vec.append(attr)
 
@@ -96,41 +153,21 @@ class ref_group:
 
 		col_spec = ", ".join(col_spec_vec)
 
-		# generate search condition
-
-		cond = []
-		for rel in self.__joins + self.__outer_joins:
-			cond_str = rel.get_cond(act_str)
-			cond += self.__substitute_vars(cond_str)
-
-		missing_lock = False
-		to_lock_vec = []
-		to_lock_cond = []
-		for key in self.__rel_map.keys():
-			attr = attr_map[key]
-			if attr.is_locked():
-				cond += ["%s = '%s'" % (self.__rel_map[key].get_colref(key),
-						attr.sql_str())]
-			else:
-				if attr.is_to_be_locked():
-					to_lock_vec += [attr]
-					to_lock_cond += ["%s = '%s'" % \
-							(self.__rel_map[key].get_colref(key),
-							attr.sql_str())]
-				missing_lock = True
-
-		search_cond = "\n\t(" + ") AND \n\t(".join(cond) + ")"
+		#from error import *
+		#error(err_debug, 'constructing search condition', 'search_cond: %s, ' \
+		#		'lock_cond: %s, to_lock_cond: %s' % \
+		#		(search_cond, lock_cond, to_lock_cond))
 
 		# execute query
 
-		keylist = self.__query(col_spec, table_ref, search_cond + \
-				" AND \n\t".join(to_lock_cond), sort_spec)
+		res_ok, rset = self.__query_if(len(self.__joins), col_spec,
+				table_ref, search_cond, lock_cond, to_lock_cond, sort_spec)
 
 		if len(to_lock_vec) != 0:
-			if len(keylist) != 0:
+			if res_ok:
 				# Assert key locks
 				for key in to_lock_vec:
-					attr_map[key].lock()
+					self.__ent.get_attr_nocheck(key).lock()
 			else:
 				# Possible scenario: User locks a non-relational key and in
 				# combination with the locked parameters this results in an
@@ -138,64 +175,81 @@ class ref_group:
 				# So we simply tell the user this key is not available and
 				# prompt for the same values again.
 				for key in to_lock_vec:
-					attr_map[key].invalid_key()
+					self.__ent.get_attr_nocheck(key).invalid_key()
 
-				keylist = self.__query(col_spec, table_ref, search_cond,
+				missing_lock = True
+
+				if len(self.__joins) == 0:
+					return True
+
+				res_ok, rset = self.__query_if(len(self.__joins),
+						col_spec, table_ref, search_cond, lock_cond, [],
 						sort_spec)
-
-		empty_keylist = len(keylist) == 0
 
 		# It's also possible that there are simply no valid entries available.
 		# In this case the user interface should not give the possibility to
 		# execute this action in the first place.
-		if empty_keylist:
+		if not res_ok:
 			if not missing_lock:
-				from error.no_valid_keys import *
+				from error.no_valid_keys import no_valid_keys
 				raise no_valid_keys()
 			else:
 				# This can happen if user tampers with locked parameters or if
 				# the user interface is buggy and changes locked parameters.
-				from error.error import *
-				from text import errmsg
+				from error import *
+				from txt import errmsg
 				raise error(err_fail, errmsg.invalid_key)
 
-		self.__keylist = keylist
+		if len(self.__joins) > 0:
+			self.__key_map = dict(zip(key_vec, zip(*rset)))
 
 		return missing_lock
 
 	def __substitute_vars(self, s):
 		import re
-		re.sub(r'\$([A-Za-z0-9_]*)', self.__session_val, s)
+		return re.sub(r'\$([A-Za-z0-9_]*)', self.__session_val, s)
 
-	def __session_val(self, match)
-		varname = match.group(1)
+	def __session_val(self, match):
+		varname = match.group(0)
 		if not self.__session.has_key(varname):
 			# this will evaluate all comparisons to NULL, i.e. false
 			return 'NULL'
 
 		val = self.__session[varname]
 		if not isinstance(val, str):
-			from error.error import *
+			import error
 			raise error(err_fail, "Session variables for use in an " + \
 					"SQL condition must be strings",
-					"variable: %s, type: %s" % (varname, type(val))
+					"variable: %s, type: %s" % (varname, type(val)))
 
 		return val
 
-	# TODO: remove
-	def get_key_vec(self)
-		raise error(err_fail, "use of deprecated function")
-#		if self.__key_vec is None:
-#			from error.error import *
-#			raise error(err_fail, "Attempt to call get_key_vec before " + \
-#				"generate_keylist")
-#
-#		return self.__key_vec
+	def __query_if(self, joins_len, col_spec, table_ref, search_cond,
+			lock_cond, to_lock_cond, sort_spec):
+		if joins_len == 0:
+			rset = self.__query('*', table_ref, lock_cond + to_lock_cond)
+			res_ok = len(rset) == 0
+		else:
+			rset = self.__query(col_spec, table_ref,
+					search_cond + lock_cond + to_lock_cond, sort_spec)
+			res_ok = len(rset) != 0
 
-	def __query(self, col_spec, table_ref, search_cond, sort_spec):
-		sql_query = "SELECT UNIQUE %s\nFROM %s\nWHERE %s\nORDER BY %s" % \
-			(col_spec, table_ref, search_cond, sort_spec)
+		return (res_ok, rset)
 
-		from lib.db_iface import *
+	def __query(self, col_spec, table_ref, cond, sort_spec = None):
+		if len(cond) == 0:
+			search_str = ''
+		else:
+			search_str = '\nWHERE ' + ' AND\n\t'.join(cond)
+
+		if sort_spec is None:
+			sort_spec_str = ''
+		else:
+			sort_spec_str = '\nORDER BY ' + sort_spec
+
+		sql_query = "SELECT DISTINCT %s\nFROM %s%s%s" % \
+				(col_spec, table_ref, search_str, sort_spec_str)
+
+		from lib.db_iface import db_iface
 
 		return db_iface.query(sql_query)

@@ -8,37 +8,37 @@ from entity import *
 
 class ent_table(entity):
 	def __init__(
-			self, name, attributes, primary_keys,
+			self, attributes, primary_keys,
 			relations = [], perm = {}, pre = {}, post = {}):
-		entity.__init__(self, name, attributes, primary_keys, relations, perm)
+		entity.__init__(self, attributes, primary_keys, relations, perm)
 
 	def accept(self, action):
 		action.visit_table(self)
 
 	# create database table
 	def init(self):
-		from lib.db_iface import *
+		from lib.db_iface import db_iface
 
 		create_defs = []
-		for a in self._attr_vec
-			attr = _attr_map[a]
+		for attr_id in self._attr_ids:
+			attr = self._attr_map[attr_id]
 
 			# TODO: add REFERENCES?
-			type = attr.sql_type()
-			default = attr.default()
+			sql_type = attr.sql_type()
 
-			col_def = a + ' ' + type + ' NOT NULL'
-			if default is not None:
-				col_def += ' DEFAULT ' + default
+			col_def = attr_id + ' ' + sql_type + ' NOT NULL'
+			#if default is not None:
+			#	col_def += ' DEFAULT %s' % default
 
 			create_defs.append(col_def)
 
-		pk_def = ', '.join(self._pk_vec)
-		create_defs.append(pk_def)
+		pk_def = ', '.join(self._pk_set)
+		create_defs.append('PRIMARY KEY (%s)' % pk_def)
 
 		create_def = ', '.join(create_defs)
 
-		sql_query = "CREATE TABLE IF NOT EXISTS (%s)" % create_def
+		sql_query = "CREATE TABLE IF NOT EXISTS %s (%s)" % \
+				(self._name, create_def)
 
 		db_iface.query(sql_query)
 
@@ -48,13 +48,13 @@ class ent_table(entity):
 		# by its primary key
 		self._require_pk_locks()
 
-		from lib.db_iface import *
+		from lib.db_iface import db_iface
 
 		rset = db_iface.query("SELECT * FROM %s WHERE %s" % \
 			(self._name, self.get_attr_sql_pk()))
 
 		if len(rset) != 1:
-			from error.error import *
+			import error
 
 			# TODO: Make this an invalid_key exception. This could very well
 			# occur by a user 'mistake'. On the other hand, can it still occur

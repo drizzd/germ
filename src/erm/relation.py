@@ -14,10 +14,7 @@ class relation:
 		self.__outer_join = outer_join
 
 	def get_cond(self, act_str):
-		if self.__cond.has_key(act_str):
-			return [self.__cond[act_str]]
-		else:
-			return []
+		return self.__cond.get(act_str)
 
 	def is_outer_join(self):
 		return self.__outer_join is not None
@@ -51,5 +48,5 @@ class relation:
 	def get_colref(self, key):
 		return "%s.%s" % (self.get_alias(), self.get_realkey(key))
 
-	def handle_unknown_key(self, key, attr_map, join_cond):
+	def handle_unknown_key(self, ent, key, act_str, join_cond):
 		return self
