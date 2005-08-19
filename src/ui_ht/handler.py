@@ -256,7 +256,7 @@ def print_view(entity, act_str, prompt_pk_only):
 	if last_ch != 'e':
 		suffix += 'e'
 
-	viewtext = "The following entry has been %sd<BR />\n<BR />\n" % \
+	viewtext = "The following entry has been %sd.<BR />\n<BR />\n" % \
 			(act_str + suffix)
 
 	from attr_act_view import attr_act_view
@@ -287,6 +287,8 @@ def get_cell(attr, act_get):
 	text += attr_text
 
 	text += '</TD>'
+
+	return text
 
 def print_list(entity, act_str, prompt_pk_only):
 	from attr_act_view import attr_act_view
@@ -455,7 +457,8 @@ def print_form(entity, act_str, prompt_pk_only):
 		for e in e_vec:
 			err_str += "%s<BR />\n" % e
 
-		errortext += '<SPAN style="color: red"><SUP>%s</SUP></SPAN> %s' % (i+1, err_str)
+		errortext += '<SPAN style="color: red"><SUP>%s</SUP></SPAN> %s' % \
+				(i+1, err_str)
 
 	errortext += len(error_vec) > 0 and \
 			"<BR />\n" or ''
