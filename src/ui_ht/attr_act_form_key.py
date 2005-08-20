@@ -10,14 +10,10 @@ class attr_act_form_key(attr_act_get):
 	def __init__(self):
 		attr_act_get.__init__(self)
 
-	def visit_string(self, attr):
-		self._text = attr.sql_str()
-
-	def visit_int(self, attr):
-		self._text = attr.sql_str()
-
 	def visit_date(self, attr):
-		self._text = attr.sql_str()
+		from lib import misc
+
+		self._text = misc.date_str_iso(attr.get())
 
 	def visit_bool(self, attr):
 		import txt.misc

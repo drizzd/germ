@@ -13,8 +13,14 @@ class attr_act_get(attr_action):
 	def get_text(self):
 		return self._text
 
+	def visit_plain_pwd(self, attr):
+		self._text = ''
+
 	def visit_passwd(self, attr):
 		self._text = ''
+
+	def visit_choice(self, attr):
+		self._text = str(attr)
 
 	def visit_string(self, attr):
 		val = attr.get()
@@ -27,7 +33,9 @@ class attr_act_get(attr_action):
 		self._text = str(attr.get())
 
 	def visit_date(self, attr):
-		self._text = attr.get().strftime("%e. %b %Y")()
+		from lib import misc
+
+		self._text = misc.date_str_nice(attr.get())
 
 	def visit_bool(self, attr):
 		import txt.misc

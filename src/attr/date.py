@@ -13,7 +13,7 @@ class date(attribute):
 	def sql_str(self):
 		from lib import misc
 
-		return misc.date_sqlstr(self._val)
+		return misc.date_str_sql(self._val)
 
 	def sql_type(self):
 		return 'DATE'

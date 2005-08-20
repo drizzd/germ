@@ -7,9 +7,9 @@
 def identifier(val):
 	import re
 
-	if not re.compile(r'(^[a-z_]|[^a-z0-9_])').match(val):
+	if re.match(r'^[a-z_][a-z0-9_]*$', val.lower()) is None:
 		from error import *
 		from txt import errmsg
-		return error(err_fail, errmsg.invalid_identifier, "'%s'" % val)
+		return error(err_fail, errmsg.invalid_identifier)
 
-	return False
+	return val.lower()

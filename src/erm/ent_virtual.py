@@ -7,8 +7,11 @@
 from entity import *
 
 class ent_virtual(entity):
-	def __init__(self):
-		entity.__init__(self)
+	def __init__(self, attributes, primary_keys, relations = [],
+			condition = {}, perm = {},
+			pre = {}, post = {}):
+		entity.__init__(self, attributes, primary_keys, relations, condition,
+				perm, pre, post)
 
 	def accept(self, action):
 		action.visit_virtual(self)

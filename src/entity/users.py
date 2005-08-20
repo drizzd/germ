@@ -40,11 +40,12 @@ class users(ent_table):
 	def __init__(self):
 		from lib import chk
 		from lib import misc
+		import cf
 
 		ent_table.__init__(self, attributes = [
 			('username', string(label.username, perm.submit, None, 10,
 				[chk.identifier])),
-			('passwd', passwd(label.passwd, [ 'edit', 'submit' ], None, 30)),
+			(cf.pwd_str, passwd(label.passwd, [ 'submit' ], None, 30)),
 			('rank', choice(label.rank, self.opt_rank, perm.view, 0)),
 			('privacy', choice(label.privacy, self.opt_privacy, perm.all, 1)),
 			('surname', string(label.surname, perm.all, None, 64)),
@@ -57,4 +58,5 @@ class users(ent_table):
 			('last_activity', date(label.last_activity, perm.view,
 				misc.today))
 			],
-			primary_keys = [ 'username' ])
+			primary_keys = [ 'username' ],
+			condition = { 'edit': "users.username = '$userid'" })

@@ -7,10 +7,11 @@
 from entity import *
 
 class ent_table(entity):
-	def __init__(
-			self, attributes, primary_keys,
-			relations = [], perm = {}, pre = {}, post = {}):
-		entity.__init__(self, attributes, primary_keys, relations, perm)
+	def __init__(self, attributes, primary_keys, relations = [],
+			condition = {}, perm = {},
+			pre = {}, post = {}):
+		entity.__init__(self, attributes, primary_keys, relations, condition,
+				perm, pre, post)
 
 	def accept(self, action):
 		action.visit_table(self)
@@ -54,14 +55,13 @@ class ent_table(entity):
 			(self._name, self.get_attr_sql_pk()))
 
 		if len(rset) != 1:
-			import error
-
 			# TODO: Make this an invalid_key exception. This could very well
 			# occur by a user 'mistake'. On the other hand, can it still occur
 			# if ref_group.generate_keylist did not complain?
+			from error import *
 			raise error(err_fail, "Invalid primary key: result is empty " + \
-				"or multiple result sets", "number of result sets: %s" % \
-				len(rset))
+					"or has multiple records", "number of records: %s" % \
+					len(rset))
 
 		rec = rset[0]
 

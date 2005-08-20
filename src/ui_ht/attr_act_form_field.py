@@ -16,12 +16,13 @@ class attr_act_form_field(attr_act_get):
 		self.__parm_name = name
 
 	def generic_text(self, attr, length = 10, inp_type = 'text'):
-		attr_act_get.accept(self, attr)
-		text = self._text
+		act_get = attr_act_get()
+		attr.accept(act_get)
+		text = act_get.get_text()
 
-		self._formtext = '<INPUT type="%s" maxlength="%s" name="%s" ' \
+		self._text = '<INPUT type="%s" maxlength="%s" name="%s" ' \
 				'value="%s"%s>' % (inp_type, length, self.__parm_name,
-				val, self.__lock_str(attr.is_locked()))
+				act_get.get_text(), self.__lock_str(attr.is_locked()))
 
 		self.__parm_name = None
 
@@ -31,6 +32,9 @@ class attr_act_form_field(attr_act_get):
 	def visit_string(self, attr):
 		self.generic_text(attr, attr.get_length())
 
+	def visit_plain_pwd(self, attr):
+		self.generic_text(attr, 16, 'password')
+
 	def visit_passwd(self, attr):
 		self.generic_text(attr, 16, 'password')
 
@@ -38,17 +42,17 @@ class attr_act_form_field(attr_act_get):
 		self.generic_text(attr)
 
 	def visit_choice(self, attr):
-		import cf
+		from lib import misc
 
-		self._formtext = '<SELECT name="%s"%s>\n' % (self.__parm_name, \
+		self._text = '<SELECT name="%s"%s>\n' % (self.__parm_name, \
 				self.__lock_str(attr.is_locked()))
 
 		for i, choice in enumerate(attr.get_options()):
-			self._formtext += '\t<OPTION value="%s"%s>%s</OPTION>\n' % \
+			self._text += '\t<OPTION value="%s"%s>%s</OPTION>\n' % \
 					(i, i == attr.get() and ' selected' or '',
-						choice.get(cf.lang, choice['en']))
+						misc.txt_lang(choice))
 
-		self._formtext += "</SELECT>"
+		self._text += "</SELECT>"
 
 	def visit_date(self, attr):
 		date = attr.get()
@@ -63,9 +67,9 @@ class attr_act_form_field(attr_act_get):
 					(self.__parm_name, val, length, length, date_val,
 					self.__lock_str(attr.is_locked())))
 
-		self._formtext = '-'.join(input_vec)
+		self._text = '-'.join(input_vec)
 
 	def visit_bool(self, attr):
-		self._formtext = '<INPUT type="checkbox" name="%s"%s%s>' % \
+		self._text = '<INPUT type="checkbox" name="%s"%s%s>' % \
 				(self.__parm_name, attr.get() and ' checked' or '',
 					self.__lock_str(attr.is_locked()))

@@ -35,8 +35,9 @@ class choice(attribute):
 			self._error(e)
 
 	def __str__(self):
-		import cf
-		return self.__options[self._val][cf.lang]
+		from lib import misc
+
+		return misc.txt_lang(self.__options[self._val])
 
 	def accept(self, attr_act):
 		attr_act.visit_choice(self)

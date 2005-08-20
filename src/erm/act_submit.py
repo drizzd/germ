@@ -14,3 +14,6 @@ class act_submit(action):
 	def visit_table(self, entity):
 		tbl_act = tbl_act_submit(self._act_str, entity)
 		tbl_act.execute(self._do_exec)
+
+	def visit_virtual(self, entity):
+		entity.execute(self._do_exec)

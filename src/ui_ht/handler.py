@@ -6,19 +6,53 @@
 
 from mod_python import apache
 from mod_python import util
-
-#from Cookie import SimpleCookie
-#from mod_python import Cookie
+from mod_python.Session import Session
 
 from error import *
 
 parm_prefix_attr = 'a_'
 
+class log_file(file):
+	def __init__(self):
+		import cf
+		file.__init__(self, cf.log_file_path, 'a')
+
+	def write(self, message, level):
+		from datetime import datetime
+		time_str = datetime.now().strftime('%b %d %H:%M:%S')
+
+		# TODO: add information about the user/ip this message originates from
+		file.write("[%s] [%s] %s\n" % (time_str, error.lvl_txt(level), message))
+
+class log_file_apache:
+	ap_log = {
+		err_debug:	apache.APLOG_DEBUG,
+		err_info:	apache.APLOG_INFO,
+		err_notice:	apache.APLOG_NOTICE,
+		err_warn:	apache.APLOG_WARNING,
+		err_error:	apache.APLOG_ERR,
+		err_fail:	apache.APLOG_CRIT }
+
+	def __init__(self, req):
+		self.__req = req
+		
+	def write(self, message, level):
+		self.__req.log_error(message, log_file_apache.ap_log[level])
+	
+	def flush(self):
+		pass
+
 def handler(req):
 	try:
 		import cf
 
+		prevent_caching(req)
 		req.content_type = "text/html"
+
+		error.log_file = log_file_apache(req)
+
+		session = Session(req, secret = cf.ht_secret)
+		session.load()
 
 		form = util.FieldStorage(req, keep_blank_values = True)
 
@@ -30,8 +64,6 @@ def handler(req):
 		p_action = form.getfirst('action', None)
 		p_entity = form.getfirst('entity', None)
 		p_page = form.getfirst('page', None)
-
-#		cookies = Cookie.get_cookies(req)
 
 		if p_action is None:
 			if p_entity is not None:
@@ -74,7 +106,6 @@ def handler(req):
 		from sets import Set
 
 		attr_map = {}
-		session_vars = {}
 		attr_locks = Set()
 		attr_to_lock = Set()
 		do_exec = False
@@ -103,9 +134,6 @@ def handler(req):
 								"attribute: %s" % attr)
 
 					attr_map[attr][name[pos+2:]] = val
-			elif name.startswith('v_'):
-				# TODO: implement authentication
-				session_vars[name[2:]] = val
 			elif name == 'lock':
 				attr_locks.add(val)
 			elif name.startswith('to_lock'):
@@ -119,7 +147,7 @@ def handler(req):
 
 		entity = entity_class()
 
-		entity.add_session_vars(session_vars)
+		entity.set_session(session)
 
 		found_invalid_parm = False
 
@@ -205,6 +233,11 @@ def handler(req):
 			elif isinstance(e, no_valid_keys) or isinstance(e, perm_denied):
 				error(err_warn, e, "action: %s, entity: %s" % \
 						(p_action, p_entity))
+
+				prompt_pk_only = True
+
+				req.write(text)
+
 				return apache.OK
 			else:
 				return boil_out(req, e)
@@ -212,6 +245,8 @@ def handler(req):
 		text += print_handler(entity, p_action, prompt_pk_only)
 
 		req.write(text)
+
+		session.save()
 
 	except Exception, e:
 		return boil_out(req, e)
@@ -226,7 +261,9 @@ def boil_out(req, e):
 	req.write('<B>Unhandled Exception:</B> <I>%s</I>' % e)
 
 	if isinstance(e, error):
-		req.write(' (%s)' % e.err_lvl())
+		req.write(' (%s)' % error.lvl_txt(e.lvl()))
+	else:
+		error(err_error, str(e))
 
 	req.write('<BR />\n')
 
@@ -246,35 +283,6 @@ def boil_out(req, e):
 
 	return apache.OK
 
-def print_view(entity, act_str, prompt_pk_only):
-	last_ch = act_str[-1]
-	suffix = ''
-
-	if last_ch in ['t'] and act_str not in ['edit']:
-		suffix += last_ch
-	
-	if last_ch != 'e':
-		suffix += 'e'
-
-	viewtext = "The following entry has been %sd.<BR />\n<BR />\n" % \
-			(act_str + suffix)
-
-	from attr_act_view import attr_act_view
-	act_view = attr_act_view()
-
-	viewtext += '<TABLE border="1">\n'
-
-	for attr in entity.attr_iter('view'):
-		viewtext += '<TR><TH align="left">%s:</TH>' % attr.label()
-
-		viewtext += get_cell(attr, act_view)
-
-		viewtext += "</TR>\n"
-
-	viewtext += "</TABLE>"
-
-	return viewtext
-
 def get_cell(attr, act_get):
 	text = '<TD>'
 
@@ -289,6 +297,38 @@ def get_cell(attr, act_get):
 	text += '</TD>'
 
 	return text
+
+def print_view(entity, act_str, prompt_pk_only):
+	last_ch = act_str[-1]
+	suffix = ''
+
+	if last_ch in ['t'] and act_str not in ['edit']:
+		suffix += last_ch
+	
+	if last_ch != 'e':
+		suffix += 'e'
+
+	from lib.misc import txt_lang
+	from txt import misc
+
+	viewtext = "%s %s.<BR />\n<BR />\n" % \
+			(txt_lang(misc.action_report), txt_lang(misc.action_past[act_str]))
+
+	from attr_act_view import attr_act_view
+	act_view = attr_act_view()
+
+	viewtext += '<TABLE>\n'
+
+	for attr in entity.attr_iter('view'):
+		viewtext += '<TR><TH align="left">%s:</TH>' % attr.label()
+
+		viewtext += get_cell(attr, act_view)
+
+		viewtext += "</TR>\n"
+
+	viewtext += "</TABLE>"
+
+	return viewtext
 
 def print_list(entity, act_str, prompt_pk_only):
 	from attr_act_view import attr_act_view
@@ -317,10 +357,11 @@ def print_list(entity, act_str, prompt_pk_only):
 
 def print_form(entity, act_str, prompt_pk_only):
 	import cf
-	formtext = '<FORM method="GET" action="%s">\n' % ('/' + cf.ht_path + \
-			'/' + cf.ht_index)
+	formtext = '<FORM method="GET" action="%s" autocomplete="off">\n' % \
+			('/' + cf.ht_path + '/' + cf.ht_index)
 
-	if not prompt_pk_only:
+	# give form again until user has seen all the fields, except for a view
+	if not prompt_pk_only or act_str == 'view':
 		formtext += '<INPUT type="hidden" name="do_exec">\n'
 
 	formtext += '<INPUT type="hidden" name="entity" value="%s">\n' % \
@@ -400,10 +441,6 @@ def print_form(entity, act_str, prompt_pk_only):
 
 						tmp_attr.set_sql(key)
 
-						error(err_debug, 'act_form_key', 'attr_id: %s, ' \
-								'key: %s, attr value: %s' % \
-								(attr_id, key, tmp_attr.get()))
-
 						tmp_attr.accept(act_form_key)
 						formtext += act_form_key.get_text()
 
@@ -440,24 +477,25 @@ def print_form(entity, act_str, prompt_pk_only):
 				formtext += '<TR><TD colspan="2"></TD><TD><HR></TD></TR>\n'
 	
 	from txt import misc
-	import cf
+	from lib.misc import txt_lang
 
 	formtext += '<TR><TD colspan="2"></TD>' \
 			'<TD><INPUT type="submit" value="%s"></TD>' \
-			'</TR>\n' % misc.action[act_str][cf.lang]
+			'</TR>\n' % txt_lang(misc.action[act_str])
 
 	formtext += '</TABLE>\n</FORM>'
 
 	errortext = ''
+	from txt import errmsg
 	errortext += len(error_vec) > 0 and \
-			"The following attributes caused errors:<BR />\n" or ''
+			txt_lang(errmsg.attr_error) + ":<BR />\n" or ''
 
 	for i, e_vec in enumerate(error_vec):
 		err_str = ''
 		for e in e_vec:
 			err_str += "%s<BR />\n" % e
 
-		errortext += '<SPAN style="color: red"><SUP>%s</SUP></SPAN> %s' % \
+		errortext += '<SPAN style="color: red">%s</SPAN>: %s' % \
 				(i+1, err_str)
 
 	errortext += len(error_vec) > 0 and \
@@ -480,3 +518,8 @@ def parm_val(parm):
 		return parm
 	else:
 		return util.StringField(parm.value)
+
+def prevent_caching(req):
+	req.headers_out.add('Expires', 'Thu, 01 Jan 1970 00:00:00 GMT')
+	req.headers_out.add('Pragma', 'no-cache')
+	req.headers_out.add('Cache-Control', 'no-cache')

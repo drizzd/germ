@@ -1,20 +1,20 @@
 #
-#  passwd.py
+#  plain_pwd.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
 from string import *
 
-class passwd(string):
-	def __init__(self, label, perm = {}, default = None, length = 128,
+class plain_pwd(string):
+	def __init__(self, label, perm = {}, default = None, length = 32,
 			chk_func_vec = []):
 		string.__init__(self, label, perm, default, length, chk_func_vec)
 
 	def accept(self, attr_act):
-		attr_act.visit_passwd(self)
-	
-	def check(self, plain_pwd):
+		attr_act.visit_plain_pwd(self)
+
+	def check(self, crypted_pwd):
 		from crypt import crypt
 
-		return self._val == crypt(plain_pwd, self._val)
+		return crypted_pwd == crypt(self._val, crypted_pwd)

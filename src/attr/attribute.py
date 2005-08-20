@@ -4,7 +4,7 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from error.error import *
+from error import *
 from txt import errmsg
 
 class perm:
@@ -45,9 +45,9 @@ class attribute:
 		return dup
 
 	def label(self):
-		import cf
+		from lib import misc
 
-		return self.__label.get(cf.lang, self.__label['en'])
+		return misc.txt_lang(self.__label)
 
 	def to_lock(self):
 		if not self.is_set():
@@ -74,8 +74,11 @@ class attribute:
 		for chk_func in self.__chk_func_vec:
 			res = chk_func(val)
 
-			if res:
+			if isinstance(res, error):
 				self._error(res)
+
+			if res is not None:
+				val = res
 
 		self._do_set(val)
 

@@ -87,5 +87,11 @@ unknown_db_type = {
 	'en': 'Unkown database type' }
 
 invalid_identifier = {
-	'en': 'Invalid identifier',
-	'de': 'Ung"ultige Bezeichnung' }
+	'en':	"Invalid identifier (allowed characters: 'a-z', '_', '0-9'; do " \
+			"not start with number)",
+	'de':	"Ung\"ultige Bezeichnung (erlaubte Zeichen: 'a-z', '_', '0-9'; " \
+			"nicht mit einer Zahl beginnen)" }
+
+attr_error = {
+	'en': 'The following attributes caused errors',
+	'de': 'Die folgenden Attribute verursachen Fehler' }

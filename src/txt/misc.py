@@ -9,7 +9,33 @@ yes = { 'en': 'Yes', 'de': 'Ja' }
 no = { 'en': 'No', 'de': 'Nein' }
 
 action = {
-	'edit':	{ 'en': 'edit', 'de': 'editieren' },
-	'submit': { 'en': 'submit', 'de': 'abschicken' },
-	'delete': { 'en': 'delete', 'de': 'l"oschen' },
-	'view': { 'en': 'view', 'de': 'ansehen' } }
+	'edit':	{
+		'en': 'edit',
+		'de': 'editieren' },
+	'submit': {
+		'en': 'submit',
+		'de': 'abschicken' },
+	'delete': {
+		'en': 'delete',
+		'de': 'l"oschen' },
+	'view': {
+		'en': 'view',
+		'de': 'ansehen' } }
+
+action_past = {
+	'edit':	{
+		'en': 'edited',
+		'de': 'editiert' },
+	'submit': {
+		'en': 'submitted',
+		'de': 'abgeschickt' },
+	'delete': {
+		'en': 'deleted',
+		'de': 'gel"oscht' },
+	'view': {
+		'en': 'viewed',
+		'de': 'angesehen' } }
+
+action_report = {
+	'en': 'The following entry has been',
+	'de': 'Der folgende Eintrag wurde' }

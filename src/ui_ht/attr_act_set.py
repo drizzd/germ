@@ -14,8 +14,19 @@ class attr_act_set(attr_action):
 		attr.set(self.__val)
 
 	def visit_passwd(self, attr):
-		if self.__val != '':
-			attr.set(self.__val)
+		import random
+		py_string = __import__('string')
+
+		salt = ''
+		for i in range(2):
+			salt += random.choice('./' + py_string.letters + py_string.digits)
+
+		from crypt import crypt
+
+		attr.set(crypt(self.__val, salt))
+
+	def visit_plain_pwd(self, attr):
+		attr.set(self.__val)
 
 	def visit_int(self, attr):
 		attr.set(self.__val)

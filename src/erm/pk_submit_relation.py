@@ -67,7 +67,7 @@ class pk_submit_relation(relation):
 		if attr.is_locked():
 			# exclude all matches for this key (this condition is used in a
 			# LEFT JOIN ... WHERE pk0 IS NULL)
-			join_cond.append("\n\t\t%s = '%s'" %
+			join_cond.append("\n      %s = '%s'" %
 				(self.get_colref(key), attr.sql_str()))
 
 		# Indicate that this is not a foreign key

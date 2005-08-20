@@ -10,9 +10,8 @@ from txt import errmsg
 from ref_group import *
 
 class entity:
-	def __init__(
-			self, attributes, primary_keys,
-			relations = [], perm = {}, pre = {}, post = {}):
+	def __init__(self, attributes, primary_keys, relations = [],
+			condition = {}, perm = {}, pre = {}, post = {}):
 		self._name = self.__class__.__name__
 		self._attr_ids = []
 		self._attr_map = dict(attributes)
@@ -24,22 +23,26 @@ class entity:
 		from sets import Set
 		self._pk_set = Set(primary_keys)
 		self.__rel_vec = relations
+		self.__condition = condition
 		self.__lock_map = {}
 
 		self.__perm = perm
 		self.__pre = pre
 		self.__post = post
 
-		self.__session = {}
+		self._session = None
 		self.__build_ref_groups()
 
 		self.init()
 
-	def add_session_vars(self, session):
-		self.__session.update(session)
+	def set_session(self, session):
+		self._session = session
 	
+	def get_condition(self):
+		return self.__condition
+
 	def get_session(self):
-		return self.__session
+		return self._session
 
 	def set_rset(self, rset):
 		if self.__rset is not None:
@@ -331,13 +334,12 @@ class entity:
 
 	# fill in attribute values from given record
 	def _fill(self, rec):
-		# TODO: This also re-sets the primary keys. Make sure this does not
-		# cause any problems
 		for i, aid in enumerate(self._attr_ids):
 			attr = self._attr_map[aid]
+
 			if not attr.is_set():
 				attr.set_sql(rec[i])
 
-	# this has to be run after each configuration change
+	# this has to be invoked after each configuration change
 	def init(self):
 		pass

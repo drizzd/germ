@@ -9,7 +9,7 @@ from table_action import *
 class tbl_act_submit(table_action):
 	def __init__(self, act_str, table):
 		table_action.__init__(self, act_str, table,
-			fill_table = False)
+				fill_table = False)
 		self._relation_class = 'pk_submit_relation'
 
 	def _set_default(self):

@@ -57,7 +57,7 @@ class ref_group:
 			else:
 				#error(err_debug, 'adding join condition', 'key: %s, ' \
 				#		'rel_map: %s' % (key, self.__rel_map))
-				join_cond.append("\n\t\t%s = %s" % (rel.get_colref(key),
+				join_cond.append("\n      %s = %s" % (rel.get_colref(key),
 						self.__rel_map[key].get_colref(key)))
 
 		if len(join_cond) > 0:
@@ -79,6 +79,11 @@ class ref_group:
 			cond_str = rel.get_cond(act_str)
 			if cond_str is not None:
 				search_cond.append('(%s)' % self.__substitute_vars(cond_str))
+
+		condition = self.__ent.get_condition()
+		if condition.has_key(act_str):
+			search_cond.append('(%s)' % \
+					self.__substitute_vars(condition[act_str]))
 
 		missing_lock = False
 		to_lock_vec = []
@@ -104,7 +109,7 @@ class ref_group:
 			table_ref_vec.append(rel.get_table_spec() + \
 					self.__get_join_cond(rel, act_str))
 
-		table_ref = "\n\tJOIN ".join(table_ref_vec)
+		table_ref = "\n   JOIN ".join(table_ref_vec)
 
 		if len(self.__joins) == 0:
 			# This should only happen if there are only non-relational
@@ -124,12 +129,12 @@ class ref_group:
 			#	table_ref_vec.append(rel.get_table_spec() + \
 			#			self.__get_join_cond(rel, act_str))
 
-			#table_ref += "\n\tJOIN ".join(table_ref_vec)
+			#table_ref += "\n   JOIN ".join(table_ref_vec)
 
 			table_ref = self.__outer_joins[0].get_table_spec()
 		else:
 			for rel in self.__outer_joins:
-				table_ref += "\n\t" + rel.get_outer_join() + " JOIN " + \
+				table_ref += "\n   " + rel.get_outer_join() + " JOIN " + \
 					rel.get_table_spec() + \
 					self.__get_join_cond(rel, act_str)
 
@@ -148,7 +153,7 @@ class ref_group:
 		col_spec_vec = []
 		for key in key_vec:
 			rel = self.__rel_map[key]
-			col_spec_vec.append("\n\t%s.%s AS %s" % \
+			col_spec_vec.append("\n   %s.%s AS %s" % \
 				(rel.get_alias(), rel.get_realkey(key), key))
 
 		col_spec = ", ".join(col_spec_vec)
@@ -190,7 +195,9 @@ class ref_group:
 		# In this case the user interface should not give the possibility to
 		# execute this action in the first place.
 		if not res_ok:
-			if not missing_lock:
+			if missing_lock:
+				self.__key_map = dict(zip(key_vec, len(key_vec)*[[]]))
+
 				from error.no_valid_keys import no_valid_keys
 				raise no_valid_keys()
 			else:
@@ -207,10 +214,11 @@ class ref_group:
 
 	def __substitute_vars(self, s):
 		import re
+
 		return re.sub(r'\$([A-Za-z0-9_]*)', self.__session_val, s)
 
 	def __session_val(self, match):
-		varname = match.group(0)
+		varname = match.group(1)
 		if not self.__session.has_key(varname):
 			# this will evaluate all comparisons to NULL, i.e. false
 			return 'NULL'
@@ -240,7 +248,7 @@ class ref_group:
 		if len(cond) == 0:
 			search_str = ''
 		else:
-			search_str = '\nWHERE ' + ' AND\n\t'.join(cond)
+			search_str = '\nWHERE ' + ' AND\n   '.join(cond)
 
 		if sort_spec is None:
 			sort_spec_str = ''

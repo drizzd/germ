@@ -22,8 +22,20 @@ def today():
 	import datetime
 	return datetime.date.today()
 
-def date_sqlstr(day):
+def date_str_sql(day):
 	return day.strftime("%Y%m%d")
+
+def date_str_nice(day):
+	from lib import misc
+
+	format = {
+		'de':	"%e. %B %Y",
+		'en':	"%B %e, %Y" }
+
+	return day.strftime(misc.txt_lang(format))
+
+def date_str_iso(day):
+	return day.strftime("%Y-%m-%d")
 
 # same as [i for i in a_vec if i not in b_vec]
 # or list(Set(a) - Set(b))
@@ -41,3 +53,8 @@ def vec_sub(a, b):
 			i += 1
 
 	return a
+
+def txt_lang(txt):
+	import cf
+
+	return txt.get(cf.lang, txt['en'])
