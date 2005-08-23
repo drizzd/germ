@@ -7,7 +7,9 @@
 from attribute import *
 
 class int(attribute):
-	def __init__(self, label, perm = {}, default = None, length = 128,
+	py_int = type(0)
+
+	def __init__(self, label, perm = [], default = None, length = 128,
 			chk_func_vec = []):
 		attribute.__init__(self, label, perm, default, chk_func_vec)
 		self.__length = length
@@ -20,7 +22,7 @@ class int(attribute):
 
 	def _do_set(self, val):
 		try:
-			self._val = int(val)
+			self._val = self.py_int(val)
 		except ValueError:
 			self._format_error()
 

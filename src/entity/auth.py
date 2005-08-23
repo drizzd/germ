@@ -5,35 +5,60 @@
 #
 
 from erm.ent_virtual import *
+from erm.relation import *
+
 from attr.string import *
 from attr.plain_pwd import *
 from txt import label
 import cf
 
 class auth(ent_virtual):
+	__user_table = 'users'
+
 	def __init__(self):
 		ent_virtual.__init__(self, attributes = [
-			('username', string(label.username, [ 'submit' ], None, 10)),
-			(cf.pwd_str, plain_pwd(label.passwd, [ 'submit' ], None, 30))
-			],
-			primary_keys = [ 'username' ])
+			('username', string(label.username, [ 'submit', 'edit' ], None, 10)),
+			(cf.pwd_str + 'old', plain_pwd(label.passwd_old, [ 'edit' ], None, 30)),
+			(cf.pwd_str, plain_pwd(label.passwd, [ 'submit', 'edit' ], None, 30)) ],
+				primary_keys = [ ],
+				action_txt = {
+					'edit': {
+						'en':	'change password',
+						'de':	'Passwort "andern' },
+					'submit': {
+						'en':	'login',
+						'de':	'einloggen' },
+					'delete': {
+						'en':	'log out',
+						'de':	'ausloggen' } },
+				action_report = {
+					'edit': {
+						'en':	'The password has been changed',
+						'de':	'Das Passwort wurde ge"andert' },
+					'submit': {
+						'en':	'You have logged in',
+						'de':	'Sie wurden eingeloggt' },
+					'delete': {
+						'en':	'You have logged out',
+						'de':	'Sie wurden ausgeloggt' } })
 
-		self.__user_table = 'users'
+	def require_parms(self, act_str):
+		for attr in self._attr_map.itervalues():
+			if attr.perm(act_str) and not attr.is_set():
+				from error.missing_parm import *
+				raise missing_parm()
 
-	def execute(self, do_exec = True):
+	def check_exec(self, do_exec):
 		if not do_exec:
 			from error.do_not_exec import do_not_exec
 			raise do_not_exec()
 
-		for attr in self._attr_map.itervalues():
-			if not attr.is_set():
-				from error.missing_parm import *
-				raise missing_parm()
-
+	def check_pwd(self, aid):
 		from lib.db_iface import db_iface
 
-		rset = db_iface.query("SELECT %s FROM %s WHERE %s" % \
-			(cf.pwd_str, self.__user_table, self.get_attr_sql_pk()))
+		rset = db_iface.query("SELECT %s FROM %s WHERE username = '%s'" % \
+			(cf.pwd_str, self.__user_table,
+			self._attr_map['username'].sql_str()))
 
 		if len(rset) > 1:
 			# TODO: Make this an invalid_key exception. This could very well
@@ -49,10 +74,37 @@ class auth(ent_virtual):
 		else:
 			passwd = rset[0][0]
 
-			invalid_auth = not self._attr_map[cf.pwd_str].check(passwd)
+			invalid_auth = not self._attr_map[aid].check(passwd)
 
 		if invalid_auth:
 			from error.invalid_parm import *
 			raise invalid_parm('Wrong username/password')
 
+	def edit(self, act_str, do_exec = True):
+		self.check_exec(do_exec)
+
+		self.require_parms(act_str)
+
+		self.check_pwd(cf.pwd_str + 'old')
+
+	def submit(self, act_str, do_exec = True):
+		if self._session.has_key('userid'):
+			from error.no_valid_keys import no_valid_keys
+			raise no_valid_keys()
+
+		self.check_exec(do_exec)
+
+		self.require_parms(act_str)
+
+		self.check_pwd(cf.pwd_str)
+
 		self._session['userid'] = self._attr_map['username'].get()
+
+	def delete(self, act_str, do_exec = True):
+		if not self._session.has_key('userid'):
+			from error.no_valid_keys import no_valid_keys
+			raise no_valid_keys()
+
+		self.check_exec(do_exec)
+
+		del self._session['userid']

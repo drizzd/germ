@@ -7,11 +7,14 @@
 from entity import *
 
 class ent_virtual(entity):
-	def __init__(self, attributes, primary_keys, relations = [],
-			condition = {}, perm = {},
-			pre = {}, post = {}):
-		entity.__init__(self, attributes, primary_keys, relations, condition,
-				perm, pre, post)
+	from txt import misc
 
-	def accept(self, action):
+	def __init__(self, attributes, primary_keys, relations = [],
+			condition = {}, item_txt = {}, action_txt = misc.action,
+			action_report = misc.action_report, perm = {}, pre = {},
+			post = {}):
+		entity.__init__(self, attributes, primary_keys, relations, condition,
+				item_txt, action_txt, action_report, perm, pre, post)
+
+	def do_accept(self, action):
 		action.visit_virtual(self)

@@ -7,7 +7,7 @@
 from attribute import *
 
 class bool(attribute):
-	def __init__(self, label, perm = {}, default = 0, chk_func_vec = []):
+	def __init__(self, label, perm = [], default = 0, chk_func_vec = []):
 		attribute.__init__(self, label, perm, default, chk_func_vec)
 
 	def sql_str(self):
@@ -25,7 +25,7 @@ class bool(attribute):
 
 		self._val = val and 1 or 0
 
-	def get(self, str):
+	def get(self):
 		return self._val != 0
 
 	def accept(self, attr_act):

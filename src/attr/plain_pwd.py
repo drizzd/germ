@@ -7,7 +7,7 @@
 from string import *
 
 class plain_pwd(string):
-	def __init__(self, label, perm = {}, default = None, length = 32,
+	def __init__(self, label, perm = [], default = None, length = 32,
 			chk_func_vec = []):
 		string.__init__(self, label, perm, default, length, chk_func_vec)
 

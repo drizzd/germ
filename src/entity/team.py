@@ -5,9 +5,9 @@
 #
 
 from erm.ent_table import *
-import txt.label
 from erm.relation import *
 
+from txt import label
 from attr.attribute import perm
 from attr.string import *
 
@@ -16,7 +16,7 @@ class team(ent_table):
 		ent_table.__init__(self, attributes = [
 			('party', string(label.party, perm.submit, None, 10)),
 			('tourney', string(label.tourney, perm.submit, None, 32)),
-			('name', string(label.teamname, perm.submit, None, 32)),
+			('name', string(label.team, perm.submit, None, 32)),
 			('leader', string(label.leader, perm.submit, None, 10)),
 			],
 			primary_keys = [ 'party', 'tourney', 'name' ],
@@ -25,18 +25,18 @@ class team(ent_table):
 			table = 'tourney',
 			alias = 'tn',
 			keys = {	'party':	'party',
-						'name':		'tourney' },
+						'tourney':	'name' },
 						# make sure tournament is in preparation phase
 			cond = {	'submit':	"tn.phase = '2'",
 						'edit':		"tn.phase = '2'" } ),
 				relation(
 			table = 'gamer',
 			keys = {	'party':	'party',
-						'username':	'leader' },
+						'leader':	'username' },
 			cond = {	'submit':	"gamer.username = '$userid'" } ),
 				relation(
 			table =	'users',
-			keys = {	'username':		'leader' },
+			keys = {	'leader':	'username' },
 						# make sure user has paid
 			cond = {	'submit':	"gamer.paid = TRUE OR users.rank > 1" } ),
 				relation(

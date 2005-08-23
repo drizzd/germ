@@ -21,6 +21,9 @@ class ref_group:
 	def get_keys(self, key):
 		return self.__key_map[key]
 
+	def get_rel_keys(self):
+		return self.__rel_map.keys()
+
 	def has_key(self, key):
 		return self.__rel_map.has_key(key)
 
@@ -66,12 +69,46 @@ class ref_group:
 			return ""
 
 	def get_colref(self, key, rel):
+		# TODO: what was this code for???
 		if rel is not None:
 			return rel.get_colref(key)
 
 		return '%s.%s' % (self.__ent.get_name(), key)
 
 	def generate_keylist(self, act_str):
+		# generate table references
+
+		table_ref_vec = []
+		for rel in self.__joins:
+			table_ref_vec.append(rel.get_table_spec() + \
+					self.__get_join_cond(rel, act_str))
+
+		table_ref = "\n   JOIN ".join(table_ref_vec)
+
+		if len(self.__joins) == 0:
+			# This should only happen if there are only non-relational
+			# PKs.
+
+			# TODO: find out if this is possible and handle it appropriately
+			if len(self.__outer_joins) > 1:
+				from error import *
+				raise error(err_warn, "No inner joins, multiple outer joins",
+						'number of outer joins: %s' % len(self.__outer_joins))
+
+			#table_ref_vec = []
+			#for rel in self.__outer_joins:
+			#	table_ref_vec.append(rel.get_table_spec() + \
+			#			self.__get_join_cond(rel, act_str))
+
+			#table_ref += "\n   JOIN ".join(table_ref_vec)
+
+			table_ref = self.__outer_joins[0].get_table_spec()
+		else:
+			for rel in self.__outer_joins:
+				table_ref += "\n   " + rel.get_outer_join() + " JOIN " + \
+					rel.get_table_spec() + \
+					self.__get_join_cond(rel, act_str)
+
 		# generate search condition
 
 		search_cond = []
@@ -100,43 +137,10 @@ class ref_group:
 				to_lock_cond.append("%s = '%s'" % \
 						(self.get_colref(key, rel), attr.sql_str()))
 			else:
+				if len(self.__joins) == 0:
+					return True
+
 				missing_lock = True
-
-		# generate table references
-
-		table_ref_vec = []
-		for rel in self.__joins:
-			table_ref_vec.append(rel.get_table_spec() + \
-					self.__get_join_cond(rel, act_str))
-
-		table_ref = "\n   JOIN ".join(table_ref_vec)
-
-		if len(self.__joins) == 0:
-			# This should only happen if there are only non-relational
-			# PKs.
-
-			# TODO: find out if this is possible and handle it appropriately
-			if len(self.__outer_joins) > 1:
-				from error import *
-				raise error(err_warn, "No inner joins, multiple outer joins",
-						'number of outer joins: %s' % len(self.__outer_joins))
-
-			if missing_lock:
-				return True
-
-			#table_ref_vec = []
-			#for rel in self.__outer_joins:
-			#	table_ref_vec.append(rel.get_table_spec() + \
-			#			self.__get_join_cond(rel, act_str))
-
-			#table_ref += "\n   JOIN ".join(table_ref_vec)
-
-			table_ref = self.__outer_joins[0].get_table_spec()
-		else:
-			for rel in self.__outer_joins:
-				table_ref += "\n   " + rel.get_outer_join() + " JOIN " + \
-					rel.get_table_spec() + \
-					self.__get_join_cond(rel, act_str)
 
 		# generate sort order specification
 
@@ -153,8 +157,10 @@ class ref_group:
 		col_spec_vec = []
 		for key in key_vec:
 			rel = self.__rel_map[key]
-			col_spec_vec.append("\n   %s.%s AS %s" % \
-				(rel.get_alias(), rel.get_realkey(key), key))
+			col_spec_vec.append("\n   %s AS %s" % \
+				(rel.get_colref(key), key))
+			#col_spec_vec.append("\n   %s.%s AS %s" % \
+			#	(rel.get_alias(), rel.get_realkey(key), key))
 
 		col_spec = ", ".join(col_spec_vec)
 
@@ -209,6 +215,12 @@ class ref_group:
 
 		if len(self.__joins) > 0:
 			self.__key_map = dict(zip(key_vec, zip(*rset)))
+
+		from error import *
+		error(err_debug, 'keylist', 'missing_lock: %s, key_map: %s' % \
+					(missing_lock, self.__key_map))
+
+		error(err_debug, 'after keylist')
 
 		return missing_lock
 

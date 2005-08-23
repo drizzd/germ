@@ -22,20 +22,13 @@ action = {
 		'en': 'view',
 		'de': 'ansehen' } }
 
-action_past = {
-	'edit':	{
-		'en': 'edited',
-		'de': 'editiert' },
-	'submit': {
-		'en': 'submitted',
-		'de': 'abgeschickt' },
-	'delete': {
-		'en': 'deleted',
-		'de': 'gel"oscht' },
-	'view': {
-		'en': 'viewed',
-		'de': 'angesehen' } }
-
 action_report = {
-	'en': 'The following entry has been',
-	'de': 'Der folgende Eintrag wurde' }
+	'edit': {
+		'en': 'The following entry has been edited',
+		'de': 'Der folgende Eintrag wurde editiert' },
+	'submit': {
+		'en': 'The following entry has been submitted',
+		'de': 'Der folgende Eintrag wurde abgeschickt' },
+	'delete': {
+		'en': 'The following entry has been deleted',
+		'de': 'Der folgende Eintrag wurde gel"oscht' } }

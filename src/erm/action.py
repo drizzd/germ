@@ -20,3 +20,6 @@ class action:
 
 	def visit_virtual(self, entity):
 		raise error(err_fail, errmsg.unimplemented)
+
+	def __str__(self):
+		return self._act_str

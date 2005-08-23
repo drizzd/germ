@@ -18,10 +18,13 @@ class error(Exception):
 			self.__log()
 
 	def __log(self):
-		for line in str(self).split('\n'):
-			error.log_file.write(line, self.__lvl)
+		if self.log_file is None:
+			return
 
-		error.log_file.flush()
+		for line in str(self).split('\n'):
+			self.log_file.write(line, self.__lvl)
+
+		self.log_file.flush()
 
 	def __str__(self):
 		from lib import misc

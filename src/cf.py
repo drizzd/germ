@@ -24,7 +24,9 @@ ht_root = '/var/www'
 ht_path = 'lpms'
 ht_index = 'ui_ht/handler.py'
 ht_docpath = 'htdocs'
-ht_default_entity = 'users'
-ht_default_action = 'view'
+ht_default_entity = None
+ht_default_action = None
 # change this regularly to ensure security
 ht_secret = 'asdf1234'
+ht_parm_prefix_attr = 'a_'
+ht_check_items = True

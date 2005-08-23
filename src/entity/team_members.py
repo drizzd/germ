@@ -5,9 +5,9 @@
 #
 
 from erm.ent_table import *
-import txt.label
 from erm.relation import *
 
+from txt import label
 from attr.attribute import perm
 from attr.string import *
 

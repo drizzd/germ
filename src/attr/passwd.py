@@ -7,7 +7,7 @@
 from string import *
 
 class passwd(string):
-	def __init__(self, label, perm = {}, default = None, length = 128,
+	def __init__(self, label, perm = [], default = None, length = 128,
 			chk_func_vec = []):
 		string.__init__(self, label, perm, default, length, chk_func_vec)
 

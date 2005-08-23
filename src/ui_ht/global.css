@@ -1,0 +1,118 @@
+BODY
+{
+	background: #001e3c;
+	color: #f5f5f5;
+	font-size: 14px;
+	font-family: Verdana
+}
+
+TD
+{
+	color: #f5f5f5;
+	font-size: 14px;
+	font-family: Verdana
+}
+
+A
+{
+	color: #f5f5f5;
+	text-decoration: none
+}
+
+A:hover
+{
+	text-decoration: underline
+}
+
+TABLE.list
+{
+	border: 0;
+	empty-cells: show;
+	position: center;
+	border-spacing: 1px
+}
+
+TH.list
+{
+	background: #445e77;
+	font-size: 14px;
+	font-style: bold;
+	text-align: center;
+	padding: 0;
+	margin: 0
+}
+
+TD.list
+{
+	background: #5C80A3;
+	text-align: center;
+	padding: 0;
+	margin: 0
+}
+
+TABLE.seatplan
+{
+	background: #445e77;
+	empty-cells: show;
+	border: 0;
+	border-spacing: 1px;
+	padding: 1;
+	margin: 0
+}
+
+TR.seatplan
+{
+	background: #001e3c;
+	text-align: center;
+	padding: 0;
+	margin: 0
+}
+
+TD.seatplan
+{
+	background: #001e3c;
+	text-align: center;
+	padding: 0;
+	margin: 0
+}
+
+TD.seat_available
+{
+	text-align: center;
+	background: grey;
+	padding: 0;
+	margin: 0
+}
+
+TD.seat_occupied_online
+{
+	text-align: center;
+	background: green;
+	padding: 0;
+	margin: 0
+}
+
+TD.seat_occupied_offline
+{
+	text-align: center;
+	background: red;
+	padding: 0;
+	margin: 0
+}
+
+INPUT, TEXTAREA, SELECT
+{
+	background-color: #333333;
+	background-image: url(images/th_back_anf.gif);
+	background-repeat: repeat-y;
+#	border: #9C7E41 1px solid;
+	border: #808080 1px solid;
+	color: #CCCCCC;
+#	font-family: Georgia,Verdana,Arial,Helvetica;
+	font-weight: normal
+}
+
+INPUT.checkbox
+{
+	background-image: none;
+}

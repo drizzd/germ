@@ -7,7 +7,7 @@
 from attribute import *
 
 class string(attribute):
-	def __init__(self, label, perm = {}, default = '', length = 128,
+	def __init__(self, label, perm = [], default = '', length = 128,
 			chk_func_vec = []):
 		attribute.__init__(self, label, perm, default, chk_func_vec)
 

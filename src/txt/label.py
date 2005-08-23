@@ -36,9 +36,22 @@ homepage = {
 rank = {
 	'en': 'Rank',
 	'de': 'Rang' }
+
+seat = {
+	'en': 'Seat',
+	'de': 'Sitzplatz' }
+
+paid = {
+	'en': 'Paid',
+	'de': 'Bezahlt' }
+
 passwd = {
 	'en': 'Password',
 	'de': 'Passwort' }
+
+passwd_old = {
+	'en': 'Old Password',
+	'de': 'Altes Passwort' }
 
 last_activity = {
 	'en': 'Latest activity',
@@ -62,6 +75,10 @@ tourney = {
 team = {
 	'en': 'Team' }
 
+leader = {
+	'en': 'Leader',
+	'de': 'Leiter' }
+
 genre = {
 	'en': 'Genre' }
 
@@ -78,12 +95,12 @@ location = {
 	'de': 'Veranstaltungsort' }
 
 entry_fee_advance = {
-	'en': 'Entry fee if registered online',
-	'de': 'Vorauskasse (Eintritt bei Voranmeldung online)' }
+	'en': 'Advance entry fee',
+	'de': 'Vorauskasse' }
 
 entry_fee = {
-	'en': 'Entry fee if not registered online',
-	'de': 'Abendkasse (Eintritt ohne Voranmeldung online)' }
+	'en': 'Entry fee',
+	'de': 'Abendkasse' }
 
 organizer = {
 	'en': 'Organizer',

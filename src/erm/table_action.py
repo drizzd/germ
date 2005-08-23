@@ -17,9 +17,6 @@ class table_action:
 		self._relation_class = 'relation'
 
 	def execute(self, do_exec = True):
-		# check permissions
-		self.__check_perm()
-
 		# set default values
 		self._set_default()
 
@@ -35,6 +32,8 @@ class table_action:
 			from error.missing_lock import missing_lock
 			raise missing_lock()
 
+		error(err_debug, '-> do execute', str(do_exec))
+
 		if not do_exec:
 			from error.do_not_exec import do_not_exec
 			raise do_not_exec()
@@ -47,11 +46,6 @@ class table_action:
 
 		# execute post-action function
 		self._tbl.post(self.__act_str)
-
-	def __check_perm(self):
-		if not self._tbl.perm(self.__act_str):
-			# TODO: make this a perm_denied exception
-			raise error(err_error, errmsg.permission_denied)
 
 	def __analyze(self):
 		# add primary key relation

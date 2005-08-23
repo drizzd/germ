@@ -5,11 +5,13 @@
 #
 
 from erm.ent_table import *
-
-import txt.label
 from erm.relation import *
+
+from txt import label
 from attr.attribute import perm
 from attr.string import *
+from attr.choice import *
+from attr.int import *
 
 class tourney(ent_table):
 	def __init__(self):
@@ -36,10 +38,9 @@ class tourney(ent_table):
 			('party', string(label.party, perm.submit, None, 10)),
 			('name', string(label.tourney, perm.submit, None, 32)),
 			('organizer', string(label.organizer, perm.all, None, 10)),
-			('mode', choice(label.tourney_mode, perm.all, 0, opt_mode))
-			('phase', choice(label.tourney_phase, perm.all, 0, opt_phase)),
-			('teamsize', int(label.teamsize, perm.all, None, 2))
-			],
+			('mode', choice(label.tourney_mode, opt_mode, perm.all, 0)),
+			('phase', choice(label.tourney_phase, opt_phase, perm.all, 0)),
+			('teamsize', int(label.teamsize, perm.all, None, 2)) ],
 			primary_keys = [ 'party', 'name' ],
 			relations = [
 				relation(

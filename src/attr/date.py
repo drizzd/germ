@@ -7,7 +7,10 @@
 from attribute import *
 
 class date(attribute):
-	def __init__(self, label, perm = {}, default = None, chk_func_vec = []):
+	from lib import misc
+
+	def __init__(self, label, perm = [], default = misc.today,
+			chk_func_vec = []):
 		attribute.__init__(self, label, perm, default, chk_func_vec)
 
 	def sql_str(self):

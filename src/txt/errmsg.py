@@ -40,8 +40,8 @@ abstract_inst = {
 	'de': 'Instanziierung einer abstrakten Klasse' }
 
 tried_locking_unset_attr = {
-	'en': 'Tried to lock unset attribute',
-	'de': 'Versuchte ein nicht gesetztes Attribut zu sperren' }
+	'en': 'Attempt to lock unset attribute',
+	'de': 'Versuch ein nicht gesetztes Attribut zu sperren' }
 
 permission_denied = {
 	'en': 'Permission denied',

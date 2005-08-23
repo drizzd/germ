@@ -14,7 +14,10 @@ class relation:
 		self.__outer_join = outer_join
 
 	def get_cond(self, act_str):
-		return self.__cond.get(act_str)
+		if isinstance(self.__cond, dict):
+			return self.__cond.get(act_str)
+		else:
+			return self.__cond
 
 	def is_outer_join(self):
 		return self.__outer_join is not None
