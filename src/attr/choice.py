@@ -6,7 +6,7 @@
 
 from attribute import *
 
-from error.error import *
+from error.error import error
 from txt import errmsg
 
 class choice(attribute):
@@ -15,7 +15,7 @@ class choice(attribute):
 		attribute.__init__(self, label, perm, default, chk_func_vec)
 
 		if len(options) == 0:
-			raise error(err_fail, errmsg.attr_choice_nooptions)
+			raise error(error.fail, errmsg.attr_choice_nooptions)
 
 		self.__options = options
 

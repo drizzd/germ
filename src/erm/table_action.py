@@ -4,7 +4,7 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from error.error import *
+from error.error import error
 from txt import errmsg
 
 class table_action:
@@ -32,7 +32,7 @@ class table_action:
 			from error.missing_lock import missing_lock
 			raise missing_lock()
 
-		error(err_debug, '-> do execute', str(do_exec))
+		error(error.debug, '-> do execute', str(do_exec))
 
 		if not do_exec:
 			from error.do_not_exec import do_not_exec
@@ -86,7 +86,7 @@ class table_action:
 			outer_join = outer_join)
 
 	def _get_sql_query(self, table, sql_str):
-		raise error(err_error, errmsg.abstract_func)
+		raise error(error.error, errmsg.abstract_func)
 
 	def _get_pk_cond_join(self, table, pk0):
 		return [ None, None ]
@@ -100,7 +100,7 @@ class table_action:
 		if sql_query is None:
 			return
 
-		from lib.db_iface import *
+		from lib.db_iface import db_iface
 		rset = db_iface.query(sql_query)
 
 		if self.__save_rset:

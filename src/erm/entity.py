@@ -4,7 +4,6 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from error import error
 from txt import errmsg
 
 from ref_group import *
@@ -47,8 +46,8 @@ class entity:
 		text = self.__item_txt.get(act_str, self.__action_txt.get(act_str))
 
 		if text is None:
-			from error import *
-			raise error(err_warn, 'No item description', 'action: %s' % \
+			from error.error import error
+			raise error(error.warn, 'No item description', 'action: %s' % \
 					act_str)
 
 		return text
@@ -58,8 +57,8 @@ class entity:
 		text = self.__action_txt.get(act_str, misc.action.get(act_str))
 
 		if text is None:
-			from error import *
-			raise error(err_warn, 'No action description', 'action: %s' % \
+			from error.error import error
+			raise error(error.warn, 'No action description', 'action: %s' % \
 					act_str)
 		
 		return text
@@ -83,7 +82,8 @@ class entity:
 
 	def set_rset(self, rset):
 		if self.__rset is not None:
-			raise error(err_fail, "Attempt to set result set twice",
+			from error.error import error
+			raise error(error.fail, "Attempt to set result set twice",
 				"entity: %s" % self._name)
 
 		self.__rset = rset
@@ -283,8 +283,8 @@ class entity:
 	def accept(self, action):
 		from lib.misc import always_true
 
-		from error import *
-		error(err_debug, 'checking permission', 'entity: %s, action: %s' % \
+		from error.error import error
+		error(error.debug, 'checking permission', 'entity: %s, action: %s' % \
 				(self._name, str(action)))
 
 		if isinstance(self.__perm, dict):
@@ -299,7 +299,7 @@ class entity:
 		self.do_accept(action)
 
 	def do_accept(self, action):
-		raise error(err_fail, errmsg.abstract_func)
+		raise error(error.fail, errmsg.abstract_func)
 
 	def __has_attr(self, attr):
 		has_attr = self._attr_map.has_key(attr)
@@ -307,7 +307,8 @@ class entity:
 		# Do not raise an error if attribute does not exist. We
 		# do not want the user to spy on secret attributes
 		if not has_attr:
-			error(err_warn, errmsg.nonexistent_attr,
+			from error.error import error
+			error(error.warn, errmsg.nonexistent_attr,
 				'table: %s, attribute: %s' % (self._name, attr))
 
 		return has_attr
@@ -354,8 +355,8 @@ class entity:
 			if attr in self._pk_set or a.perm(action):
 				return a
 
-		from error import *
-		raise error(err_fail, errmsg.nonexistent_attr,
+		from error.error import error
+		raise error(error.fail, errmsg.nonexistent_attr,
 			'table: %s, attribute: %s' % (self._name, attr))
 
 	def __get_attr_items(self):

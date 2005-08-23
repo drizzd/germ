@@ -16,15 +16,15 @@ class db_iface:
 	__conn = None
 
 	def query(cls, query):
-		from error import *
-		error(err_debug, 'db_iface query', query)
+		from error.error import error
+		error(error.debug, 'db_iface query', query)
 
 		if cls.__db_type == 'mysql':
 			rset = cls.__sql_query_mysql(query)
 		else:
-			import error
+			from error.error import error
 			from txt import errmsg
-			raise error(err_fail, errmsg.unknown_db_type,
+			raise error(error.fail, errmsg.unknown_db_type,
 				'db_type: %s' % db_type)
 
 		return rset

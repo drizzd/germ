@@ -8,8 +8,8 @@ def get_entity(ent_str, session, glob = globals()):
 	try:
 		mod = __import__('entity.' + ent_str, glob, locals(), [ent_str])
 	except ImportError, e:
-		from error import *
-		raise error(err_fail, "Could not find entity. " + \
+		from error.error import error
+		raise error(error.fail, "Could not find entity. " + \
 				"ImportError: " + str(e), "entity: " + ent_str)
 
 	entity_class = getattr(mod, ent_str)
@@ -26,8 +26,8 @@ def get_action(act_str, do_exec):
 		mod = __import__('erm.' + action_class_str, globals(), locals(),
 				[action_class_str])
 	except ImportError, e:
-		from error import *
-		raise error(err_fail, "Could not perform action. " + \
+		from error.error import error
+		raise error(error.fail, "Could not perform action. " + \
 				"ImportError: " + str(e), "action: " + act_str)
 
 	action_class = getattr(mod, action_class_str)

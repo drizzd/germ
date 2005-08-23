@@ -5,16 +5,17 @@
 #
 
 from mod_python import apache
-from error import *
 
 class log_file_apache:
+	from error.error import error
+
 	ap_log = {
-		err_debug:	apache.APLOG_DEBUG,
-		err_info:	apache.APLOG_INFO,
-		err_notice:	apache.APLOG_NOTICE,
-		err_warn:	apache.APLOG_WARNING,
-		err_error:	apache.APLOG_ERR,
-		err_fail:	apache.APLOG_CRIT }
+		error.debug:	apache.APLOG_DEBUG,
+		error.info:	apache.APLOG_INFO,
+		error.notice:	apache.APLOG_NOTICE,
+		error.warn:	apache.APLOG_WARNING,
+		error.error:	apache.APLOG_ERR,
+		error.fail:	apache.APLOG_CRIT }
 
 	def __init__(self, req):
 		self.__req = req

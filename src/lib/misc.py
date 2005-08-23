@@ -85,8 +85,8 @@ class rank_check:
 				% userid)
 
 		if len(rset) != 1:
-			from error import *
-			raise error(err_fail, "Invalid userid", 'userid: %s' % userid)
+			from error.error import error
+			raise error(error.fail, "Invalid userid", 'userid: %s' % userid)
 
 		rec = rset[0]
 

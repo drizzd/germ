@@ -4,8 +4,6 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from error import *
-
 def boil_out(req, e):
 	# TODO: Log errors and inform administrator. Only inform user that this
 	# should not happen and a bug report has been filed. Encourage user to
@@ -13,10 +11,12 @@ def boil_out(req, e):
 	#req.content_type = "text/html"
 	req.write('<B>Unhandled Exception:</B> <I>%s</I>' % e)
 
+	from error.error import error
+
 	if isinstance(e, error):
 		req.write(' (%s)' % error.lvl_txt(e.lvl()))
 	else:
-		error(err_error, str(e))
+		error(error.error, str(e))
 
 	req.write('<BR />\n')
 

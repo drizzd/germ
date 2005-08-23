@@ -4,7 +4,7 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from error.error import *
+from error.error import error
 from txt import errmsg
 
 class action:
@@ -13,13 +13,13 @@ class action:
 		self._do_exec = do_exec
 
 	def visit_table(self, entity):
-		raise error(err_fail, errmsg.unimplemented)
+		raise error(error.fail, errmsg.unimplemented)
 
 	def visit_view(self, entity):
-		raise error(err_fail, errmsg.unimplemented)
+		raise error(error.fail, errmsg.unimplemented)
 
 	def visit_virtual(self, entity):
-		raise error(err_fail, errmsg.unimplemented)
+		raise error(error.fail, errmsg.unimplemented)
 
 	def __str__(self):
 		return self._act_str

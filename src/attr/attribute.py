@@ -4,7 +4,6 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from error import *
 from txt import errmsg
 
 class perm:
@@ -51,7 +50,8 @@ class attribute:
 
 	def to_lock(self):
 		if not self.is_set():
-			raise error(err_fail, errmsg.tried_locking_unset_attr)
+			from error.error import error
+			raise error(error.fail, errmsg.tried_locking_unset_attr)
 		else:
 			self.__to_lock = True
 
@@ -60,7 +60,8 @@ class attribute:
 
 	def lock(self):
 		if not self.is_set():
-			raise error(err_fail, errmsg.tried_locking_unset_attr)
+			from error.error import error
+			raise error(error.fail, errmsg.tried_locking_unset_attr)
 		else:
 			self.__locked = True
 
@@ -74,6 +75,7 @@ class attribute:
 		for chk_func in self.__chk_func_vec:
 			res = chk_func(val)
 
+			from error.error import error
 			if isinstance(res, error):
 				self._error(res)
 
@@ -93,18 +95,20 @@ class attribute:
 			if callable(self.__default):
 				val = self.__default()
 
-				from error import *
-				error(err_debug, 'callable default', 'value: %s' % val)
+				from error.error import error
+				error(error.debug, 'callable default', 'value: %s' % val)
 
 				self.set(self.__default())
 			else:
 				self.set(self.__default)
 
 	def sql_type(self):
-		raise error(err_fail, errmsg.abstract_func)
+		from error.error import error
+		raise error(error.fail, errmsg.abstract_func)
 
 	def sql_str(self):
-		raise error(err_fail, errmsg.abstract_func)
+		from error.error import error
+		raise error(error.fail, errmsg.abstract_func)
 
 	def perm(self, action):
 		return action in self.__perm
@@ -113,7 +117,8 @@ class attribute:
 		return self._val
 
 	def accept(self, attr_act):
-		raise error(err_fail, errmsg.abstract_func)
+		from error.error import error
+		raise error(error.fail, errmsg.abstract_func)
 
 	def invalid_key(self):
 		from error.invalid_key import invalid_key
@@ -129,6 +134,6 @@ class attribute:
 		return self.__error_vec
 
 	def _format_error(self):
-		from error import *
-		raise error(err_fail, "Parameter has invalid format", "type: %s" % \
+		from error.error import error
+		raise error(error.fail, "Parameter has invalid format", "type: %s" % \
 			self.__class__.__name__)

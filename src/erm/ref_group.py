@@ -53,12 +53,12 @@ class ref_group:
 			if self.__rel_map[key] is None:
 				self.__rel_map[key] = rel.handle_unknown_key(self.__ent, key,
 						act_str, join_cond)
-				#from error import *
-				#error(err_debug, 'handling unknown key', 'key: %s, ' \
+				#from error.error import error
+				#error(error.debug, 'handling unknown key', 'key: %s, ' \
 				#		'rel_map: %s, join_cond: %s' % (key, self.__rel_map,
 				#			join_cond))
 			else:
-				#error(err_debug, 'adding join condition', 'key: %s, ' \
+				#error(error.debug, 'adding join condition', 'key: %s, ' \
 				#		'rel_map: %s' % (key, self.__rel_map))
 				join_cond.append("\n      %s = %s" % (rel.get_colref(key),
 						self.__rel_map[key].get_colref(key)))
@@ -91,8 +91,8 @@ class ref_group:
 
 			# TODO: find out if this is possible and handle it appropriately
 			if len(self.__outer_joins) > 1:
-				from error import *
-				raise error(err_warn, "No inner joins, multiple outer joins",
+				from error.error import error
+				raise error(error.warn, "No inner joins, multiple outer joins",
 						'number of outer joins: %s' % len(self.__outer_joins))
 
 			#table_ref_vec = []
@@ -164,8 +164,8 @@ class ref_group:
 
 		col_spec = ", ".join(col_spec_vec)
 
-		#from error import *
-		#error(err_debug, 'constructing search condition', 'search_cond: %s, ' \
+		#from error.error import error
+		#error(error.debug, 'constructing search condition', 'search_cond: %s, ' \
 		#		'lock_cond: %s, to_lock_cond: %s' % \
 		#		(search_cond, lock_cond, to_lock_cond))
 
@@ -209,18 +209,18 @@ class ref_group:
 			else:
 				# This can happen if user tampers with locked parameters or if
 				# the user interface is buggy and changes locked parameters.
-				from error import *
+				from error.error import error
 				from txt import errmsg
-				raise error(err_fail, errmsg.invalid_key)
+				raise error(error.fail, errmsg.invalid_key)
 
 		if len(self.__joins) > 0:
 			self.__key_map = dict(zip(key_vec, zip(*rset)))
 
-		from error import *
-		error(err_debug, 'keylist', 'missing_lock: %s, key_map: %s' % \
+		from error.error import error
+		error(error.debug, 'keylist', 'missing_lock: %s, key_map: %s' % \
 					(missing_lock, self.__key_map))
 
-		error(err_debug, 'after keylist')
+		error(error.debug, 'after keylist')
 
 		return missing_lock
 
@@ -237,8 +237,8 @@ class ref_group:
 
 		val = self.__session[varname]
 		if not isinstance(val, str):
-			import error
-			raise error(err_fail, "Session variables for use in an " + \
+			from error.error import error
+			raise error(error.fail, "Session variables for use in an " + \
 					"SQL condition must be strings",
 					"variable: %s, type: %s" % (varname, type(val)))
 

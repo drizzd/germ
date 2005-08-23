@@ -78,8 +78,8 @@ class ht_parser(BaseHTMLProcessor):
 		act_str = attr_map.get('action')
 
 		if ent_str is None or act_str is None:
-			from error import *
-			error(err_warn, 'Invalid item', 'entity: %s, action: %s' % \
+			from error.error import error
+			error(error.warn, 'Invalid item', 'entity: %s, action: %s' % \
 					(ent_str, act_str))
 
 		entity = self.check_item(ent_str, act_str)
@@ -109,8 +109,8 @@ class ht_parser(BaseHTMLProcessor):
 				self.__skip_item += 1
 				return None
 		else:
-			from error import *
-			raise error(err_error, 'action succeeded without do_exec',
+			from error.error import error
+			raise error(error.error, 'action succeeded without do_exec',
 				'entity: %s, action: %s' % (ent_str, act_str))
 
 		return entity

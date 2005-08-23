@@ -109,13 +109,13 @@ def print_form(entity, act_str, prompt_pk_only):
 	prev_group = None
 	cnt = 0
 	while len(attr_vec) > 0:
-		from error import *
-		error(err_debug, 'getting reference group')
+		from error.error import error
+		error(error.debug, 'getting reference group')
 
 		group = entity.get_ref_group(attr_vec[0])
 
-		from error import *
-		error(err_debug, 'got reference group', 'group: %s' % group)
+		from error.error import error
+		error(error.debug, 'got reference group', 'group: %s' % group)
 
 		if group is None:
 			aid = attr_vec.pop(0)
@@ -131,8 +131,8 @@ def print_form(entity, act_str, prompt_pk_only):
 
 			parm_name = cf.ht_parm_prefix_attr + aid
 
-			from error import *
-			error(err_debug, 'printing attribute form element', 'aid: %s' % aid)
+			from error.error import error
+			error(error.debug, 'printing attribute form element', 'aid: %s' % aid)
 
 			act_form_field.set_parm_name(parm_name)
 			attr.accept(act_form_field)
@@ -143,8 +143,8 @@ def print_form(entity, act_str, prompt_pk_only):
 
 			formtext += '</TD></TR>\n'
 
-			from error import *
-			error(err_debug, 'printed attribute form element', 'aid: %s' % aid)
+			from error.error import error
+			error(error.debug, 'printed attribute form element', 'aid: %s' % aid)
 
 		else:
 			cnt += 1
@@ -170,8 +170,8 @@ def print_form(entity, act_str, prompt_pk_only):
 				prev_group = group
 				prev_was_key = True
 
-				from error import *
-				error(err_debug, 'printing key form element', 'aid: %s' % aid)
+				from error.error import error
+				error(error.debug, 'printing key form element', 'aid: %s' % aid)
 
 				locked = attr.is_locked()
 
@@ -230,8 +230,8 @@ def print_form(entity, act_str, prompt_pk_only):
 
 				formtext += '</TD></TR>\n'
 
-			from error import *
-			error(err_debug, 'leaving reference group')
+			from error.error import error
+			error(error.debug, 'leaving reference group')
 
 	from lib.misc import txt_lang
 
@@ -257,7 +257,7 @@ def print_form(entity, act_str, prompt_pk_only):
 	errortext += len(error_vec) > 0 and \
 			"<BR />\n" or ''
 
-	from error import *
-	error(err_debug, 'done printing')
+	from error.error import error
+	error(error.debug, 'done printing')
 
 	return errortext + formtext

@@ -5,16 +5,16 @@
 #
 
 def handler(req):
+	from log_file_apache import log_file_apache
+	from error.error import error
+
+	error.log_file = log_file_apache(req)
+
 	try:
 		import cf
 
 		prevent_caching(req)
 		req.content_type = "text/html"
-
-		from log_file_apache import log_file_apache
-		from error.error import error
-
-		error.log_file = log_file_apache(req)
 
 		from mod_python import util
 		form = util.FieldStorage(req, keep_blank_values = True)
@@ -30,7 +30,7 @@ def handler(req):
 
 		if p_action is None:
 			if p_entity is not None:
-				raise error(err_fail, "Request for an entity without an " +
+				raise error(error.fail, "Request for an entity without an " +
 						"action to act on it", "entity: %s" % p_entity)
 
 			p_action = cf.ht_default_action
@@ -55,7 +55,7 @@ def handler(req):
 				else:
 					page = file(path + 'index.html')
 		except IOError, e:
-			raise error(err_fail, e, 'path: %s, page: %s, entity: %s' % \
+			raise error(error.fail, e, 'path: %s, page: %s, entity: %s' % \
 					(path, p_page, p_entity))
 
 		from mod_python.Session import Session
@@ -110,7 +110,7 @@ def parm_val(parm):
 
 def get_content(p_entity, p_action, form, session):
 	if p_entity is None:
-		raise error(err_fail, "Request for an action without an " + \
+		raise error(error.fail, "Request for an action without an " + \
 				"entity to act on", "action: %s" % p_action)
 
 	from sets import Set
@@ -129,7 +129,7 @@ def get_content(p_entity, p_action, form, session):
 				attr = name[len(cf.ht_parm_prefix_attr):]
 
 				if attr_map.has_key(attr):
-					raise error(err_warn, "Multi-valued parameter " + \
+					raise error(error.warn, "Multi-valued parameter " + \
 							"overwritten with single-valued parameter",
 							"attribute: %s" % attr)
 
@@ -140,7 +140,7 @@ def get_content(p_entity, p_action, form, session):
 				if not attr_map.has_key(attr):
 					attr_map[attr] = {}
 				elif not isinstance(attr_map, dict):
-					raise error(err_warn, "Multi-valued parameter " + \
+					raise error(error.warn, "Multi-valued parameter " + \
 							"overwritten with single-valued parameter",
 							"attribute: %s" % attr)
 
@@ -169,7 +169,7 @@ def get_content(p_entity, p_action, form, session):
 			found_invalid_parm = True
 
 			if attr in attr_locks:
-				raise error(err_fail, "Locked attribute has invalid value",
+				raise error(error.fail, "Locked attribute has invalid value",
 						"attr: %s, error: %s" % (attr, e))
 			elif attr in attr_to_lock:
 				attr_to_lock.remove(attr)
@@ -235,8 +235,8 @@ def get_content(p_entity, p_action, form, session):
 		elif isinstance(e, missing_pk_lock):
 			prompt_pk_only = True
 		elif isinstance(e, no_valid_keys) or isinstance(e, perm_denied):
-			from error import *
-			error(err_warn, e, "action: %s, entity: %s" % \
+			from error.error import error
+			error(error.warn, e, "action: %s, entity: %s" % \
 					(p_action, p_entity))
 
 			return content
@@ -247,8 +247,7 @@ def get_content(p_entity, p_action, form, session):
 
 	session.save()
 
-	from error import *
-	error(err_debug, 'saving session')
-
+	from error.error import error
+	error(error.debug, 'saving session')
 
 	return content

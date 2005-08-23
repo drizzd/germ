@@ -61,8 +61,8 @@ class ent_table(entity):
 			# TODO: Make this an invalid_key exception. This could very well
 			# occur by a user 'mistake'. On the other hand, can it still occur
 			# if ref_group.generate_keylist did not complain?
-			from error import *
-			raise error(err_fail, "Invalid primary key: result is empty " + \
+			from error.error import error
+			raise error(error.fail, "Invalid primary key: result is empty " + \
 					"or has multiple records", "number of records: %s" % \
 					len(rset))
 

@@ -45,7 +45,7 @@ class auth(ent_virtual):
 	def require_parms(self, act_str):
 		for attr in self._attr_map.itervalues():
 			if attr.perm(act_str) and not attr.is_set():
-				from error.missing_parm import *
+				from error.missing_parm import missing_parm
 				raise missing_parm()
 
 	def check_exec(self, do_exec):
@@ -64,8 +64,8 @@ class auth(ent_virtual):
 			# TODO: Make this an invalid_key exception. This could very well
 			# occur by a user 'mistake'. On the other hand, can it still occur
 			# if ref_group.generate_keylist did not complain?
-			from error import *
-			raise error(err_fail, "Ambiguous primary key: result has " + \
+			from error.error import error
+			raise error(error.fail, "Ambiguous primary key: result has " + \
 					"multiple records", "number of records: %s" % \
 					len(rset))
 
@@ -77,7 +77,7 @@ class auth(ent_virtual):
 			invalid_auth = not self._attr_map[aid].check(passwd)
 
 		if invalid_auth:
-			from error.invalid_parm import *
+			from error.invalid_parm import invalid_parm
 			raise invalid_parm('Wrong username/password')
 
 	def edit(self, act_str, do_exec = True):

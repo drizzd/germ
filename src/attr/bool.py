@@ -19,8 +19,8 @@ class bool(attribute):
 	def _do_set(self, val):
 		# TODO: is this useful?
 		#if not isinstance(val, bool):
-		#	from error import *
-		#	self._error(error(err_fail, 'invalid type for boolean attribute',
+		#	from error.error import error
+		#	self._error(error(error.fail, 'invalid type for boolean attribute',
 		#			'value: %s, type: %s' % (val, type(val))))
 
 		self._val = val and 1 or 0

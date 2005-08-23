@@ -4,10 +4,9 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-err_debug, err_info, err_notice, err_warn, err_error, err_fail = range(0,6)
-
 class error(Exception):
 	log_file = None
+	debug, info, notice, warn, error, fail = range(0,6)
 
 	def __init__(self, lvl, msg, add_info = None, do_log = True):
 		self.__lvl = lvl

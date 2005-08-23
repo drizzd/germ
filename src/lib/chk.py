@@ -8,8 +8,8 @@ def identifier(val):
 	import re
 
 	if re.match(r'^[a-z_][a-z0-9_]*$', val.lower()) is None:
-		from error import *
+		from error.error import error
 		from txt import errmsg
-		return error(err_fail, errmsg.invalid_identifier)
+		return error(error.fail, errmsg.invalid_identifier)
 
 	return val.lower()
