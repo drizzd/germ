@@ -1,5 +1,5 @@
 #
-#  ht_parser.py
+#  ui_ht/ht_parser.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

@@ -1,5 +1,5 @@
 #
-#  boil_out.py
+#  ui_ht/boil_out.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

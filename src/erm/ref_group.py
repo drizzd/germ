@@ -1,5 +1,5 @@
 #
-#  ref_group.py
+#  erm/ref_group.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

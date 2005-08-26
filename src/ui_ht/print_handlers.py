@@ -1,5 +1,5 @@
 #
-#  print_handlers.py
+#  ui_ht/print_handlers.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

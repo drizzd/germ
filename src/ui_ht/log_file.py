@@ -1,5 +1,5 @@
 #
-#  log_file.py
+#  ui_ht/log_file.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

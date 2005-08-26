@@ -1,5 +1,5 @@
 #
-#  attr_action.py
+#  attr/attr_action.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

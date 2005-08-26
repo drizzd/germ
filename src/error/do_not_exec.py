@@ -1,5 +1,5 @@
 #
-#  do_not_exec.py
+#  error/do_not_exec.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

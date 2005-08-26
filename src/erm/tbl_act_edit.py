@@ -1,5 +1,5 @@
 #
-#  tbl_act_edit.py
+#  erm/tbl_act_edit.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

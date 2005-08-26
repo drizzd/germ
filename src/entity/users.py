@@ -1,5 +1,5 @@
 #
-#  users.py
+#  entity/users.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

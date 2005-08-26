@@ -1,5 +1,5 @@
 #
-#  attr_act_print.py
+#  attr/attr_act_print.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

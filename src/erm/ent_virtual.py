@@ -1,5 +1,5 @@
 #
-#  ent_virtual.py
+#  erm/ent_virtual.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

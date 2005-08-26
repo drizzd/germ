@@ -1,5 +1,5 @@
 #
-#  db_iface.py: database interface
+#  lib/db_iface.py: database interface
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

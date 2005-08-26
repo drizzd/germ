@@ -1,5 +1,5 @@
 #
-#  act_edit.py
+#  erm/act_edit.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

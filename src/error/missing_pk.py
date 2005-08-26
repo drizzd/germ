@@ -1,5 +1,5 @@
 #
-#  missing_pk.py
+#  error/missing_pk.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

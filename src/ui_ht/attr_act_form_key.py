@@ -1,5 +1,5 @@
 #
-#  attr_act_form_key.py
+#  ui_ht/attr_act_form_key.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

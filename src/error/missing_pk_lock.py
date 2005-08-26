@@ -1,5 +1,5 @@
 #
-#  missing_pk_lock.py
+#  error/missing_pk_lock.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

@@ -1,5 +1,5 @@
 #
-#  no_valid_keys.py
+#  error/no_valid_keys.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

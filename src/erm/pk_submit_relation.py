@@ -1,5 +1,5 @@
 #
-#  pk_submit_relation.py
+#  erm/pk_submit_relation.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

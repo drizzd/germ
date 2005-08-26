@@ -1,5 +1,5 @@
 #
-#  attr_act_get.py
+#  attr/attr_act_get.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

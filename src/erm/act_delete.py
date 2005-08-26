@@ -1,5 +1,5 @@
 #
-#  act_delete.py
+#  erm/act_delete.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

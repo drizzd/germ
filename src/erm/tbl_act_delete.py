@@ -1,5 +1,5 @@
 #
-#  tbl_act_delete.py
+#  erm/tbl_act_delete.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

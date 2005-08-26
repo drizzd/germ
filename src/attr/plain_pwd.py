@@ -1,5 +1,5 @@
 #
-#  plain_pwd.py
+#  attr/plain_pwd.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

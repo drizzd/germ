@@ -1,5 +1,5 @@
 #
-#  act_view.py
+#  erm/act_view.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

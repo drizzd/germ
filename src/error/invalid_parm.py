@@ -1,5 +1,5 @@
 #
-#  invalid_parm.py
+#  error/invalid_parm.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

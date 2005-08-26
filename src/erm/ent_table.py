@@ -1,5 +1,5 @@
 #
-#  ent_table.py
+#  erm/ent_table.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #

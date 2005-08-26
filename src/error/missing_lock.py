@@ -1,5 +1,5 @@
 #
-#  missing_lock.py
+#  error/missing_lock.py
 #
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
