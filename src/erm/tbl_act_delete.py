@@ -8,7 +8,8 @@ from table_action import *
 
 class tbl_act_delete(table_action):
 	def __init__(self, act_str, table):
-		table_action.__init__(self, act_str, table, fill_table = True)
+		table_action.__init__(self, act_str, table, fill_table = True,
+				raise_missing_lock = False)
 
 	def _get_sql_query(self):
 		name = self._tbl.get_name()

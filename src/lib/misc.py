@@ -54,10 +54,17 @@ def vec_sub(a, b):
 
 	return a
 
+txt_lang_convert = []
+
 def txt_lang(txt):
 	import cf
 
-	return txt.get(cf.lang, txt['en'])
+	text = txt.get(cf.lang, txt['en'])
+
+	for conv in txt_lang_convert:
+		text = conv(text)
+
+	return text
 
 class var_check:
 	def __init__(self, entity, var, val):
@@ -68,26 +75,24 @@ class var_check:
 	def __call__(self):
 		return self.__entity.get_var(self.__var) == self.__val
 
-class rank_check:
-	def __init__(self, entity, rank):
-		self.__entity = entity
-		self.__rank = rank
+def get_cond(cond, act_str):
+	if not isinstance(cond, dict):
+		from error.error import error
+		raise error(error.error, 'Invalid condition type',
+				'cond: %s, type: %s' % (cond, type(cond)))
 
-	def __call__(self):
-		userid = self.__entity.get_var('userid')
+	cond_act = cond.get(act_str)
+	cond_all = cond.get('all')
 
-		if userid is None:
-			return False
+	if cond_act is None:
+		return cond_all
+	elif cond_all is None:
+		return cond_act
+	else:
+		return '(%s) AND (%s)' % (cond_all, cond_act)
 
-		from lib.db_iface import db_iface
-
-		rset = db_iface.query("SELECT rank FROM users WHERE username = '%s'" \
-				% userid)
-
-		if len(rset) != 1:
-			from error.error import error
-			raise error(error.fail, "Invalid userid", 'userid: %s' % userid)
-
-		rec = rset[0]
-
-		return int(rec[0]) >= self.__rank
+def call_if(expr, args = {}):
+	if callable(expr):
+		return expr(*args)
+	else:
+		return expr

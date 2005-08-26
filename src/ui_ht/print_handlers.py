@@ -29,7 +29,7 @@ def get_cell(attr, act_get):
 
 	return text
 
-def print_view(entity, act_str, prompt_pk_only):
+def print_view(entity, act_str, prompt_pk_only, display_errors):
 	viewtext = ''
 
 	from lib.misc import txt_lang
@@ -54,9 +54,9 @@ def print_view(entity, act_str, prompt_pk_only):
 
 	viewtext += "</TABLE>"
 
-	return viewtext
+	return (viewtext, '')
 
-def print_list(entity, act_str, prompt_pk_only):
+def print_list(entity, act_str, prompt_pk_only, display_errors):
 	from attr_act_view import attr_act_view
 	act_view = attr_act_view()
 
@@ -79,9 +79,9 @@ def print_list(entity, act_str, prompt_pk_only):
 
 	listtext += "</TABLE>"
 
-	return listtext
+	return (listtext, '')
 
-def print_form(entity, act_str, prompt_pk_only):
+def print_form(entity, act_str, prompt_pk_only, display_errors):
 	import cf
 	formtext = '<FORM method="GET" action="%s" autocomplete="off">\n' % \
 			('/' + cf.ht_path + '/' + cf.ht_index)
@@ -109,13 +109,11 @@ def print_form(entity, act_str, prompt_pk_only):
 	prev_group = None
 	cnt = 0
 	while len(attr_vec) > 0:
-		from error.error import error
-		error(error.debug, 'getting reference group')
-
 		group = entity.get_ref_group(attr_vec[0])
 
 		from error.error import error
-		error(error.debug, 'got reference group', 'group: %s' % group)
+		error(error.debug, 'printing attribute', 'aid: %s, group: %s' % \
+				(attr_vec[0], group))
 
 		if group is None:
 			aid = attr_vec.pop(0)
@@ -131,21 +129,15 @@ def print_form(entity, act_str, prompt_pk_only):
 
 			parm_name = cf.ht_parm_prefix_attr + aid
 
-			from error.error import error
-			error(error.debug, 'printing attribute form element', 'aid: %s' % aid)
-
 			act_form_field.set_parm_name(parm_name)
 			attr.accept(act_form_field)
 
 			formtext += act_form_field.get_text()
 
-			formtext += get_error(attr, error_vec)
+			if display_errors:
+				formtext += get_error(attr, error_vec)
 
 			formtext += '</TD></TR>\n'
-
-			from error.error import error
-			error(error.debug, 'printed attribute form element', 'aid: %s' % aid)
-
 		else:
 			cnt += 1
 			j = 0
@@ -170,9 +162,6 @@ def print_form(entity, act_str, prompt_pk_only):
 				prev_group = group
 				prev_was_key = True
 
-				from error.error import error
-				error(error.debug, 'printing key form element', 'aid: %s' % aid)
-
 				locked = attr.is_locked()
 
 				formtext += '<TR><TD>%s:</TD><TD align="right"><INPUT ' \
@@ -193,15 +182,17 @@ def print_form(entity, act_str, prompt_pk_only):
 					formtext += '<SELECT name="%s"%s>' % (parm_name,
 							locked and ' disabled' or '')
 
-					cur_key = attr.sql_str()
+					if attr.is_set():
+						cur_key = attr.sql_str()
+					else:
+						cur_key = None
 
 					tmp_attr = attr.copy()
 
-					prev_key = None
-					for key in group.get_keys(aid):
-						if key == prev_key:
-							continue
+					from sets import Set
 
+					prev_key = None
+					for key in Set(group.get_keys(aid)):
 						formtext += '\t<OPTION value="%s"%s>' % \
 								(key, key == cur_key and ' selected' or '')
 
@@ -226,12 +217,10 @@ def print_form(entity, act_str, prompt_pk_only):
 					formtext += '<INPUT type="hidden" name="%s" value="%s">' \
 							% (parm_name, attr.get())
 
-				formtext += get_error(attr, error_vec)
+				if display_errors:
+					formtext += get_error(attr, error_vec)
 
 				formtext += '</TD></TR>\n'
-
-			from error.error import error
-			error(error.debug, 'leaving reference group')
 
 	from lib.misc import txt_lang
 
@@ -257,7 +246,4 @@ def print_form(entity, act_str, prompt_pk_only):
 	errortext += len(error_vec) > 0 and \
 			"<BR />\n" or ''
 
-	from error.error import error
-	error(error.debug, 'done printing')
-
-	return errortext + formtext
+	return (formtext, errortext)

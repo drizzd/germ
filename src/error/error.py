@@ -14,9 +14,9 @@ class error(Exception):
 		self.__add_info = add_info
 
 		if do_log:
-			self.__log()
+			self.log()
 
-	def __log(self):
+	def log(self):
 		if self.log_file is None:
 			return
 

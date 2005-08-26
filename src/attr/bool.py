@@ -10,7 +10,7 @@ class bool(attribute):
 	def __init__(self, label, perm = [], default = 0, chk_func_vec = []):
 		attribute.__init__(self, label, perm, default, chk_func_vec)
 
-	def sql_str(self):
+	def _sql_str(self):
 		return str(self._val)
 
 	def sql_type(self):

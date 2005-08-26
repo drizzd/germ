@@ -13,7 +13,7 @@ class string(attribute):
 
 		self.__length = length
 
-	def sql_str(self):
+	def _sql_str(self):
 		return self._val
 
 	def sql_type(self):

@@ -18,10 +18,8 @@ class attribute:
 		from sets import Set
 		self.__label = label
 		self.__perm = Set(perm)
-		if callable(default):
-			self.__default = default()
-		else:
-			self.__default = default
+
+		self.__default = default
 
 		self._val = None
 		self.__chk_func_vec = chk_func_vec
@@ -91,22 +89,29 @@ class attribute:
 		return self._val is not None
 
 	def set_default(self):
-		if self.__default is not None:
-			if callable(self.__default):
-				val = self.__default()
+		if self.__default is None:
+			return
 
-				from error.error import error
-				error(error.debug, 'callable default', 'value: %s' % val)
-
-				self.set(self.__default())
-			else:
-				self.set(self.__default)
+		from lib.misc import call_if
+		self.set(call_if(self.__default))
 
 	def sql_type(self):
 		from error.error import error
 		raise error(error.fail, errmsg.abstract_func)
 
 	def sql_str(self):
+		from lib.db_iface import db_iface
+
+		string = self._sql_str()
+
+		if string is None:
+			from error.error import error
+			raise error(error.error, 'Invalid SQL String', 'attr: %s' % \
+					self.__class__.__name__)
+
+		return db_iface.escape_string(string)
+
+	def _sql_str(self):
 		from error.error import error
 		raise error(error.fail, errmsg.abstract_func)
 

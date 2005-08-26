@@ -22,7 +22,7 @@ class choice(attribute):
 	def get_options(self):
 		return self.__options
 
-	def sql_str(self):
+	def _sql_str(self):
 		return str(self._val)
 
 	def sql_type(self):

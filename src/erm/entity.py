@@ -6,11 +6,11 @@
 
 from txt import errmsg
 
-from ref_group import *
+from erm.ref_group import *
 
 class entity:
 	def __init__(self, attributes, primary_keys, relations, condition,
-			item_txt, action_txt, action_report, perm, pre, post):
+			item_txt, action_txt, action_report, perm, pre, post, magic_var):
 		self._name = self.__class__.__name__
 
 		self.__item_txt = item_txt
@@ -34,21 +34,32 @@ class entity:
 		self.__pre = pre
 		self.__post = post
 
+		self.__magic_var = magic_var
+
 		self._session = None
+		self.__globals = None
 		self.__build_ref_groups()
 
 		self.init()
+
+	def get_globals(self):
+		return self.__globals
+
+	def set_globals(self, glob):
+		self.__globals = glob
+
+	def magic_var(self, var):
+		magic_func = self.__magic_var.get(var)
+		
+		from lib.misc import call_if
+
+		return call_if(magic_func)
 
 	def get_var(self, var):
 		return self._session.get(var)
 
 	def item_txt(self, act_str):
-		text = self.__item_txt.get(act_str, self.__action_txt.get(act_str))
-
-		if text is None:
-			from error.error import error
-			raise error(error.warn, 'No item description', 'action: %s' % \
-					act_str)
+		text = self.__item_txt.get(act_str, self.action_txt(act_str))
 
 		return text
 
@@ -74,8 +85,10 @@ class entity:
 	def set_session(self, session):
 		self._session = session
 	
-	def get_condition(self):
-		return self.__condition
+	def get_condition(self, act_str):
+		from lib import misc
+
+		return misc.get_cond(self.__condition, act_str)
 
 	def get_session(self):
 		return self._session
@@ -264,35 +277,29 @@ class entity:
 	def get_ref_group(self, attr):
 		return self.__ref_group_map.get(attr, None)
 
-	def _require_pk_locks(self):
-		found_missing = False
-
+	def pks_locked(self):
 		for key in self._pk_set:
 			if not self._attr_map[key].is_locked():
-				# TODO: is lock_map necessary? All keys have to be locked. The
-				# user interace has to know which attribute belongs to which
-				# reference group anyway (in order to display them in direct
-				# succession so the user can choose which key to lock)
-				#self.__lock_map[key] = None
-				found_missing = True
+				return False
 
-		if found_missing:
-			from error.missing_pk_lock import missing_pk_lock
-			raise missing_pk_lock()
+		return True
 
 	def accept(self, action):
-		from lib.misc import always_true
+		from lib.misc import call_if
 
-		from error.error import error
-		error(error.debug, 'checking permission', 'entity: %s, action: %s' % \
-				(self._name, str(action)))
-
-		if isinstance(self.__perm, dict):
-			perm = self.__perm.get(str(action), always_true)()
-		else:
-			perm = self.__perm()
-
-		if not perm:
+		# The tests are evaluated in the following order. If any of the tests
+		# is not specified, proceed to the next item.
+		#
+		# 1. 'none':	If this fails, deny permission, otherwise proceed.
+		# 2. act_str:	This either denies or grants permission. Only proceed
+		# 				to the next test if act_str specification does not
+		# 				exist.
+		# 3. 'all':		If this fails, deny permission
+		# 4. grant permission
+		#
+		if not (call_if(self.__perm.get('none', True)) and \
+				call_if(self.__perm.get(str(action),
+				call_if(self.__perm.get('all', True))))):
 			from error.perm_denied import perm_denied
 			raise perm_denied()
 
@@ -368,6 +375,10 @@ class entity:
 	def __get_attr_items_pk(self):
 		return [(pk, self._attr_map[pk]) for pk in self._pk_set]
 
+	def __get_attr_items_pk_alias(self, alias):
+		return [('%s.%s' % (alias, pk), self._attr_map[pk])
+				for pk in self._pk_set]
+
 	def get_attr_sql(self):
 		return self.__sql_str(self.__get_attr_items())
 
@@ -376,6 +387,9 @@ class entity:
 
 	def get_attr_sql_pk(self):
 		return self.__sql_str(self.__get_attr_items_pk(), ' AND ')
+
+	def get_attr_sql_pk_alias(self, alias):
+		return self.__sql_str(self.__get_attr_items_pk_alias(alias), ' AND ')
 
 	def __sql_str(self, attr_items, delim = ', '):
 		sql_vec = ["%s = '%s'" % (name, attr.sql_str())

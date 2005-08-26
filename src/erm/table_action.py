@@ -8,12 +8,14 @@ from error.error import error
 from txt import errmsg
 
 class table_action:
-	def __init__(self, act_str, table, fill_table, save_rset = False):
+	def __init__(self, act_str, table, fill_table, raise_missing_lock = True,
+			save_rset = False):
 		self.__act_str = act_str
 		self._tbl = table
 		self.__fill_table = fill_table
 		self.__save_rset = save_rset
 
+		self.__raise_missing_lock = raise_missing_lock
 		self._relation_class = 'relation'
 
 	def execute(self, do_exec = True):
@@ -28,11 +30,9 @@ class table_action:
 		if self.__fill_table:
 			self._tbl.fill_pk()
 
-		if missing_lock:
+		if missing_lock and self.__raise_missing_lock:
 			from error.missing_lock import missing_lock
 			raise missing_lock()
-
-		error(error.debug, '-> do execute', str(do_exec))
 
 		if not do_exec:
 			from error.do_not_exec import do_not_exec
@@ -55,21 +55,20 @@ class table_action:
 		# a chance of violating this condition here.
 		self._tbl.add_rel(self.__get_pk_rel())
 
-		missing_lock = False
+		found_missing_lock = False
 
 		for ref_grp in self._tbl.get_ref_group_vec():
-			if ref_grp.generate_keylist(self.__act_str):
-				# If we need the primary key, we have to prompt for PKs only.
-				if self.__fill_table:
-					pk0 = self._tbl.get_pk_set().copy().pop()
+			missing_lock, missing_pk_lock = ref_grp.generate_keylist(self.__act_str)
 
-					if ref_grp.has_key(pk0):
+			if missing_lock:
+				# If we need the primary key, we have to prompt for PKs only.
+				if self.__fill_table and missing_pk_lock:
 						from error.missing_pk_lock import missing_pk_lock
 						raise missing_pk_lock()
 
-				missing_lock = True
+				found_missing_lock = True
 
-		return missing_lock
+		return found_missing_lock
 
 	def __get_pk_rel(self):
 		pk_set = self._tbl.get_pk_set()

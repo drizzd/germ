@@ -16,8 +16,8 @@ class db_iface:
 	__conn = None
 
 	def query(cls, query):
-		from error.error import error
-		error(error.debug, 'db_iface query', query)
+		#from error.error import error
+		#error(error.debug, 'db_iface query', query)
 
 		if cls.__db_type == 'mysql':
 			rset = cls.__sql_query_mysql(query)
@@ -30,6 +30,13 @@ class db_iface:
 		return rset
 
 	query = classmethod(query)
+
+	def escape_string(cls, s):
+		conn = cls.__mysql_connect()
+
+		return conn.escape_string(s)
+
+	escape_string = classmethod(escape_string)
 
 	def __sql_query_mysql(cls, query):
 		conn = cls.__mysql_connect()

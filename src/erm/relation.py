@@ -13,17 +13,34 @@ class relation:
 		self.__fk_map = keys
 		self.__outer_join = outer_join
 
+		self.__missing_lock = False
+		self.__to_be_locked = False
+
+	def missing_lock(self):
+		self.__missing_lock = True
+
+	def to_lock(self):
+		self.__to_be_locked = True
+
+	def is_to_be_locked(self):
+		return self.__to_be_locked
+
 	def get_cond(self, act_str):
-		if isinstance(self.__cond, dict):
-			return self.__cond.get(act_str)
-		else:
-			return self.__cond
+		if self.__missing_lock:
+			return None
+
+		from lib import misc
+
+		return misc.get_cond(self.__cond, act_str)
 
 	def is_outer_join(self):
 		return self.__outer_join is not None
 
 	def get_outer_join(self):
 		return self.__outer_join
+
+	def get_table(self):
+		return self.__table
 
 	def get_alias(self):
 		return self.__alias is None and self.__table or self.__alias
@@ -50,6 +67,3 @@ class relation:
 
 	def get_colref(self, key):
 		return "%s.%s" % (self.get_alias(), self.get_realkey(key))
-
-	def handle_unknown_key(self, ent, key, act_str, join_cond):
-		return self

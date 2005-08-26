@@ -28,8 +28,10 @@ class ref_group:
 		return self.__rel_map.has_key(key)
 
 	def has_fk(self, key):
-		# key exists _and_ is not None
-		return self.__rel_map.get(key) is not None
+		# key exists _and_ is not a pk_submit_relation
+		rel = self.__rel_map.get(key)
+
+		return rel is not None and not rel.is_outer_join()
 
 	def join_group(self, other):
 		self.__joins.extend(other.__joins)
@@ -47,33 +49,65 @@ class ref_group:
 		for key in rel.get_keys():
 			self.__rel_map[key] = None
 
-	def __get_join_cond(self, rel, act_str):
+	def __get_join_cond(self, rel):
 		join_cond = []
 		for key in rel.get_keys():
-			if self.__rel_map[key] is None:
-				self.__rel_map[key] = rel.handle_unknown_key(self.__ent, key,
-						act_str, join_cond)
-				#from error.error import error
-				#error(error.debug, 'handling unknown key', 'key: %s, ' \
-				#		'rel_map: %s, join_cond: %s' % (key, self.__rel_map,
-				#			join_cond))
+			colref = None
+
+			other_rel = self.__rel_map.get(key)
+			if other_rel is None:
+				self.__rel_map[key] = rel
+				
+				if rel.is_outer_join():
+					# Here we check if the key is locked. We always add the
+					# outer join relations to the reference groups last. Thus
+					# all other relations will be evaluated first and the key
+					# would already point to another relation, if another
+					# relation for this key existed.
+					attr = self.__ent.get_attr_nocheck(key)
+
+					if attr.is_locked() or attr.is_to_be_locked():
+						# exclude all matches for this key (this condition is
+						# used in a LEFT JOIN ... WHERE pk0 IS NULL)
+
+						# TODO: move this to the search condition string.
+						# Immediate values in the join condition are not
+						# supported by all SQL databases
+						colref = "'%s'" % attr.sql_str()
+
+						if attr.is_to_be_locked():
+							rel.to_lock()
+					else:
+						# TODO: missing lock, prevent use of search condition
+						# for this relation
+						rel.missing_lock()
+
+				from error.error import error
+				error(error.debug, 'handling unknown key', 'key: %s, ' \
+						'rel_map: %s, join_cond: %s' % (key, self.__rel_map,
+							join_cond))
 			else:
-				#error(error.debug, 'adding join condition', 'key: %s, ' \
-				#		'rel_map: %s' % (key, self.__rel_map))
+				from error.error import error
+				error(error.debug, 'adding join condition', 'key: %s, ' \
+						'rel_map: %s' % (key, self.__rel_map))
+
+				colref = other_rel.get_colref(key)
+
+			if colref is not None:
 				join_cond.append("\n      %s = %s" % (rel.get_colref(key),
-						self.__rel_map[key].get_colref(key)))
+						colref))
 
 		if len(join_cond) > 0:
 			return " ON " + " AND ".join(join_cond)
 		else:
 			return ""
 
-	def get_colref(self, key, rel):
-		# TODO: what was this code for???
-		if rel is not None:
-			return rel.get_colref(key)
+	#def get_colref(self, key):
+	#	# TODO: what was this code for???
+	#	if rel is not None:
+	#		return rel.get_colref(key)
 
-		return '%s.%s' % (self.__ent.get_name(), key)
+	#	return '%s.%s' % (self.__ent.get_name(), key)
 
 	def generate_keylist(self, act_str):
 		# generate table references
@@ -81,7 +115,7 @@ class ref_group:
 		table_ref_vec = []
 		for rel in self.__joins:
 			table_ref_vec.append(rel.get_table_spec() + \
-					self.__get_join_cond(rel, act_str))
+					self.__get_join_cond(rel))
 
 		table_ref = "\n   JOIN ".join(table_ref_vec)
 
@@ -98,49 +132,104 @@ class ref_group:
 			#table_ref_vec = []
 			#for rel in self.__outer_joins:
 			#	table_ref_vec.append(rel.get_table_spec() + \
-			#			self.__get_join_cond(rel, act_str))
+			#			self.__get_join_cond(rel))
 
 			#table_ref += "\n   JOIN ".join(table_ref_vec)
 
-			table_ref = self.__outer_joins[0].get_table_spec()
+			rel = self.__outer_joins[0]
+
+			# make sure the relation is registerated in the rel_map, but
+			# discard the join condition
+			self.__get_join_cond(rel)
+
+			table_ref = rel.get_table_spec()
 		else:
 			for rel in self.__outer_joins:
 				table_ref += "\n   " + rel.get_outer_join() + " JOIN " + \
 					rel.get_table_spec() + \
-					self.__get_join_cond(rel, act_str)
+					self.__get_join_cond(rel)
 
 		# generate search condition
 
-		search_cond = []
-		for rel in self.__joins + self.__outer_joins:
-			cond_str = rel.get_cond(act_str)
-			if cond_str is not None:
-				search_cond.append('(%s)' % self.__substitute_vars(cond_str))
-
-		condition = self.__ent.get_condition()
-		if condition.has_key(act_str):
-			search_cond.append('(%s)' % \
-					self.__substitute_vars(condition[act_str]))
-
 		missing_lock = False
-		to_lock_vec = []
+		missing_pk_lock = False
+		pk_set = self.__ent.get_pk_set()
+		#non_rel_missing_lock = False
 		lock_cond = []
 		to_lock_cond = []
+		to_lock_vec = []
 		for key, rel in self.__rel_map.iteritems():
+			from error.error import error
+			error(error.debug, 'getting lock condition', 'key: %s, rel: %s' \
+					% (key, rel))
+
 			attr = self.__ent.get_attr_nocheck(key)
 
 			if attr.is_locked():
-				lock_cond.append("%s = '%s'" % (self.get_colref(key, rel),
-						attr.sql_str()))
+				# TODO: pk_submit_relation should probably do something
+				# different
+				if not rel.is_outer_join() or len(self.__joins) == 0:
+					lock_cond.append("%s = '%s'" % (rel.get_colref(key),
+							attr.sql_str()))
 			elif attr.is_to_be_locked():
 				to_lock_vec.append(key)
-				to_lock_cond.append("%s = '%s'" % \
-						(self.get_colref(key, rel), attr.sql_str()))
-			else:
-				if len(self.__joins) == 0:
-					return True
 
-				missing_lock = True
+				if not rel.is_outer_join() or len(self.__joins) == 0:
+					to_lock_cond.append("%s = '%s'" % \
+							(rel.get_colref(key), attr.sql_str()))
+			else:
+				if attr.perm(act_str):
+					missing_lock = True
+
+				if key in pk_set:
+					missing_pk_lock = True
+
+				if len(self.__joins) == 0:
+					return missing_lock, missing_pk_lock
+
+				#if rel.is_outer_join():
+				#	non_rel_missing_lock = True
+
+		search_cond = []
+		to_lock_search_cond = []
+		for rel in self.__joins + self.__outer_joins:
+			cond_str = rel.get_cond(act_str)
+			if cond_str is not None:
+				cond_str = '(%s)' % self.__substitute_vars(cond_str)
+
+				if act_str == 'edit' and rel.is_outer_join() and \
+						rel.get_table() == self.__ent.get_name():
+					if not self.__ent.pks_locked():
+						continue
+
+					cond_str = '(%s OR (%s))' % (cond_str,
+							self.__ent.get_attr_sql_pk_alias(rel.get_alias()))
+
+				if len(self.__joins) == 0:
+					cond_str = 'NOT ' + cond_str
+
+				if rel.is_to_be_locked():
+					# If we fail, simply omit the to_lock_search_cond in the
+					# second query. This is a nasty trick that will allow us to
+					# get our reference keys even though the join condition is
+					# wrong. This will only work if the user interface behaves
+					# nicely. If both the non-relational and the relational
+					# keys are wrong, we have a problem (because invalid
+					# relational keys will be conceived as correct)
+					#
+					# Or no? Maybe this is not such a nasty trick after all.
+					# The outer joins are easily controlled by the search
+					# condition. Omitting it will have the same effect as if we
+					# had not supplied the outer join at all. An outer join
+					# will never give additional results. There can only be
+					# fewer if the IS NULL condition is used.
+					to_lock_search_cond.append(cond_str)
+				else:
+					search_cond.append(cond_str)
+
+		condition = self.__ent.get_condition(act_str)
+		if condition is not None:
+			search_cond.append('(%s)' % self.__substitute_vars(condition))
 
 		# generate sort order specification
 
@@ -172,7 +261,8 @@ class ref_group:
 		# execute query
 
 		res_ok, rset = self.__query_if(len(self.__joins), col_spec,
-				table_ref, search_cond, lock_cond, to_lock_cond, sort_spec)
+				table_ref, search_cond + to_lock_search_cond + lock_cond + \
+				to_lock_cond, sort_spec)
 
 		if len(to_lock_vec) != 0:
 			if res_ok:
@@ -189,12 +279,14 @@ class ref_group:
 					self.__ent.get_attr_nocheck(key).invalid_key()
 
 				missing_lock = True
+				if key in pk_set:
+					missing_pk_lock = True
 
 				if len(self.__joins) == 0:
 					return True
 
 				res_ok, rset = self.__query_if(len(self.__joins),
-						col_spec, table_ref, search_cond, lock_cond, [],
+						col_spec, table_ref, search_cond + lock_cond,
 						sort_spec)
 
 		# It's also possible that there are simply no valid entries available.
@@ -202,35 +294,54 @@ class ref_group:
 		# execute this action in the first place.
 		if not res_ok:
 			if missing_lock:
-				self.__key_map = dict(zip(key_vec, len(key_vec)*[[]]))
-
-				from error.no_valid_keys import no_valid_keys
-				raise no_valid_keys()
+				pass
+				#self.__key_map = dict(zip(key_vec, len(key_vec)*[[]]))
 			else:
+				# ???
 				# This can happen if user tampers with locked parameters or if
 				# the user interface is buggy and changes locked parameters.
 				from error.error import error
 				from txt import errmsg
-				raise error(error.fail, errmsg.invalid_key)
+				error(error.fail, errmsg.invalid_key, 'res_ok: %s, ' \
+						'missing_lock: %s' % (res_ok, missing_lock))
+
+			from error.no_valid_keys import no_valid_keys
+			raise no_valid_keys()
 
 		if len(self.__joins) > 0:
 			self.__key_map = dict(zip(key_vec, zip(*rset)))
 
-		from error.error import error
-		error(error.debug, 'keylist', 'missing_lock: %s, key_map: %s' % \
-					(missing_lock, self.__key_map))
-
-		error(error.debug, 'after keylist')
-
-		return missing_lock
+		return (missing_lock, missing_pk_lock)
 
 	def __substitute_vars(self, s):
 		import re
 
-		return re.sub(r'\$([A-Za-z0-9_]*)', self.__session_val, s)
+		return re.sub(r'\$([A-Za-z_][A-Za-z0-9_]*)(\.[A-Za-z_][A-Za-z0-9_]*)?',
+				self.__session_val, s)
 
 	def __session_val(self, match):
+		if match.group(2) is not None:
+			varname = match.group(2)[1:]
+			ent_str = match.group(1)
+
+			from helper import get_entity
+			entity = get_entity(ent_str, self.__session,
+					self.__ent.get_globals())
+
+			val = entity.magic_var(varname)
+			if val is None:
+				from error.error import error
+				raise error(error.error, 'Invalid magic variable',
+						'entity: %s, varname: %s' % (ent_str, varname))
+
+			return val
+
 		varname = match.group(1)
+
+		val = self.__ent.magic_var(varname)
+		if val is not None:
+			return val
+
 		if not self.__session.has_key(varname):
 			# this will evaluate all comparisons to NULL, i.e. false
 			return 'NULL'
@@ -242,16 +353,17 @@ class ref_group:
 					"SQL condition must be strings",
 					"variable: %s, type: %s" % (varname, type(val)))
 
-		return val
+		from lib.db_iface import db_iface
 
-	def __query_if(self, joins_len, col_spec, table_ref, search_cond,
-			lock_cond, to_lock_cond, sort_spec):
+		return "'%s'" % db_iface.escape_string(val)
+
+	def __query_if(self, joins_len, col_spec, table_ref, search_cond, sort_spec):
 		if joins_len == 0:
-			rset = self.__query('*', table_ref, lock_cond + to_lock_cond)
+			rset = self.__query('*', table_ref, search_cond)
 			res_ok = len(rset) == 0
 		else:
 			rset = self.__query(col_spec, table_ref,
-					search_cond + lock_cond + to_lock_cond, sort_spec)
+					search_cond, sort_spec)
 			res_ok = len(rset) != 0
 
 		return (res_ok, rset)

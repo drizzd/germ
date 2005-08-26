@@ -15,37 +15,63 @@ from attr.bool import *
 
 class gamer(ent_table):
 	def __init__(self):
+		from lib.chk import greater_equal
+
 		ent_table.__init__(self, attributes = [
-			('party', string(label.party, perm.submit, None, 10)),
-			('username', string(label.username, perm.submit, None, 10)),
-			('seat', int(label.seat, perm.edit, 0)),
-			('paid', bool(label.paid, perm.view, 0))
+			('party', string(label.party, perm.submit, '', 10)),
+			('username', string(label.username, perm.submit, '', 10)),
+			('seat', int(label.seat, perm.edit, 0, 8, [greater_equal(0)])),
+			('paid', bool(label.paid, perm.edit, 0))
 			],
 			primary_keys = [ 'party', 'username' ],
 			relations = [
 				relation(
 			table =	'users',
 			keys = {	'username':	'username' },
-			cond = "users.username = '$userid'" ),
+			cond = {
+				'edit':
+					"(users.username = $userid AND " \
+						"(gamer.paid = 1 OR $users.rank > 1)) OR " \
+					"($users.rank > 1 AND users.rank < $users.rank)",
+				'submit':
+					"users.username = $userid OR " \
+					"($users.rank > 1 AND users.rank < $users.rank)",
+				'delete':
+					"users.username = $userid OR " \
+					"($users.rank > 1 AND users.rank < $users.rank)" }),
 				relation(
 			table =	'party',
-			keys = {	'party':		'name' },
-			# party has to be in registration phase
-			cond = {
-				'submit':	'party.status = 1 OR users.rank > 1',
-				'edit':		'(party.status = 1 AND gamer.paid = 1) ' \
-							'OR users.rank > 1'})
+			keys = {	'party':	'name' },
+			cond = {		# party has to be in registration phase
+				'submit':	"party.status = 1 OR $users.rank > 1",
+				'edit':		"party.status = 1 OR $users.rank > 1" }),
+				relation(
+			table = 'gamer',
+			alias = 'haspaid',
+			keys = {	'party':	'party',
+						'username':	'username' },
+			cond = {	# make sure user can not change the 'paid' field
+				'edit':	"$users.rank > 1 OR gamer.paid = haspaid.paid" }),
+				relation(
+			table = 'gamer',
+			alias = 'seats',
+			keys = {	'seat':	'seat' },
+			cond = {	'edit':	"seats.seat IS NULL OR seats.seat = '0'"	},
+			outer_join = "LEFT")
 				],
 			item_txt = {
 				'edit': {
-					'en': 'My Parties',
-					'de': 'Meine Anmeldung' },
+					'en': 'Joined Parties',
+					'de': 'Anmeldung' },
 				'submit': {
 					'en': 'Join Party',
-					'de': 'Anmeldung' },
+					'de': 'Anmelden' },
 				'delete': {
 					'en': 'Cancel Party',
-					'de': 'Abmeldung' } },
+					'de': 'Abmelden' },
+				'view': {
+					'en': 'Gamers',
+					'de': 'Spieler' } },
 			action_txt = {
 				'submit': {
 					'en': 'register',

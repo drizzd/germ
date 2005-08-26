@@ -14,10 +14,10 @@ from attr.string import *
 class team(ent_table):
 	def __init__(self):
 		ent_table.__init__(self, attributes = [
-			('party', string(label.party, perm.submit, None, 10)),
-			('tourney', string(label.tourney, perm.submit, None, 32)),
+			('party', string(label.party, perm.submit, '', 10)),
+			('tourney', string(label.tourney, perm.submit, '', 32)),
 			('name', string(label.team, perm.submit, None, 32)),
-			('leader', string(label.leader, perm.submit, None, 10)),
+			('leader', string(label.leader, perm.all, '', 10))
 			],
 			primary_keys = [ 'party', 'tourney', 'name' ],
 			relations = [
@@ -27,18 +27,27 @@ class team(ent_table):
 			keys = {	'party':	'party',
 						'tourney':	'name' },
 						# make sure tournament is in preparation phase
-			cond = {	'submit':	"tn.phase = '2'",
-						'edit':		"tn.phase = '2'" } ),
+			cond = {	'submit':	"tn.phase = '1'" } ),
 				relation(
 			table = 'gamer',
 			keys = {	'party':	'party',
 						'leader':	'username' },
-			cond = {	'submit':	"gamer.username = '$userid'" } ),
+			cond = {	'submit':	"gamer.username = $userid" } ),
 				relation(
 			table =	'users',
+			alias = 'leader',
 			keys = {	'leader':	'username' },
 						# make sure user has paid
-			cond = {	'submit':	"gamer.paid = TRUE OR users.rank > 1" } ),
+			cond = {	'submit':	"gamer.paid = TRUE OR leader.rank > 1" } ),
+				relation(
+			table = 'team_members',
+			alias = 'tm',
+			keys = {	'party':	'party',
+						'name':		'team',
+						'leader':	'username' },
+			cond = {
+				'edit':		"tm.party IS NOT NULL OR leader.username = $userid" },
+			outer_join = "LEFT" ),
 				relation(
 			table =	'team',
 			alias =	'lt',
@@ -47,8 +56,15 @@ class team(ent_table):
 						'leader':	'leader' },
 						# make sure user is not a leader of another team
 						# already
-			cond = {	'submit':	"lt.leader IS NULL OR team.name = lt.name",
-						'edit':		"lt.leader IS NULL OR team.name = lt.name"
-					},
+			cond = {	'submit':	"lt.leader IS NULL" },
 			outer_join =	"LEFT" )
-				])
+				],
+			item_txt = {
+				'edit': {
+					'en':	'Team Settings',
+					'de':	'Teameinstellungen' },
+				'submit': {
+					'en':	'Form New Team',
+					'de':	'Team bilden' },
+				'view': {
+					'en':	'Teams' } } )

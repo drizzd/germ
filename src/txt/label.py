@@ -79,6 +79,10 @@ leader = {
 	'en': 'Leader',
 	'de': 'Leiter' }
 
+active = {
+	'en': 'active',
+	'de': 'aktiv' }
+
 genre = {
 	'en': 'Genre' }
 

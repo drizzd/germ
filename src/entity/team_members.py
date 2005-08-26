@@ -4,20 +4,22 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from erm.ent_table import *
-from erm.relation import *
+from erm.ent_table import ent_table
+from erm.relation import relation
 
 from txt import label
 from attr.attribute import perm
-from attr.string import *
+from attr.string import string
+from attr.bool import bool
 
 class team_members(ent_table):
 	def __init__(self):
 		ent_table.__init__(self, attributes = [
-			('party', string(label.party, perm.submit, None, 10)),
-			('username', string(label.username, perm.submit, None, 10)),
-			('tourney', string(label.tourney, perm.submit, None, 32)),
-			('team', string(label.team, perm.all, None, 32))
+			('party', string(label.party, perm.submit, '', 10)),
+			('username', string(label.username, perm.submit, '', 10)),
+			('tourney', string(label.tourney, perm.submit, '', 32)),
+			('team', string(label.team, perm.submit, '', 32)),
+			('active', bool(label.active, perm.edit, 0))
 			],
 			primary_keys = [ 'party', 'username', 'tourney' ],
 			relations = [
@@ -26,22 +28,22 @@ class team_members(ent_table):
 			keys = {	'party':		'party',
 						'username':	'username' },
 						# users can only subscribe themselves
-			cond = {	'submit':	"gamer.username = '$userid'" } ),
+			cond = {	'submit':	"gamer.username = $userid" } ),
 				relation(
 			table =	'team',
-			keys = {	'party':		'party',
+			keys = {	'party':	'party',
 						'tourney':	'tourney',
 						'team':		'name' },
 						# only the team leader can change member settings
-			cond = {	'edit':	"team.leader = '$userid'" } ),
+			cond = {	'edit':		"team.leader = $userid" } ),
 				relation(
 			table =	'tourney',
 			alias =	'tn',
 			keys = {	'party':		'party',
 						'tourney':	'name' },
 						# make sure tournament is in preparation phase
-			cond = {	'submit':	"tn.phase = '2'",
-						'edit':		"tn.phase = '2'" } ),
+			cond = {	'submit':	"tn.phase = '1'",
+						'edit':		"tn.phase = '1'" } ),
 				relation(
 			table =	'users',
 			keys = {	'username':		'username' },
@@ -57,4 +59,14 @@ class team_members(ent_table):
 						# already
 			cond = {	'submit':	"lt.leader IS NULL OR team.name = lt.name" },
 			outer_join =	"LEFT" )
-				])
+				],
+			item_txt = {
+				'edit': {
+					'en': 'Teammember Settings',
+					'de': 'Teammitglieder Einstellengen' },
+				'submit': {
+					'en': 'Join Team',
+					'de': 'Team beitreten' },
+				'view': {
+					'en': 'Teammembers',
+					'de': 'Teammitglieder' } } )

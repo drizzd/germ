@@ -14,7 +14,7 @@ class int(attribute):
 		attribute.__init__(self, label, perm, default, chk_func_vec)
 		self.__length = length
 
-	def sql_str(self):
+	def _sql_str(self):
 		return str(self._val)
 
 	def sql_type(self):

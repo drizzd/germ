@@ -12,9 +12,10 @@ class ent_table(entity):
 	def __init__(self, attributes, primary_keys, relations = [],
 			condition = {}, item_txt = {}, action_txt = misc.action,
 			action_report = misc.action_report, perm = {}, pre = {},
-			post = {}):
+			post = {}, magic_var = {}):
 		entity.__init__(self, attributes, primary_keys, relations, condition,
-				item_txt, action_txt, action_report, perm, pre, post)
+				item_txt, action_txt, action_report, perm, pre, post,
+				magic_var)
 
 	def do_accept(self, action):
 		action.visit_table(self)
@@ -50,7 +51,9 @@ class ent_table(entity):
 	def fill_pk(self):
 		# in order to fill the table with values we need an entry, identified
 		# by its primary key
-		self._require_pk_locks()
+		if not self.pks_locked():
+			from error.missing_pk_lock import missing_pk_lock
+			raise missing_pk_lock()
 
 		from lib.db_iface import db_iface
 

@@ -4,11 +4,26 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
+from mod_python import apache
+
+def convert_html(text):
+	import re
+
+	text = re.sub(r'``', '"', text)
+	text = re.sub(r'\'\'', '"', text)
+	text = re.sub(r'"s', '&szlig;', text)
+	text = re.sub(r'"([A-Za-z])', r'&\1uml;', text)
+
+	return text
+
 def handler(req):
 	from log_file_apache import log_file_apache
 	from error.error import error
 
 	error.log_file = log_file_apache(req)
+
+	from lib import misc
+	misc.txt_lang_convert.append(convert_html)
 
 	try:
 		import cf
@@ -65,10 +80,10 @@ def handler(req):
 
 		content = ''
 		if p_action is not None:
-			ret = get_content(p_entity, p_action, form, session)
+			ret = get_content(p_entity, p_action, form, session, req)
 
-			if isinstance(ret, error):
-				return boil_out(req, e)
+			if isinstance(ret, type(apache.OK)):
+				return ret
 
 			content = ret
 
@@ -92,7 +107,6 @@ def handler(req):
 		from boil_out import boil_out
 		return boil_out(req, e)
 
-	from mod_python import apache
 	return apache.OK
 
 def prevent_caching(req):
@@ -108,7 +122,7 @@ def parm_val(parm):
 	else:
 		return util.StringField(parm.value)
 
-def get_content(p_entity, p_action, form, session):
+def get_content(p_entity, p_action, form, session, req):
 	if p_entity is None:
 		raise error(error.fail, "Request for an action without an " + \
 				"entity to act on", "action: %s" % p_action)
@@ -201,7 +215,8 @@ def get_content(p_entity, p_action, form, session):
 	# Note: Always display locked values as disabled form elements
 	# (shouldn't happen for listings)
 
-	content = ''
+	error_str = ''
+	display_errors = True
 
 	from error.error import error
 	prompt_pk_only = False
@@ -225,10 +240,15 @@ def get_content(p_entity, p_action, form, session):
 		from error.perm_denied import perm_denied
 		from error.invalid_parm import invalid_parm
 
-		if not (isinstance(e, do_not_exec) and found_invalid_parm):
-			content += str(e) + "<BR />\n<BR />\n"
+		if (isinstance(e, do_not_exec) or isinstance(e, invalid_parm)) \
+				and (not do_exec or found_invalid_parm):
+			display_errors = False
 
-		if isinstance(e, missing_lock) or isinstance(e, invalid_parm):
+		error_str += str(e) + "<BR />\n<BR />\n"
+
+		if isinstance(e, missing_lock):
+			pass
+		elif isinstance(e, invalid_parm):
 			pass
 		elif isinstance(e, do_not_exec):
 			pass
@@ -239,15 +259,21 @@ def get_content(p_entity, p_action, form, session):
 			error(error.warn, e, "action: %s, entity: %s" % \
 					(p_action, p_entity))
 
-			return content
+			return error_str
 		else:
-			return e
+			from boil_out import boil_out
+			return boil_out(req, e)
 
-	content += print_handler(entity, p_action, prompt_pk_only)
+	content, errortext = print_handler(entity, p_action, prompt_pk_only,
+			display_errors)
+	error_str += errortext
 
 	session.save()
 
 	from error.error import error
 	error(error.debug, 'saving session')
 
-	return content
+	if display_errors:
+		return error_str + content
+	else:
+		return content

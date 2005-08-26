@@ -17,9 +17,9 @@ class auth(ent_virtual):
 
 	def __init__(self):
 		ent_virtual.__init__(self, attributes = [
-			('username', string(label.username, [ 'submit', 'edit' ], None, 10)),
-			(cf.pwd_str + 'old', plain_pwd(label.passwd_old, [ 'edit' ], None, 30)),
-			(cf.pwd_str, plain_pwd(label.passwd, [ 'submit', 'edit' ], None, 30)) ],
+			('username', string(label.username, [ 'submit', 'edit' ], '', 10)),
+			(cf.pwd_str + 'old', plain_pwd(label.passwd_old, [ 'edit' ], '', 30)),
+			(cf.pwd_str, plain_pwd(label.passwd, [ 'submit', 'edit' ], '', 30)) ],
 				primary_keys = [ ],
 				action_txt = {
 					'edit': {
