@@ -1,0 +1,113 @@
+Roughly ordered by precedence and simplicity from high to low.
+
+o Additional privilege features.
+
+  Examples:
+
+  - team/team_members tables need restricted permissions. Only the current team
+    leader should be able to edit records.
+
+  - users privacy. 'view' permission should only be granted for fields as
+    specified in the 'privacy' field.
+
+  Ideas:
+
+  - Implement dynamic attribute permissions. Instead of just passing a list of
+    allowed values, also allow functions to do more elaborate checks.
+    
+    The problem with that is we don't have the reference group construct, so we
+    have to wait for the primary key before we can do any useful checks. This
+    also means we cannot know in advance if there will be any allowed
+    attributes at all (Okay, that may not be too bad).
+
+o Modularization
+
+  - Find a way to to separate germ code, entity specifications and user
+    interface code.
+
+  - Some day it should be possible to cherrypick from available modules and
+    automatically resolve interdependencies.
+    
+    Example (arrows indicate dependencies):
+
+    users
+    `-> news
+    `-> forum
+    `-> party
+        `-> tournament
+	`-> voting
+
+o Show disabled values.
+
+  When editing or submitting, also show attributes we have permission to view
+  even if we do not have permission to edit/submit. Simply disable the
+  elements.
+
+o Attribute Notes.
+
+  Sometimes it may be useful to add notes to the attributes. For example, when
+  we use a password for authentication and we know that it might be transmitted
+  over an insecure line (which it probably will for the hypertext user
+  interface) we should add a note advising the user not to use a valuable
+  password.
+
+o Database
+
+  - Do not try to create tables all the time. Use a special 'init' flag. Maybe
+    only check table consistency only if something goes wrong.
+
+o JavaScript Focus.
+
+  - Automatically focus the first form element (omitting the lock radio
+    button). Or is that annoying?
+
+  - Automatically select the lock radio button if the corresponding form
+    element is edited (onchange="document.to_lockx[myelement].focus() or
+    something like that)
+
+o 'view' tables.
+
+  Their purpose is the combination of different entities and constructed
+  attributes (like age constructed from birthday and current date) to provide
+  customized information.
+
+o File Attribute.
+
+  This attribute allows the system to save and retrieve files.
+
+  Examples:
+
+  - Upload image
+  - Export tournament data in WWCL XML-format.
+
+o Security.
+
+  - Client-side password encryption (using Java/JavaScript?) or use SSL to get
+    some security. Do not use cookies for secure sessions?
+
+o User Interfaces
+
+  - Tcl/Tk user interface
+
+    Would be nice to implement more 'active' elements, like intrusion detection
+    or other 'alert' features.
+
+o Refactor keylist generation algorithm (ref_group.generate_keylist)
+
+  I had a lot of trouble with that one and currently the code is a huge mess.
+  It seems to work now, but there are some parts I find particularly troubling:
+
+  - Do not use constant values in the join condition. MySQL seems to swallow
+    it, but is that valid SQL? We can just as well use the WHERE clause. This
+    would also move the locking condition to one place, which will be much
+    easier to read.
+
+  - Currently we have a special case for the 'edit' action. We try to ignore
+    the entry itself to allow _not_ changing a value. Otherwise the algorithm
+    would think that the value is already used by a different entry.
+    
+    Is there really no more generic way to handle this? For a submit, the entry
+    cannot exist yet anyway, and for a view we don't change any values...
+
+  - We also have a special case if the reference group has only outer joins.
+    Maybe we could also avoid that by joining with an empty table or something.
