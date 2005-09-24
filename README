@@ -1,23 +1,22 @@
-Generic Entity Relationship Model
+Generic Entity Relationship Model (GERM)
 
-This set of python classes is meant to provide a generic way of dealing with
-the physical representation of an entity relationship (ER) model. It allows the
-definition of attributes, entities and relations and will handle them
-appropriately. Implementation of the following actions is currently planned:
-list, view, edit, delete and submit. They correspond to the SQL commands
-SELECT, SELECT ... WHERE, UPDATE, DELETE and INSERT.
+This system allows the definition of attributes, entities and relations as used
+in entity-relationship (ER) models. It will then handle input and
+representation of data appropriately.
 
-It also provides a framework for the implementation of a user interface that
-will then be able to trigger various actions on specific entities. An HTML
-interface using HTTP to execute actions is going to be available.
+The following actions are currently implemented: list, view, edit, delete and
+submit. They correspond to the SQL commands SELECT, SELECT ... WHERE, UPDATE,
+DELETE and INSERT.
+
+The system also provides a framework for the implementation of a user interface
+that will then be able to trigger various actions on specific entities. An HTTP
+interface using HTML to represent and input data is available.
 
 Furthermore, GERM provides an integrated privilege system. Apart from security
 reasons this is also necessary for a complete constraint specification and to
-ensure integrity of the system. The user interface should try not to provide
-any illegal actions to spare the user annoying 'permission denied' errors. This
-is much easier to do with a permission check for specific actions than by an
-analysis of the potentially complex relational conditions. The idea is to hide
-information that's irrelevant to the user.
+ensure integrity of the data. The user interface should try not to provide any
+illegal actions to spare the user annoying 'permission denied' errors. The idea
+is to hide information that's irrelevant to the user.
 
 Consider the following example of a tournament planning system:
 
@@ -28,15 +27,65 @@ instance, the system should prevent the user from joining a team if he is
 already a member of a team that partakes in the same tournament. Furthermore,
 the limit for the number of team members must not be exceeded. Also, it should
 not be possible to join a team if the tournament has already started or if it
-is already finished. Also, the system might want to check that the user has
-paid the entrance fee before allowing to join a team.
+is already finished. The system might want to check that the user has paid the
+entrance fee before allowing to join a team, etc.
 
 Each of these conditions can easily be ensured by defining the appropriate
-relations. Using this information, however, to determine if a menu entry should
-be made available to the user depending on wether or not the user is currently
-able to join _any_ team at all, is quite time-consuming. Therefore, I recommend
-using the privilege system to provide for a crude outline of the user's current
-possibilities.
+relations and constraints. This information can then be used to determine if a
+menu entry should be made available to the user depending on wether or not the
+user is currently able to join _any_ team at all.
 
 
-Clemens Buchacher, 2005-03-19
+o Programming Language: Python 2.3
+ 
+o Libraries: Python DB Libraries, Apache mod-python (for HTTP user interface),
+  Tcl/Tk (for Tcl/Tk user interface)
+
+o Databases: Currently, only MySQL, any with Python database API support in the
+  future
+
+o OS platforms: Any supported by Python and the required libraries
+
+o Features:
+
+  - Ensures data consistency by resolving relations and constraints.
+  - Generates appropriate input forms.
+  - Object-oriented implementation to be easily extensible and flexible.
+  - Separates data related and user interface related (i.e., data input and
+    output) code.
+  - Seperates generic data related code (like dealing with relations,
+    contraints, permission) and code related to specific data (like the
+    generation of games for a tournament).
+
+o Technical Problems:
+
+  - Handling all data in a generic way and still provide all kinds of possible
+    requirements to complex data structures.
+  - Providing extensibility and flexibility for the programmer while still
+    being easy to use and adapt to the needs of an end user.
+
+o Solution specific to a particular web site:
+
+  Even though this system was designed with a particular application in mind
+  (i.e. a LAN Party and Tournament Planning System), it was not intended to be
+  specific to this use.
+
+o Services:
+
+  I plan to host a demonstration of the system. The basic features of the
+  system are implemented and I have a testing application running on my
+  machine.
+  
+  I plan to provide a forum for development of the system.
+
+o Differences to other CMSs
+
+  GERM is really more of a library than it is a complete system. It needs a
+  rather low-level description (essentially, an entity-relationship model) of
+  the data it is supposed to manage. It has many more possible uses than just a
+  news or message board. I even consider using it for an accounting program.
+  
+  Other CMSs also seem to be restricted to the Webserver/Browser environment.
+  To GERM, that's just one possible user interface.
+
+Clemens Buchacher, 2005-08-26
