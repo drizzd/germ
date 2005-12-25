@@ -1,5 +1,9 @@
 Roughly ordered by precedence and simplicity from high to low.
 
+o Add Distutils support
+
+o use CGI instead of apache-mod-python
+
 o Additional privilege features.
 
   Examples:
@@ -84,6 +88,8 @@ o Security.
 
   - Client-side password encryption (using Java/JavaScript?) or use SSL to get
     some security. Do not use cookies for secure sessions?
+
+  - Check for availability of cookies. Use URL encoded session data?
 
 o User Interfaces
 
