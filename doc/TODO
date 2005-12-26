@@ -4,6 +4,9 @@ o Add Distutils support
 
 o use CGI instead of apache-mod-python
 
+o Optionally hide items if the user is not privileged to use them and present
+  the user with a login screen instead of permission denied message.
+
 o Additional privilege features.
 
   Examples:
