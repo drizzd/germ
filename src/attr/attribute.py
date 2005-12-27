@@ -4,7 +4,7 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from txt import errmsg
+from germ.txt import errmsg
 
 class perm:
 	all = [ 'view', 'edit', 'submit' ]
@@ -42,13 +42,13 @@ class attribute:
 		return dup
 
 	def label(self):
-		from lib import misc
+		from germ.lib import misc
 
 		return misc.txt_lang(self.__label)
 
 	def to_lock(self):
 		if not self.is_set():
-			from error.error import error
+			from germ.error.error import error
 			raise error(error.fail, errmsg.tried_locking_unset_attr)
 		else:
 			self.__to_lock = True
@@ -58,7 +58,7 @@ class attribute:
 
 	def lock(self):
 		if not self.is_set():
-			from error.error import error
+			from germ.error.error import error
 			raise error(error.fail, errmsg.tried_locking_unset_attr)
 		else:
 			self.__locked = True
@@ -73,7 +73,7 @@ class attribute:
 		for chk_func in self.__chk_func_vec:
 			res = chk_func(val)
 
-			from error.error import error
+			from germ.error.error import error
 			if isinstance(res, error):
 				self._error(res)
 
@@ -92,27 +92,27 @@ class attribute:
 		if self.__default is None:
 			return
 
-		from lib.misc import call_if
+		from germ.lib.misc import call_if
 		self.set(call_if(self.__default))
 
 	def sql_type(self):
-		from error.error import error
+		from germ.error.error import error
 		raise error(error.fail, errmsg.abstract_func)
 
 	def sql_str(self):
-		from lib.db_iface import db_iface
+		from germ.lib.db_iface import db_iface
 
 		string = self._sql_str()
 
 		if string is None:
-			from error.error import error
+			from germ.error.error import error
 			raise error(error.error, 'Invalid SQL String', 'attr: %s' % \
 					self.__class__.__name__)
 
 		return db_iface.escape_string(string)
 
 	def _sql_str(self):
-		from error.error import error
+		from germ.error.error import error
 		raise error(error.fail, errmsg.abstract_func)
 
 	def perm(self, action):
@@ -122,23 +122,23 @@ class attribute:
 		return self._val
 
 	def accept(self, attr_act):
-		from error.error import error
+		from germ.error.error import error
 		raise error(error.fail, errmsg.abstract_func)
 
 	def invalid_key(self):
-		from error.invalid_key import invalid_key
+		from germ.error.invalid_key import invalid_key
 		self.__error_vec.append(invalid_key())
 
 	def _error(self, e):
 		self.__error_vec.append(e)
 
-		from error.invalid_parm import invalid_parm
+		from germ.error.invalid_parm import invalid_parm
 		raise invalid_parm()
 
 	def get_error(self):
 		return self.__error_vec
 
 	def _format_error(self):
-		from error.error import error
+		from germ.error.error import error
 		raise error(error.fail, "Parameter has invalid format", "type: %s" % \
 			self.__class__.__name__)

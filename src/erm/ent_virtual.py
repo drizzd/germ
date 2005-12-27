@@ -7,7 +7,7 @@
 from entity import *
 
 class ent_virtual(entity):
-	from txt import misc
+	from germ.txt import misc
 
 	def __init__(self, attributes, primary_keys, relations = [],
 			condition = {}, item_txt = {}, action_txt = misc.action,

@@ -20,16 +20,19 @@ class error(Exception):
 		if self.log_file is None:
 			return
 
-		for line in str(self).split('\n'):
+		for line in self.txt('en').split('\n'):
 			self.log_file.write(line, self.__lvl)
 
 		self.log_file.flush()
 
 	def __str__(self):
-		from lib import misc
+		return self.txt()
+
+	def txt(self, lang = None):
+		from germ.lib import misc
 
 		msg = isinstance(self.__msg, dict) and \
-				misc.txt_lang(self.__msg) or self.__msg
+				misc.txt_lang(self.__msg, lang) or self.__msg
 
 		if self.__add_info is None:
 			add_info = ''
@@ -39,14 +42,14 @@ class error(Exception):
 		return "%s%s" % (msg, add_info)
 
 	def __repr__(self):
-		return self.__str__()
+		return self.txt()
 
 	def lvl(self):
 		return self.__lvl
 
-	def lvl_txt(level):
-		from txt.errmsg import error_lvl
-		from lib import misc
+	def lvl_txt(level, lang = None):
+		from germ.txt.errmsg import error_lvl
+		from germ.lib import misc
 
-		return misc.txt_lang(error_lvl[level])
+		return misc.txt_lang(error_lvl[level], lang)
 	lvl_txt = staticmethod(lvl_txt)

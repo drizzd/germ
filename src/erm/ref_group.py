@@ -82,14 +82,14 @@ class ref_group:
 						# for this relation
 						rel.missing_lock()
 
-				from error.error import error
-				error(error.debug, 'handling unknown key', 'key: %s, ' \
-						'rel_map: %s, join_cond: %s' % (key, self.__rel_map,
-							join_cond))
+				#from germ.error.error import error
+				#error(error.debug, 'handling unknown key', 'key: %s, ' \
+				#		'rel_map: %s, join_cond: %s' % (key, self.__rel_map,
+				#			join_cond))
 			else:
-				from error.error import error
-				error(error.debug, 'adding join condition', 'key: %s, ' \
-						'rel_map: %s' % (key, self.__rel_map))
+				#from germ.error.error import error
+				#error(error.debug, 'adding join condition', 'key: %s, ' \
+				#		'rel_map: %s' % (key, self.__rel_map))
 
 				colref = other_rel.get_colref(key)
 
@@ -125,7 +125,7 @@ class ref_group:
 
 			# TODO: find out if this is possible and handle it appropriately
 			if len(self.__outer_joins) > 1:
-				from error.error import error
+				from germ.error.error import error
 				raise error(error.warn, "No inner joins, multiple outer joins",
 						'number of outer joins: %s' % len(self.__outer_joins))
 
@@ -159,9 +159,9 @@ class ref_group:
 		to_lock_cond = []
 		to_lock_vec = []
 		for key, rel in self.__rel_map.iteritems():
-			from error.error import error
-			error(error.debug, 'getting lock condition', 'key: %s, rel: %s' \
-					% (key, rel))
+			#from germ.error.error import error
+			#error(error.debug, 'getting lock condition', 'key: %s, rel: %s' \
+			#		% (key, rel))
 
 			attr = self.__ent.get_attr_nocheck(key)
 
@@ -182,10 +182,10 @@ class ref_group:
 					missing_lock = True
 
 				if key in pk_set:
-					missing_pk_lock = True
+					missing_lock = missing_pk_lock = True
 
 				if len(self.__joins) == 0:
-					return missing_lock, missing_pk_lock
+					return (missing_lock, missing_pk_lock)
 
 				#if rel.is_outer_join():
 				#	non_rel_missing_lock = True
@@ -253,7 +253,7 @@ class ref_group:
 
 		col_spec = ", ".join(col_spec_vec)
 
-		#from error.error import error
+		#from germ.error.error import error
 		#error(error.debug, 'constructing search condition', 'search_cond: %s, ' \
 		#		'lock_cond: %s, to_lock_cond: %s' % \
 		#		(search_cond, lock_cond, to_lock_cond))
@@ -278,12 +278,13 @@ class ref_group:
 				for key in to_lock_vec:
 					self.__ent.get_attr_nocheck(key).invalid_key()
 
+					if key in pk_set:
+						missing_pk_lock = True
+
 				missing_lock = True
-				if key in pk_set:
-					missing_pk_lock = True
 
 				if len(self.__joins) == 0:
-					return True
+					return (missing_lock, missing_pk_lock)
 
 				res_ok, rset = self.__query_if(len(self.__joins),
 						col_spec, table_ref, search_cond + lock_cond,
@@ -300,12 +301,14 @@ class ref_group:
 				# ???
 				# This can happen if user tampers with locked parameters or if
 				# the user interface is buggy and changes locked parameters.
-				from error.error import error
-				from txt import errmsg
-				error(error.fail, errmsg.invalid_key, 'res_ok: %s, ' \
-						'missing_lock: %s' % (res_ok, missing_lock))
+				from germ.error.error import error
+				from germ.txt import errmsg
+				raise error(error.fail, errmsg.invalid_key, 'entity: %s, ' \
+						'action: %s, res_ok: %s, missing_lock: %s' % \
+						(self.__ent.get_name(), act_str,
+						res_ok, missing_lock))
 
-			from error.no_valid_keys import no_valid_keys
+			from germ.error.no_valid_keys import no_valid_keys
 			raise no_valid_keys()
 
 		if len(self.__joins) > 0:
@@ -330,7 +333,7 @@ class ref_group:
 
 			val = entity.magic_var(varname)
 			if val is None:
-				from error.error import error
+				from germ.error.error import error
 				raise error(error.error, 'Invalid magic variable',
 						'entity: %s, varname: %s' % (ent_str, varname))
 
@@ -348,12 +351,12 @@ class ref_group:
 
 		val = self.__session[varname]
 		if not isinstance(val, str):
-			from error.error import error
+			from germ.error.error import error
 			raise error(error.fail, "Session variables for use in an " + \
 					"SQL condition must be strings",
 					"variable: %s, type: %s" % (varname, type(val)))
 
-		from lib.db_iface import db_iface
+		from germ.lib.db_iface import db_iface
 
 		return "'%s'" % db_iface.escape_string(val)
 
@@ -382,6 +385,25 @@ class ref_group:
 		sql_query = "SELECT DISTINCT %s\nFROM %s%s%s" % \
 				(col_spec, table_ref, search_str, sort_spec_str)
 
-		from lib.db_iface import db_iface
+		from germ.lib.db_iface import db_iface
+		from _mysql_exceptions import ProgrammingError
+		done = False
+		while not done:
+			try:
+				res = db_iface.query(sql_query)
+			except ProgrammingError, e:
+				table = db_iface.get_missing_table(e)
 
-		return db_iface.query(sql_query)
+				if table is None:
+					import sys
+					exctype, exc, tb = sys.exc_info()
+					raise exctype, exc, tb
+
+				from germ.erm.helper import get_entity
+				entity = get_entity(table, self.__session, self.__ent.get_globals())
+				entity.init()
+				del entity
+			else:
+				done = True
+
+		return res

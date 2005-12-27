@@ -4,8 +4,8 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from error.error import error
-from txt import errmsg
+from germ.error.error import error
+from germ.txt import errmsg
 
 class attr_action:
 	def __init__(self):

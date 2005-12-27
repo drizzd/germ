@@ -4,8 +4,8 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from error.error import error
-from txt import errmsg
+from germ.error.error import error
+from germ.txt import errmsg
 
 class table_action:
 	def __init__(self, act_str, table, fill_table, raise_missing_lock = True,
@@ -31,11 +31,11 @@ class table_action:
 			self._tbl.fill_pk()
 
 		if missing_lock and self.__raise_missing_lock:
-			from error.missing_lock import missing_lock
+			from germ.error.missing_lock import missing_lock
 			raise missing_lock()
 
 		if not do_exec:
-			from error.do_not_exec import do_not_exec
+			from germ.error.do_not_exec import do_not_exec
 			raise do_not_exec()
 
 		# execute pre-action function
@@ -49,6 +49,7 @@ class table_action:
 
 	def __analyze(self):
 		# add primary key relation
+		# TODO: fix this comment
 		# NB: This has to be done _after_ the other reference groups are built
 		# for the reason described in the 'pk_submit_relation' class.
 		# Fortunately this is done in the entity constructor so we don't stand
@@ -58,12 +59,13 @@ class table_action:
 		found_missing_lock = False
 
 		for ref_grp in self._tbl.get_ref_group_vec():
-			missing_lock, missing_pk_lock = ref_grp.generate_keylist(self.__act_str)
+			missing_lock, missing_pk_lock = \
+					ref_grp.generate_keylist(self.__act_str)
 
 			if missing_lock:
 				# If we need the primary key, we have to prompt for PKs only.
 				if self.__fill_table and missing_pk_lock:
-						from error.missing_pk_lock import missing_pk_lock
+						from germ.error.missing_pk_lock import missing_pk_lock
 						raise missing_pk_lock()
 
 				found_missing_lock = True
@@ -99,7 +101,7 @@ class table_action:
 		if sql_query is None:
 			return
 
-		from lib.db_iface import db_iface
+		from germ.lib.db_iface import db_iface
 		rset = db_iface.query(sql_query)
 
 		if self.__save_rset:

@@ -7,7 +7,7 @@
 from mod_python import apache
 
 class log_file_apache:
-	from error.error import error
+	from germ.error.error import error
 
 	ap_log = {
 		error.debug:	apache.APLOG_DEBUG,

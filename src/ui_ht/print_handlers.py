@@ -32,8 +32,8 @@ def get_cell(attr, act_get):
 def print_view(entity, act_str, prompt_pk_only, display_errors):
 	viewtext = ''
 
-	from lib.misc import txt_lang
-	from txt.misc import action_report
+	from germ.lib.misc import txt_lang
+	from germ.txt.misc import action_report
 
 	report = txt_lang(entity.action_report(act_str))
 
@@ -84,7 +84,7 @@ def print_list(entity, act_str, prompt_pk_only, display_errors):
 def print_form(entity, act_str, prompt_pk_only, display_errors):
 	import cf
 	formtext = '<FORM method="GET" action="%s" autocomplete="off">\n' % \
-			('/' + cf.ht_path + '/' + cf.ht_index)
+			cf.ht_index
 
 	# give form again until user has seen all the fields, except for a view
 	if not prompt_pk_only or act_str == 'view':
@@ -111,7 +111,7 @@ def print_form(entity, act_str, prompt_pk_only, display_errors):
 	while len(attr_vec) > 0:
 		group = entity.get_ref_group(attr_vec[0])
 
-		from error.error import error
+		from germ.error.error import error
 		error(error.debug, 'printing attribute', 'aid: %s, group: %s' % \
 				(attr_vec[0], group))
 
@@ -222,7 +222,7 @@ def print_form(entity, act_str, prompt_pk_only, display_errors):
 
 				formtext += '</TD></TR>\n'
 
-	from lib.misc import txt_lang
+	from germ.lib.misc import txt_lang
 
 	formtext += '<TR><TD colspan="2"></TD>' \
 			'<TD><INPUT type="submit" value="%s"></TD>' \
@@ -230,7 +230,7 @@ def print_form(entity, act_str, prompt_pk_only, display_errors):
 
 	formtext += '</TABLE>\n</FORM>'
 
-	from txt import errmsg
+	from germ.txt import errmsg
 
 	errortext = len(error_vec) > 0 and \
 			txt_lang(errmsg.attr_error) + ":<BR />\n" or ''

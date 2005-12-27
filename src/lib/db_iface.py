@@ -8,7 +8,7 @@ import MySQLdb
 import cf
 
 class db_iface:
-	__db_type = cf.db_type
+	__type = cf.db_type
 	__host = cf.db_host
 	__user = cf.db_user
 	__database = cf.db_database
@@ -16,16 +16,16 @@ class db_iface:
 	__conn = None
 
 	def query(cls, query):
-		#from error.error import error
-		#error(error.debug, 'db_iface query', query)
+		from germ.error.error import error
+		error(error.debug, 'db_iface query', query)
 
-		if cls.__db_type == 'mysql':
+		if cls.__type == 'mysql':
 			rset = cls.__sql_query_mysql(query)
 		else:
-			from error.error import error
-			from txt import errmsg
+			from germ.error.error import error
+			from germ.txt import errmsg
 			raise error(error.fail, errmsg.unknown_db_type,
-				'db_type: %s' % db_type)
+				'db_type: %s' % __type)
 
 		return rset
 
@@ -63,3 +63,19 @@ class db_iface:
 		return cls.__conn
 
 	__mysql_connect = classmethod(__mysql_connect)
+
+	def get_missing_table(cls, e):
+		if cls.__type == 'mysql':
+			from MySQLdb.constants.ER import NO_SUCH_TABLE
+
+			if e.args[0] == NO_SUCH_TABLE:
+				import cf, re
+				return re.match("^Table '%s\.([a-z_]*)'" % cf.db_database,
+						e.args[1]).group(1)
+		else:
+			from germ.error.error import error
+			raise error(error.fail, errmsg.unimplemented)
+
+		return None
+
+	get_missing_table = classmethod(get_missing_table)

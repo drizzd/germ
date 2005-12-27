@@ -4,7 +4,7 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from attr.attr_act_get import *
+from germ.attr.attr_act_get import *
 
 class attr_act_view(attr_act_get):
 	def __init__(self):

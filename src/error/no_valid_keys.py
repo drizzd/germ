@@ -8,6 +8,6 @@ from error import error
 
 class no_valid_keys(error):
 	def __init__(self):
-		from txt import errmsg
+		from germ.txt import errmsg
 
 		error.__init__(self, error.notice, errmsg.no_valid_keys, do_log = False)

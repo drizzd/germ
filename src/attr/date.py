@@ -7,14 +7,14 @@
 from attribute import *
 
 class date(attribute):
-	from lib import misc
+	from germ.lib import misc
 
 	def __init__(self, label, perm = [], default = misc.today,
 			chk_func_vec = []):
 		attribute.__init__(self, label, perm, default, chk_func_vec)
 
 	def _sql_str(self):
-		from lib import misc
+		from germ.lib import misc
 
 		return misc.date_str_sql(self._val)
 

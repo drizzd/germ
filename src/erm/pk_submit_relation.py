@@ -6,6 +6,7 @@
 
 from relation import *
 
+# TODO: fix this comment
 # This class is currently unused for the reason described below
 class pk_submit_relation(relation):
 	def __init__(

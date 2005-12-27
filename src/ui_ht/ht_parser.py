@@ -48,10 +48,9 @@ class ht_parser(BaseHTMLProcessor):
 
 		import re
 		import cf
-		from lib.misc import txt_lang
-		text = re.sub('\$text\$', '<A href="/%s/%s?%s">%s</A>' % (
-				cf.ht_path, cf.ht_index,
-				'&'.join(['%s=%s' % attr for attr in item_attrs]),
+		from germ.lib.misc import txt_lang
+		text = re.sub('\$text\$', '<A href="%s?%s">%s</A>' % (
+				cf.ht_index, '&'.join(['%s=%s' % attr for attr in item_attrs]),
 				txt_lang(entity.item_txt(act_str))), text)
 
 		self.pieces.append(text)
@@ -78,7 +77,7 @@ class ht_parser(BaseHTMLProcessor):
 		act_str = attr_map.get('action')
 
 		if ent_str is None or act_str is None:
-			from error.error import error
+			from germ.error.error import error
 			error(error.warn, 'Invalid item', 'entity: %s, action: %s' % \
 					(ent_str, act_str))
 
@@ -88,28 +87,31 @@ class ht_parser(BaseHTMLProcessor):
 			self.__item_stack.append((attrs, entity, act_str))
 
 	def check_item(self, ent_str, act_str):
-		from erm.helper import get_entity
+		from germ.erm.helper import get_entity
 		entity = get_entity(ent_str, self.__session, globals())
-		from erm.helper import get_action
+		from germ.erm.helper import get_action
 		action = get_action(act_str, False)
 
-		from error.error import error
+		from germ.error.error import error
 		try:
 			import cf
 			if not cf.ht_check_items:
-				from error.do_not_exec import do_not_exec
+				from germ.error.do_not_exec import do_not_exec
 				raise do_not_exec()
 
 			entity.accept(action)
 		except error, e:
-			from error.no_valid_keys import no_valid_keys
-			from error.perm_denied import perm_denied
+			from germ.error.no_valid_keys import no_valid_keys
+			from germ.error.perm_denied import perm_denied
 
 			if isinstance(e, no_valid_keys) or isinstance(e, perm_denied):
 				self.__skip_item += 1
 				return None
+			elif e.lvl() > error.notice:
+				import sys
+				exctype, exc, tb = sys.exc_info()
+				raise exctype, exc, tb
 		else:
-			from error.error import error
 			raise error(error.error, 'action succeeded without do_exec',
 				'entity: %s, action: %s' % (ent_str, act_str))
 

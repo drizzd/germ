@@ -4,7 +4,7 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from attr.attr_act_get import *
+from germ.attr.attr_act_get import *
 
 class attr_act_form_field(attr_act_get):
 	def __init__(self):
@@ -42,7 +42,7 @@ class attr_act_form_field(attr_act_get):
 		self.generic_text(attr)
 
 	def visit_choice(self, attr):
-		from lib import misc
+		from germ.lib import misc
 
 		self._text = '<SELECT name="%s"%s>\n' % (self.__parm_name, \
 				self.__lock_str(attr.is_locked()))

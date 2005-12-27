@@ -1,11 +1,15 @@
 Roughly ordered by precedence and simplicity from high to low.
 
-o Add Distutils support
+o Put a demo up on sourceforge
 
-o use CGI instead of apache-mod-python
+o pso seems to be unmaintained. Find an alternative.
+
+o Add Distutils support
 
 o Optionally hide items if the user is not privileged to use them and present
   the user with a login screen instead of permission denied message.
+
+o Find a way to check that all foreign keys have the same type.
 
 o Additional privilege features.
 
@@ -77,6 +81,20 @@ o 'view' tables.
   Their purpose is the combination of different entities and constructed
   attributes (like age constructed from birthday and current date) to provide
   customized information.
+
+o Automatic locking.
+
+  Automatically lock fields with only one choice.
+  
+  Only do this after at least one step to give the user the chance to see that
+  there is only one choice.  Otherwise this could be very confusing (imagine
+  the user locks one field purposely to see which choice he has left for the
+  other fields).
+
+  On the other hand, if the user wants to edit his profile and even though he
+  has only one choice, he still has to choose to edit himself. We can fix this,
+  though, by providing an <ITEM> which already has the primary key set and
+  locked.
 
 o File Attribute.
 

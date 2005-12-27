@@ -26,13 +26,13 @@ def date_str_sql(day):
 	return day.strftime("%Y%m%d")
 
 def date_str_nice(day):
-	from lib import misc
+	from misc import txt_lang
 
 	format = {
 		'de':	"%e. %B %Y",
 		'en':	"%B %e, %Y" }
 
-	return day.strftime(misc.txt_lang(format))
+	return day.strftime(txt_lang(format))
 
 def date_str_iso(day):
 	return day.strftime("%Y-%m-%d")
@@ -56,10 +56,12 @@ def vec_sub(a, b):
 
 txt_lang_convert = []
 
-def txt_lang(txt):
-	import cf
+def txt_lang(txt, lang = None):
+	if lang is None:
+		import cf
+		lang = cf.lang
 
-	text = txt.get(cf.lang, txt['en'])
+	text = txt.get(lang, txt['en'])
 
 	for conv in txt_lang_convert:
 		text = conv(text)
@@ -77,7 +79,7 @@ class var_check:
 
 def get_cond(cond, act_str):
 	if not isinstance(cond, dict):
-		from error.error import error
+		from germ.error.error import error
 		raise error(error.error, 'Invalid condition type',
 				'cond: %s, type: %s' % (cond, type(cond)))
 

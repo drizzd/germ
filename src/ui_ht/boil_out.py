@@ -4,36 +4,37 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-def boil_out(req, e):
+from germ.error.error import error
+
+def boil_out():
 	# TODO: Log errors and inform administrator. Only inform user that this
 	# should not happen and a bug report has been filed. Encourage user to
 	# offer assistance (contact administrator, describe problem).
-	#req.content_type = "text/html"
-	req.write('<B>Unhandled Exception:</B> <I>%s</I>' % e)
 
-	from error.error import error
+	import sys
+	exc = sys.exc_info()[1]
 
-	if isinstance(e, error):
-		req.write(' (%s)' % error.lvl_txt(e.lvl()))
+	print '<B>Unhandled Exception:</B> <I>%s</I>' % exc
+
+	if isinstance(exc, error):
+		print ' (%s)' % error.lvl_txt(exc.lvl())
 	else:
-		error(error.error, str(e))
+		error(error.error, str(exc))
 
-	req.write('<BR />\n')
+	print '<BR />\n'
 
-	from txt import errmsg
-	req.write(errmsg.failure)
+	from germ.txt import errmsg
+	print errmsg.failure
 
-	req.write('<BR />\n')
-
-	req.write("<PRE>")
+	print "<PRE>"
 	import traceback
-	traceback.print_exc(file=req)
-	req.write("</PRE>")
+	import sys
+	traceback.print_exc(file = sys.stdout)
+	print "</PRE>"
 
 	import cf
-	req.write('<BR />\n<HR>System Administrator: ' \
-			'<A href="mailto:%s">%s</A>' % (cf.admin_email, cf.admin_name))
+	print '<HR>System Administrator: ' \
+			'<A href="mailto:%s">%s</A>' % (cf.admin_email, cf.admin_email)
 
-	from mod_python import apache
-	return apache.OK
-
+	from pso.service import OK
+	return OK

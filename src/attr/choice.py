@@ -6,8 +6,8 @@
 
 from attribute import *
 
-from error.error import error
-from txt import errmsg
+from germ.error.error import error
+from germ.txt import errmsg
 
 class choice(attribute):
 	def __init__(self, label, options, perm = [], default = 0,
@@ -35,7 +35,7 @@ class choice(attribute):
 			self._error(e)
 
 	def __str__(self):
-		from lib import misc
+		from germ.lib import misc
 
 		return misc.txt_lang(self.__options[self._val])
 

@@ -8,8 +8,8 @@ def identifier(val):
 	import re
 
 	if re.match(r'^[a-z_][a-z0-9_]*$', val.lower()) is None:
-		from error.error import error
-		from txt import errmsg
+		from germ.error.error import error
+		from germ.txt import errmsg
 		return error(error.fail, errmsg.invalid_identifier)
 
 	return val.lower()
@@ -24,8 +24,8 @@ class greater_equal:
 
 	def __call__(self, val):
 		if not int(val) >= self.__comp:
-			from error.error import error
-			from misc import txt_lang
+			from germ.error.error import error
+			from germ.misc import txt_lang
 
 			return error(error.fail, txt_lang(self.err_msg) % self.__comp)
 

@@ -4,8 +4,9 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from mod_python import apache
+from germ.error.error import error
 
+# move somewhere else
 def convert_html(text):
 	import re
 
@@ -17,22 +18,22 @@ def convert_html(text):
 	return text
 
 def handler(req):
-	from log_file_apache import log_file_apache
-	from error.error import error
+	from log_file import log_file
 
-	error.log_file = log_file_apache(req)
+	error.log_file = log_file()
 
-	from lib import misc
+	from germ.lib import misc
 	misc.txt_lang_convert.append(convert_html)
 
 	try:
 		import cf
 
 		prevent_caching(req)
-		req.content_type = "text/html"
 
-		from mod_python import util
-		form = util.FieldStorage(req, keep_blank_values = True)
+		req.pso().send_http_header()
+
+		import cgi
+		form = cgi.FieldStorage(keep_blank_values = True)
 
 		# Hmm. First we get the action object and an entity, then the
 		# parameters.
@@ -56,7 +57,7 @@ def handler(req):
 		page = None
 
 		try:
-			path = cf.ht_root + '/' + cf.ht_path + '/' + cf.ht_docpath + '/'
+			path = cf.ht_docpath + '/'
 
 			if p_entity is not None:
 				try:
@@ -73,16 +74,18 @@ def handler(req):
 			raise error(error.fail, e, 'path: %s, page: %s, entity: %s' % \
 					(path, p_page, p_entity))
 
-		from mod_python.Session import Session
+		#try:
+		#	req.pso().session['reloads'] += 1
+		#except:
+		#	req.pso().session['reloads'] = 1
 
-		session = Session(req, secret = cf.ht_secret)
-		session.load()
+		session = req.pso().session
 
 		content = ''
 		if p_action is not None:
-			ret = get_content(p_entity, p_action, form, session, req)
+			ret = get_content(p_entity, p_action, form, session)
 
-			if isinstance(ret, type(apache.OK)):
+			if isinstance(ret, bool):
 				return ret
 
 			content = ret
@@ -101,28 +104,28 @@ def handler(req):
 
 		parser.close()
 
-		req.write(parser.output())
-
-	except Exception, e:
+		print parser.output()
+	except:
 		from boil_out import boil_out
-		return boil_out(req, e)
+		return boil_out()
 
-	return apache.OK
+	from pso.service import OK
+	return OK
 
+# obsolete?
 def prevent_caching(req):
-	req.headers_out.add('Expires', 'Thu, 01 Jan 1970 00:00:00 GMT')
-	req.headers_out.add('Pragma', 'no-cache')
-	req.headers_out.add('Cache-Control', 'no-cache')
+	req.setHeaderOut('Expires', 'Thu, 01 Jan 1970 00:00:00 GMT')
+	req.setHeaderOut('Pragma', 'no-cache')
+	req.setHeaderOut('Cache-Control', 'no-cache')
 
+# obsolete?
 def parm_val(parm):
-	from mod_python import util
-
-	if isinstance(parm.file, util.FileType):
-		return parm
+	if parm.file:
+		return parm.file
 	else:
-		return util.StringField(parm.value)
+		return parm.value
 
-def get_content(p_entity, p_action, form, session, req):
+def get_content(p_entity, p_action, form, session):
 	if p_entity is None:
 		raise error(error.fail, "Request for an action without an " + \
 				"entity to act on", "action: %s" % p_action)
@@ -166,13 +169,13 @@ def get_content(p_entity, p_action, form, session, req):
 		elif name == 'do_exec':
 			do_exec = True
 
-	from erm.helper import get_entity
+	from germ.erm.helper import get_entity
 	entity = get_entity(p_entity, session, globals())
 
 	found_invalid_parm = False
 
 	for attr, value in attr_map.iteritems():
-		from error.invalid_parm import invalid_parm
+		from germ.error.invalid_parm import invalid_parm
 		try:
 			a = entity.get_attr(attr, p_action)
 
@@ -194,7 +197,7 @@ def get_content(p_entity, p_action, form, session, req):
 	for attr in attr_to_lock:
 		entity.get_attr(attr, p_action).to_lock()
 
-	from erm.helper import get_action
+	from germ.erm.helper import get_action
 	action = get_action(p_action, do_exec and not found_invalid_parm)
 
 	# o check for errors/success
@@ -218,7 +221,6 @@ def get_content(p_entity, p_action, form, session, req):
 	error_str = ''
 	display_errors = True
 
-	from error.error import error
 	prompt_pk_only = False
 	try:
 		entity.accept(action)
@@ -233,12 +235,12 @@ def get_content(p_entity, p_action, form, session, req):
 		from print_handlers import print_form
 		print_handler = print_form
 
-		from error.do_not_exec import do_not_exec
-		from error.missing_lock import missing_lock
-		from error.missing_pk_lock import missing_pk_lock
-		from error.no_valid_keys import no_valid_keys
-		from error.perm_denied import perm_denied
-		from error.invalid_parm import invalid_parm
+		from germ.error.do_not_exec import do_not_exec
+		from germ.error.missing_lock import missing_lock
+		from germ.error.missing_pk_lock import missing_pk_lock
+		from germ.error.no_valid_keys import no_valid_keys
+		from germ.error.perm_denied import perm_denied
+		from germ.error.invalid_parm import invalid_parm
 
 		if (isinstance(e, do_not_exec) or isinstance(e, invalid_parm)) \
 				and (not do_exec or found_invalid_parm):
@@ -255,14 +257,13 @@ def get_content(p_entity, p_action, form, session, req):
 		elif isinstance(e, missing_pk_lock):
 			prompt_pk_only = True
 		elif isinstance(e, no_valid_keys) or isinstance(e, perm_denied):
-			from error.error import error
 			error(error.warn, e, "action: %s, entity: %s" % \
 					(p_action, p_entity))
 
 			return error_str
 		else:
 			from boil_out import boil_out
-			return boil_out(req, e)
+			return boil_out()
 
 	content, errortext = print_handler(entity, p_action, prompt_pk_only,
 			display_errors)
@@ -270,8 +271,7 @@ def get_content(p_entity, p_action, form, session, req):
 
 	session.save()
 
-	from error.error import error
-	error(error.debug, 'saving session')
+	#error(error.debug, 'saving session')
 
 	if display_errors:
 		return error_str + content

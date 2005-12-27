@@ -29,7 +29,7 @@ class relation:
 		if self.__missing_lock:
 			return None
 
-		from lib import misc
+		from germ.lib import misc
 
 		return misc.get_cond(self.__cond, act_str)
 

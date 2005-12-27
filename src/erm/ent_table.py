@@ -7,7 +7,7 @@
 from entity import *
 
 class ent_table(entity):
-	from txt import misc
+	from germ.txt import misc
 
 	def __init__(self, attributes, primary_keys, relations = [],
 			condition = {}, item_txt = {}, action_txt = misc.action,
@@ -22,7 +22,7 @@ class ent_table(entity):
 
 	# create database table
 	def init(self):
-		from lib.db_iface import db_iface
+		from germ.lib.db_iface import db_iface
 
 		create_defs = []
 		for attr_id in self._attr_ids:
@@ -52,10 +52,10 @@ class ent_table(entity):
 		# in order to fill the table with values we need an entry, identified
 		# by its primary key
 		if not self.pks_locked():
-			from error.missing_pk_lock import missing_pk_lock
+			from germ.error.missing_pk_lock import missing_pk_lock
 			raise missing_pk_lock()
 
-		from lib.db_iface import db_iface
+		from germ.lib.db_iface import db_iface
 
 		rset = db_iface.query("SELECT * FROM %s WHERE %s" % \
 			(self._name, self.get_attr_sql_pk()))
@@ -64,7 +64,7 @@ class ent_table(entity):
 			# TODO: Make this an invalid_key exception. This could very well
 			# occur by a user 'mistake'. On the other hand, can it still occur
 			# if ref_group.generate_keylist did not complain?
-			from error.error import error
+			from germ.error.error import error
 			raise error(error.fail, "Invalid primary key: result is empty " + \
 					"or has multiple records", "number of records: %s" % \
 					len(rset))

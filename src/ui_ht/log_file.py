@@ -13,5 +13,8 @@ class log_file(file):
 		from datetime import datetime
 		time_str = datetime.now().strftime('%b %d %H:%M:%S')
 
+		from germ.error.error import error
+
 		# TODO: add information about the user/ip this message originates from
-		file.write("[%s] [%s] %s\n" % (time_str, error.lvl_txt(level), message))
+		file.write(self, "[%s] [%s] %s\n" % \
+				(time_str, error.lvl_txt(level, 'en'), message))

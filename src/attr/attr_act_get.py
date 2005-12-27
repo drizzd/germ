@@ -33,12 +33,12 @@ class attr_act_get(attr_action):
 		self._text = str(attr.get())
 
 	def visit_date(self, attr):
-		from lib import misc
+		from germ.lib import misc
 
 		self._text = misc.date_str_nice(attr.get())
 
 	def visit_bool(self, attr):
-		import txt.misc
+		import germ.txt.misc
 
 		if attr.get():
 			self._text = misc.yes

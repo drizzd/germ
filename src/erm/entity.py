@@ -4,9 +4,9 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from txt import errmsg
+from germ.txt import errmsg
 
-from erm.ref_group import *
+from ref_group import *
 
 class entity:
 	def __init__(self, attributes, primary_keys, relations, condition,
@@ -40,7 +40,7 @@ class entity:
 		self.__globals = None
 		self.__build_ref_groups()
 
-		self.init()
+		#self.init()
 
 	def get_globals(self):
 		return self.__globals
@@ -51,7 +51,7 @@ class entity:
 	def magic_var(self, var):
 		magic_func = self.__magic_var.get(var)
 		
-		from lib.misc import call_if
+		from germ.lib.misc import call_if
 
 		return call_if(magic_func)
 
@@ -64,11 +64,11 @@ class entity:
 		return text
 
 	def action_txt(self, act_str):
-		from txt import misc
+		from germ.txt import misc
 		text = self.__action_txt.get(act_str, misc.action.get(act_str))
 
 		if text is None:
-			from error.error import error
+			from germ.error.error import error
 			raise error(error.warn, 'No action description', 'action: %s' % \
 					act_str)
 		
@@ -86,7 +86,7 @@ class entity:
 		self._session = session
 	
 	def get_condition(self, act_str):
-		from lib import misc
+		from germ.lib import misc
 
 		return misc.get_cond(self.__condition, act_str)
 
@@ -95,7 +95,7 @@ class entity:
 
 	def set_rset(self, rset):
 		if self.__rset is not None:
-			from error.error import error
+			from germ.error.error import error
 			raise error(error.fail, "Attempt to set result set twice",
 				"entity: %s" % self._name)
 
@@ -110,12 +110,12 @@ class entity:
 			yield self
 
 	def pre(self, act_str):
-		from lib.misc import do_nothing
+		from germ.lib.misc import do_nothing
 
 		return self.__pre.get(act_str, do_nothing)()
 
 	def post(self, act_str):
-		from lib.misc import do_nothing
+		from germ.lib.misc import do_nothing
 
 		return self.__post.get(act_str, do_nothing)()
 
@@ -285,7 +285,7 @@ class entity:
 		return True
 
 	def accept(self, action):
-		from lib.misc import call_if
+		from germ.lib.misc import call_if
 
 		# The tests are evaluated in the following order. If any of the tests
 		# is not specified, proceed to the next item.
@@ -300,7 +300,7 @@ class entity:
 		if not (call_if(self.__perm.get('none', True)) and \
 				call_if(self.__perm.get(str(action),
 				call_if(self.__perm.get('all', True))))):
-			from error.perm_denied import perm_denied
+			from germ.error.perm_denied import perm_denied
 			raise perm_denied()
 
 		self.do_accept(action)
@@ -314,7 +314,7 @@ class entity:
 		# Do not raise an error if attribute does not exist. We
 		# do not want the user to spy on secret attributes
 		if not has_attr:
-			from error.error import error
+			from germ.error.error import error
 			error(error.warn, errmsg.nonexistent_attr,
 				'table: %s, attribute: %s' % (self._name, attr))
 
@@ -339,7 +339,7 @@ class entity:
 				if attr in self._pk_set or self._attr_map[attr].perm(action)]
 
 	def set_default(self):
-		from error.invalid_parm import invalid_parm
+		from germ.error.invalid_parm import invalid_parm
 		found_invalid_parm = False
 
 		for attr in self._attr_map.itervalues():
@@ -362,7 +362,7 @@ class entity:
 			if attr in self._pk_set or a.perm(action):
 				return a
 
-		from error.error import error
+		from germ.error.error import error
 		raise error(error.fail, errmsg.nonexistent_attr,
 			'table: %s, attribute: %s' % (self._name, attr))
 
