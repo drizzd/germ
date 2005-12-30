@@ -382,28 +382,10 @@ class ref_group:
 		else:
 			sort_spec_str = '\nORDER BY ' + sort_spec
 
-		sql_query = "SELECT DISTINCT %s\nFROM %s%s%s" % \
+		sql_str = "SELECT DISTINCT %s\nFROM %s%s%s" % \
 				(col_spec, table_ref, search_str, sort_spec_str)
 
-		from germ.lib.db_iface import db_iface
-		from _mysql_exceptions import ProgrammingError
-		done = False
-		while not done:
-			try:
-				res = db_iface.query(sql_query)
-			except ProgrammingError, e:
-				table = db_iface.get_missing_table(e)
-
-				if table is None:
-					import sys
-					exctype, exc, tb = sys.exc_info()
-					raise exctype, exc, tb
-
-				from germ.erm.helper import get_entity
-				entity = get_entity(table, self.__session, self.__ent.get_globals())
-				entity.init()
-				del entity
-			else:
-				done = True
+		from germ.erm.helper import sql_query
+		res = sql_query(sql_str, self.__session, self.__ent.get_globals())
 
 		return res

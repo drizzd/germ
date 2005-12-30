@@ -4,71 +4,28 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from BaseHTMLProcessor import BaseHTMLProcessor
+from htmlproc import htmlproc
 
-class ht_parser(BaseHTMLProcessor):
+class ht_parser(htmlproc):
 	def reset(self):
-		BaseHTMLProcessor.reset(self)
+		htmlproc.reset(self)
 
-		self.__verbatim = 0
+		self.__hide = 0
 		self.__item_stack = []
+
 		self.__content = ''
-		self.__skip_item = 0
+		self.__session = {}
 
 	def set_params(self, content, session):
 		self.__content = content
 		self.__session = session
 
-	def unknown_starttag(self, tag, attrs):
-		if self.__skip_item > 0:
-			return
+	def parse_pre(self):
+		pass
 
-		BaseHTMLProcessor.unknown_starttag(self, tag, attrs)
-
-	def unknown_endtag(self, tag):
-		if self.__skip_item > 0:
-			return
-
-		BaseHTMLProcessor.unknown_endtag(self, tag)
-
-	def handle_data(self, text):
-		if self.__verbatim > 0:
-			self.pieces.append(text)
-			return
-
-		if self.__skip_item > 0:
-			return
-
-		if len(self.__item_stack) == 0:
-			self.pieces.append(text)
-			return
-
-		item = self.__item_stack[-1]
-		item_attrs, entity, act_str = item
-
-		import re
-		import cf
-		from germ.lib.misc import txt_lang
-		text = re.sub('\$text\$', '<A href="%s?%s">%s</A>' % (
-				cf.ht_index, '&'.join(['%s=%s' % attr for attr in item_attrs]),
-				txt_lang(entity.item_txt(act_str))), text)
-
-		self.pieces.append(text)
-
-	def start_pre(self, attrs):
-		self.__verbatim += 1
-		self.unknown_starttag('pre', attrs)
-
-	def end_pre(self):
-		self.unknown_endtag('pre')
-		self.__verbatim -= 1
-
-	def start_item(self, attrs):
-		if self.__verbatim > 0:
-			return
-		
-		if self.__skip_item > 0:
-			self.__skip_item += 1
+	def start_item(self, tag, attrs):
+		if self.__hide > 0:
+			self.__hide += 1
 			return
 
 		attr_map = dict(attrs)
@@ -81,12 +38,39 @@ class ht_parser(BaseHTMLProcessor):
 			error(error.warn, 'Invalid item', 'entity: %s, action: %s' % \
 					(ent_str, act_str))
 
-		entity = self.check_item(ent_str, act_str)
+		entity = self.__check_item(ent_str, act_str)
 
 		if entity is not None:
 			self.__item_stack.append((attrs, entity, act_str))
 
-	def check_item(self, ent_str, act_str):
+	def parse_item(self):
+		if self.__hide > 0:
+			self._data = ''
+			return
+
+		if len(self.__item_stack) == 0:
+			return
+
+		item = self.__item_stack[-1]
+		item_attrs, entity, act_str = item
+
+		import re
+		import cf
+		from germ.lib.misc import txt_lang
+		self._data = re.sub('\$text\$', '<A href="%s?%s">%s</A>' % (
+				cf.ht_index, '&'.join(['%s=%s' % attr for attr in item_attrs]),
+				txt_lang(entity.item_txt(act_str))), self._data)
+
+	def end_item(self, tag):
+		if self.__hide > 0:
+			self.__hide -= 1
+		else:
+			self.__item_stack.pop()
+
+	def startend_content(self, attrs):
+		return self.__content
+
+	def __check_item(self, ent_str, act_str):
 		from germ.erm.helper import get_entity
 		entity = get_entity(ent_str, self.__session, globals())
 		from germ.erm.helper import get_action
@@ -103,11 +87,12 @@ class ht_parser(BaseHTMLProcessor):
 		except error, e:
 			from germ.error.no_valid_keys import no_valid_keys
 			from germ.error.perm_denied import perm_denied
+			from germ.error.do_not_exec import do_not_exec
 
 			if isinstance(e, no_valid_keys) or isinstance(e, perm_denied):
-				self.__skip_item += 1
+				self.__hide += 1
 				return None
-			elif e.lvl() > error.notice:
+			elif not isinstance(e, do_not_exec):#elif e.lvl() > error.notice:
 				import sys
 				exctype, exc, tb = sys.exc_info()
 				raise exctype, exc, tb
@@ -116,15 +101,3 @@ class ht_parser(BaseHTMLProcessor):
 				'entity: %s, action: %s' % (ent_str, act_str))
 
 		return entity
-
-	def end_item(self):
-		if self.__verbatim > 0:
-			return
-		
-		if self.__skip_item > 0:
-			self.__skip_item -= 1
-		else:
-			self.__item_stack.pop()
-
-	def do_content(self, attrs):
-		self.pieces.append(self.__content)

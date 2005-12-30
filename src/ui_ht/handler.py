@@ -79,7 +79,10 @@ def handler(req):
 		#except:
 		#	req.pso().session['reloads'] = 1
 
-		session = req.pso().session
+		#session = req.pso().session
+		from pso.session import CookieFileImpl
+		session = req.pso().getSession(CookieFileImpl,
+				PSOSessionFileLoader_Path=cf.ht_tmp_path)
 
 		content = ''
 		if p_action is not None:

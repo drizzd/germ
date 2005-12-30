@@ -37,16 +37,16 @@ class entity:
 		self.__magic_var = magic_var
 
 		self._session = None
-		self.__globals = None
+		self._globals = None
 		self.__build_ref_groups()
 
 		#self.init()
 
 	def get_globals(self):
-		return self.__globals
+		return self._globals
 
 	def set_globals(self, glob):
-		self.__globals = glob
+		self._globals = glob
 
 	def magic_var(self, var):
 		magic_func = self.__magic_var.get(var)
