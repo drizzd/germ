@@ -1,34 +1,50 @@
-Roughly ordered by precedence and simplicity from high to low.
+Roughly ordered by priority and simplicity from high to low.
 
-o Put a demo up on sourceforge
+o Make sure 'delete' does not violate consistency
 
-o pso seems to be unmaintained. Find an alternative.
+o Put a simple demo up on sourceforge
+
+o pso seems to be unmaintained. Find an alternative (e.g. weblib) or do it
+  yourself. Use mysql instead of files to store session data.
 
 o Add Distutils support
 
-o Optionally hide items if the user is not privileged to use them and present
-  the user with a login screen instead of permission denied message.
+o Find a way to check that all foreign keys have the same type (and length).
 
-o Find a way to check that all foreign keys have the same type.
+o Save <ITEM> state (no_valid_keys, permission_denied, ...) between requests.
+
+  Only reevaluate on successful 'submit' or 'edit' actions. 'view' or 'list'
+  actions should not have any effects.
+
+  Optionally hide items if the user is not privileged to use them (already
+  done) and present the user with a login screen instead of permission denied
+  message.
+
+o Cache entity and action instances (singleton). Provide entity copy for
+  manipulations.
+
+o rewrite db_iface and add support for databases other than mysql
 
 o Additional privilege features.
 
   Examples:
 
-  - team/team_members tables need restricted permissions. Only the current team
-    leader should be able to edit records.
+  - 'rank' should be editable, but only to a rank lower than the user's own
+    rank (maybe possible with relations).
 
   - users privacy. 'view' permission should only be granted for fields as
     specified in the 'privacy' field.
+
+  - 'paid' field in 'gamers' should not be editable by users.
 
   Ideas:
 
   - Implement dynamic attribute permissions. Instead of just passing a list of
     allowed values, also allow functions to do more elaborate checks.
     
-    The problem with that is we don't have the reference group construct, so we
-    have to wait for the primary key before we can do any useful checks. This
-    also means we cannot know in advance if there will be any allowed
+    The problem with that is we don't have the reference group construct yet,
+    so we have to wait for the primary key before we can do any useful checks.
+    This also means we cannot know in advance if there will be any allowed
     attributes at all (Okay, that may not be too bad).
 
 o Modularization
@@ -61,11 +77,6 @@ o Attribute Notes.
   over an insecure line (which it probably will for the hypertext user
   interface) we should add a note advising the user not to use a valuable
   password.
-
-o Database
-
-  - Do not try to create tables all the time. Use a special 'init' flag. Maybe
-    only check table consistency only if something goes wrong.
 
 o JavaScript Focus.
 
@@ -103,7 +114,8 @@ o File Attribute.
   Examples:
 
   - Upload image
-  - Export tournament data in WWCL XML-format.
+  - Export tournament data in WWCL XML-format. (using a 'virtual' entity with a
+    file attribute)
 
 o Security.
 
@@ -111,6 +123,11 @@ o Security.
     some security. Do not use cookies for secure sessions?
 
   - Check for availability of cookies. Use URL encoded session data?
+
+o Use more powerful templating for Hypertext User Interface
+
+  - Have a look at albatross/cheetah etc. At least for the 'list' action we
+    definitely need more freedom for HTML design.
 
 o User Interfaces
 
@@ -135,6 +152,11 @@ o Refactor keylist generation algorithm (ref_group.generate_keylist)
     
     Is there really no more generic way to handle this? For a submit, the entry
     cannot exist yet anyway, and for a view we don't change any values...
+
+    Update: This has been party solved. The special case now applies to all
+    relations which join the table with itself and is not restricted to the
+    'edit' action any more. It seems to work, but thinking it over would not
+    hurt.
 
   - We also have a special case if the reference group has only outer joins.
     Maybe we could also avoid that by joining with an empty table or something.
