@@ -24,7 +24,7 @@ def sql_query(sql_str, session, glob):
 
 			from helper import get_entity
 			entity = get_entity(table, session, glob)
-			entity.init()
+			entity.create()
 			del entity
 		else:
 			done = True
@@ -32,6 +32,7 @@ def sql_query(sql_str, session, glob):
 	return res
 
 # TODO: cache entities (immutable?)
+# TODO: move this to entity.py
 def get_entity(ent_str, session, glob = globals()):
 	try:
 		mod = __import__('entity.' + ent_str, glob, locals(), [ent_str])
@@ -43,11 +44,13 @@ def get_entity(ent_str, session, glob = globals()):
 	entity_class = getattr(mod, ent_str)
 
 	entity = entity_class()
-	entity.set_session(session)
+
+	entity.init(session, glob)
 
 	return entity
 
 # TODO: cache actions (immutable?)
+# TODO: move this to action.py
 def get_action(act_str, do_exec):
 	action_class_str = 'act_' + act_str
 

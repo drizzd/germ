@@ -194,38 +194,48 @@ class ref_group:
 		to_lock_search_cond = []
 		for rel in self.__joins + self.__outer_joins:
 			cond_str = rel.get_cond(act_str)
-			if cond_str is not None:
-				cond_str = '(%s)' % self.__substitute_vars(cond_str)
 
-				if act_str == 'edit' and rel.is_outer_join() and \
-						rel.get_table() == self.__ent.get_name():
-					if not self.__ent.pks_locked():
-						continue
+			if cond_str is None:
+				continue
 
+			cond_str = '(%s)' % self.__substitute_vars(cond_str)
+
+			# TODO: think about this
+			# this makes sure a check for uniqueness does not collide with the
+			# entry itself
+			if rel.get_table() == self.__ent.get_name():
+				if self.__ent.pks_locked():
 					cond_str = '(%s OR (%s))' % (cond_str,
 							self.__ent.get_attr_sql_pk_alias(rel.get_alias()))
+#			if act_str == 'edit' and rel.is_outer_join() and \
+#					rel.get_table() == self.__ent.get_name():
+#				if not self.__ent.pks_locked():
+#					continue
+#
+#				cond_str = '(%s OR (%s))' % (cond_str,
+#						self.__ent.get_attr_sql_pk_alias(rel.get_alias()))
 
-				if len(self.__joins) == 0:
-					cond_str = 'NOT ' + cond_str
+			if len(self.__joins) == 0:
+				cond_str = 'NOT ' + cond_str
 
-				if rel.is_to_be_locked():
-					# If we fail, simply omit the to_lock_search_cond in the
-					# second query. This is a nasty trick that will allow us to
-					# get our reference keys even though the join condition is
-					# wrong. This will only work if the user interface behaves
-					# nicely. If both the non-relational and the relational
-					# keys are wrong, we have a problem (because invalid
-					# relational keys will be conceived as correct)
-					#
-					# Or no? Maybe this is not such a nasty trick after all.
-					# The outer joins are easily controlled by the search
-					# condition. Omitting it will have the same effect as if we
-					# had not supplied the outer join at all. An outer join
-					# will never give additional results. There can only be
-					# fewer if the IS NULL condition is used.
-					to_lock_search_cond.append(cond_str)
-				else:
-					search_cond.append(cond_str)
+			if rel.is_to_be_locked():
+				# If we fail, simply omit the to_lock_search_cond in the
+				# second query. This is a nasty trick that will allow us to
+				# get our reference keys even though the join condition is
+				# wrong. This will only work if the user interface behaves
+				# nicely. If both the non-relational and the relational
+				# keys are wrong, we have a problem (because invalid
+				# relational keys will be conceived as correct)
+				#
+				# Or no? Maybe this is not such a nasty trick after all.
+				# The outer joins are easily controlled by the search
+				# condition. Omitting it will have the same effect as if we
+				# had not supplied the outer join at all. An outer join
+				# will never give additional results. There can only be
+				# fewer if the IS NULL condition is used.
+				to_lock_search_cond.append(cond_str)
+			else:
+				search_cond.append(cond_str)
 
 		condition = self.__ent.get_condition(act_str)
 		if condition is not None:
@@ -352,7 +362,7 @@ class ref_group:
 		val = self.__session[varname]
 		if not isinstance(val, str):
 			from germ.error.error import error
-			raise error(error.fail, "Session variables for use in an " + \
+			raise error(error.fail, "Session variables for use in an " \
 					"SQL condition must be strings",
 					"variable: %s, type: %s" % (varname, type(val)))
 

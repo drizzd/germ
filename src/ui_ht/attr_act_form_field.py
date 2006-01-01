@@ -70,6 +70,11 @@ class attr_act_form_field(attr_act_get):
 		self._text = '-'.join(input_vec)
 
 	def visit_bool(self, attr):
-		self._text = '<INPUT type="checkbox" name="%s"%s%s>' % \
-				(self.__parm_name, attr.get() and ' checked' or '',
-					self.__lock_str(attr.is_locked()))
+		# HTML does not specify any value if the checkbox is turned off, so we
+		# set the hidden value to off. The value be overwritten by the
+		# subsequent checkbox if it is indeed checked.
+		self._text = '<INPUT type="hidden" name="%s" value="off">' \
+				'<INPUT type="checkbox" name="%s"%s%s>' % \
+				(self.__parm_name, self.__parm_name,
+				attr.get() and ' checked' or '',
+				self.__lock_str(attr.is_locked()))

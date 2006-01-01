@@ -33,7 +33,6 @@ def print_view(entity, act_str, prompt_pk_only, display_errors):
 	viewtext = ''
 
 	from germ.lib.misc import txt_lang
-	from germ.txt.misc import action_report
 
 	report = txt_lang(entity.action_report(act_str))
 

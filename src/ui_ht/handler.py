@@ -130,7 +130,7 @@ def parm_val(parm):
 
 def get_content(p_entity, p_action, form, session):
 	if p_entity is None:
-		raise error(error.fail, "Request for an action without an " + \
+		raise error(error.fail, "Request for an action without an " \
 				"entity to act on", "action: %s" % p_action)
 
 	from sets import Set
@@ -149,9 +149,14 @@ def get_content(p_entity, p_action, form, session):
 				attr = name[len(cf.ht_parm_prefix_attr):]
 
 				if attr_map.has_key(attr):
-					raise error(error.warn, "Multi-valued parameter " + \
-							"overwritten with single-valued parameter",
-							"attribute: %s" % attr)
+					if isinstance(attr_map[attr], dict):
+						raise error(error.error, "Multi-valued parameter " \
+								"overwritten with single-valued parameter",
+								"attribute: %s" % attr)
+					else:
+						# If a single-valued parameter is specified multiple
+						# times, the last occurence counts.
+						pass
 
 				attr_map[attr] = val
 			else:
@@ -159,9 +164,9 @@ def get_content(p_entity, p_action, form, session):
 
 				if not attr_map.has_key(attr):
 					attr_map[attr] = {}
-				elif not isinstance(attr_map, dict):
-					raise error(error.warn, "Multi-valued parameter " + \
-							"overwritten with single-valued parameter",
+				elif not isinstance(attr_map[attr], dict):
+					raise error(error.error, "Single-valued parameter " \
+							"overwritten with multi-valued parameter",
 							"attribute: %s" % attr)
 
 				attr_map[attr][name[pos+2:]] = val

@@ -25,6 +25,8 @@ class table_action:
 		# create reference groups
 		missing_lock = self.__analyze()
 
+		# TODO: check dynamic attribute permissions here
+
 		# Fill the table with existing values. For some actions, such as 'list'
 		# or 'submit' this would not make any sense.
 		if self.__fill_table:

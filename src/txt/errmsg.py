@@ -16,11 +16,10 @@ error_lvl = [
 	{	'en': 'Failure',
 		'de': 'Fehler' } ]
 
+#"The system dministrator has been informed and the problem will be dealt with as soon as possible."
 failure = """
 <P>
-This should not happen. We are sorry for the inconvenience. The system
-administrator has been informed and the problem will be dealt with as soon as
-possible.<BR />
+This should not happen. We are sorry for the inconvenience.<BR />
 <BR />
 If your time permits you could describe what happened to help solve the
 problem.<BR />

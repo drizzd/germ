@@ -21,7 +21,7 @@ class ent_table(entity):
 		action.visit_table(self)
 
 	# create database table
-	def init(self):
+	def create(self):
 		from germ.lib.db_iface import db_iface
 
 		create_defs = []
@@ -42,7 +42,8 @@ class ent_table(entity):
 
 		create_def = ', '.join(create_defs)
 
-		sql_query = "CREATE TABLE IF NOT EXISTS %s (%s)" % \
+		#sql_query = "CREATE TABLE IF NOT EXISTS %s (%s)" % \
+		sql_query = "CREATE TABLE %s (%s)" % \
 				(self._name, create_def)
 
 		db_iface.query(sql_query)

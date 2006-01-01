@@ -1,0 +1,44 @@
+Hi,
+
+I'm using pso 0.98.D-beta with python2.3.
+
+Sometimes, the headers get sent _after_ the actual content. As a workaround I commented out 'if not self.headers_sent:' in the close member function of RequestIO so I can call send_http_header() directly at the beginning of the handler (right after setting some headers).
+
+I haven't figured what causes this problem exactly. Unfortunately my code is quite complex, so maybe you have a better idea where to start looking.
+
+My cgi script looks like this:
+
+#!/usr/bin/python
+
+import sys
+sys.path.insert(0, "/home/drizzd/lpms")
+
+from germ.ui_ht.handler import handler
+from pso.service import ServiceHandler
+ServiceHandler().run(handler)
+
+The handler essentially looks like this:
+
+def handler(req):
+    try:
+        prevent_caching(req)
+
+        req.pso().send_http_header()
+
+        import cgi
+        form = cgi.FieldStorage(keep_blank_values = True)
+
+        # [...] lots of stuff,
+        # also using req.pso().session,
+        # but never any printing
+
+        print parser.output()
+    except:
+        from boil_out import boil_out
+        return boil_out()
+
+    from pso.service import OK
+    return OK
+
+Best regards,
+Clemens

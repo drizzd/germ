@@ -38,15 +38,16 @@ class entity:
 
 		self._session = None
 		self._globals = None
-		self.__build_ref_groups()
 
-		#self.init()
+	# this has to be called immediately after instantiation
+	def init(self, session, globals):
+		self._session = session
+		self._globals = globals
+
+		self.__build_ref_groups()
 
 	def get_globals(self):
 		return self._globals
-
-	def set_globals(self, glob):
-		self._globals = glob
 
 	def magic_var(self, var):
 		magic_func = self.__magic_var.get(var)
@@ -82,9 +83,6 @@ class entity:
 
 		return report
 		
-	def set_session(self, session):
-		self._session = session
-	
 	def get_condition(self, act_str):
 		from germ.lib import misc
 
@@ -135,6 +133,13 @@ class entity:
 		return self.__ref_group_vec
 
 	def add_rel(self, rel):
+		# An additional multi-key relation can introduce new interdependencies
+		# among groups so they have to be joined.
+		#
+		# For a single-key relation this algorithm will simply find the
+		# appropriate reference group to add the relation to or None, in which
+		# case a new reference group is constructed
+
 		new_ref_group = ref_group(rel, self)
 
 		from sets import Set
@@ -183,13 +188,6 @@ class entity:
 #		self.__ref_group_vec.append(new_ref_group)
 
 # alternative implementation (untested, probably fastest)
-#		# An additional multi-key relation can introduce new interdependencies
-#		# among groups so they have to be joined.
-#		#
-#		# For a single-key relation this algorithm will simply find the
-#		# appropriate reference group to add the relation to or None, in which
-#		# case a new reference group is constructed
-#
 #		first_group = None
 #		i = 0
 #		while i < len(self.__ref_group_vec):
@@ -404,7 +402,3 @@ class entity:
 
 			if not attr.is_set():
 				attr.set_sql(rec[i])
-
-	# this has to be invoked after each configuration change
-	def init(self):
-		pass
