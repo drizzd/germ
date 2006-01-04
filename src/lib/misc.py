@@ -7,13 +7,13 @@
 def empty():
 	return []
 
-def always_false():
+def always_false(*args):
 	return False
 
-def always_true():
+def always_true(*args):
 	return True
 
-def do_nothing():
+def do_nothing(*args):
 	pass
 
 # Direct use of datetime.date.today as default callable doesn't work. I have no
@@ -93,7 +93,7 @@ def get_cond(cond, act_str):
 	else:
 		return '(%s) AND (%s)' % (cond_all, cond_act)
 
-def call_if(expr, args = {}):
+def call_if(expr, *args):
 	if callable(expr):
 		return expr(*args)
 	else:

@@ -13,9 +13,12 @@ class ent_table(entity):
 			condition = {}, item_txt = {}, action_txt = misc.action,
 			action_report = misc.action_report, perm = {}, pre = {},
 			post = {}, magic_var = {}):
-		entity.__init__(self, attributes, primary_keys, relations, condition,
-				item_txt, action_txt, action_report, perm, pre, post,
-				magic_var)
+		args = vars()
+		del args['self']
+		entity.__init__(self, **args)
+#		entity.__init__(self, attributes, primary_keys, relations, condition,
+#				item_txt, action_txt, action_report, perm, pre, post,
+#				magic_var)
 
 	def do_accept(self, action):
 		action.visit_table(self)
@@ -48,8 +51,8 @@ class ent_table(entity):
 
 		db_iface.query(sql_query)
 
-	# retrieve record specified by primary key and fill table
-	def fill_pk(self):
+	# retrieve record specified by primary key
+	def get_rec(self):
 		# in order to fill the table with values we need an entry, identified
 		# by its primary key
 		if not self.pks_locked():
@@ -70,6 +73,4 @@ class ent_table(entity):
 					"or has multiple records", "number of records: %s" % \
 					len(rset))
 
-		rec = rset[0]
-
-		self._fill(rec)
+		return rset[0]

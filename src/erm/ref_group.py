@@ -347,7 +347,7 @@ class ref_group:
 				raise error(error.error, 'Invalid magic variable',
 						'entity: %s, varname: %s' % (ent_str, varname))
 
-			return val
+			return str(val)
 
 		varname = match.group(1)
 

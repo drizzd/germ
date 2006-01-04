@@ -102,9 +102,9 @@ class entity:
 	def has_rset(self):
 		return self.__rset is not None
 
-	def rsets(self):
+	def rsets(self, act_str):
 		for rec in self.__rset:
-			self._fill(rec)
+			self._fill(rec, act_str)
 			yield self
 
 	def pre(self, act_str):
@@ -329,12 +329,17 @@ class entity:
 	def attr_iter(self, action):
 		for aid in self._attr_ids:
 			attr = self._attr_map[aid]
-			if attr.perm(action):
+
+			from germ.error.error import error
+			error(error.debug, 'checking attribute', aid)
+
+			if attr.dyn_perm(action):
 				yield attr
 
 	def get_attr_vec(self, action):
 		return [attr for attr in self._attr_ids \
-				if attr in self._pk_set or self._attr_map[attr].perm(action)]
+				if attr in self._pk_set or \
+				self._attr_map[attr].dyn_perm(action)]
 
 	def set_default(self):
 		from germ.error.invalid_parm import invalid_parm
@@ -366,9 +371,12 @@ class entity:
 
 	def __get_attr_items(self):
 		return self._attr_map.iteritems()
+		#return [i for i in self._attr_map.iteritems() \
+		#		if i[1].is_set()]
 
 	def __get_attr_items_nopk(self):
-		return [i for i in self._attr_map.iteritems() if i[0] not in self._pk_set]
+		return [i for i in self._attr_map.iteritems() \
+				if i[0] not in self._pk_set and i[1].is_set()]
 
 	def __get_attr_items_pk(self):
 		return [(pk, self._attr_map[pk]) for pk in self._pk_set]
@@ -396,9 +404,19 @@ class entity:
 		return delim.join(sql_vec)
 
 	# fill in attribute values from given record
-	def _fill(self, rec):
+	def _fill(self, rec, act_str):
 		for i, aid in enumerate(self._attr_ids):
 			attr = self._attr_map[aid]
 
-			if not attr.is_set():
+			if attr.dyn_perm(act_str):
+				if not attr.is_set():
+					attr.set_sql(rec[i])
+			elif not aid in self._pk_set:
+				if attr.is_set():
+					from germ.error.error import error
+					error(error.debug, 'overwriting attribute (%s)' % aid)
+
 				attr.set_sql(rec[i])
+
+#			if not (attr.is_set() and attr.dyn_perm(act_str)(attr)):
+#				attr.set_sql(rec[i])

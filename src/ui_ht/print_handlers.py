@@ -68,7 +68,7 @@ def print_list(entity, act_str, prompt_pk_only, display_errors):
 
 	listtext += "</TR>\n"
 
-	for rec in entity.rsets():
+	for rec in entity.rsets(act_str):
 		listtext += "\t<TR>"
 
 		for attr in rec.attr_iter('view'):

@@ -15,9 +15,8 @@ class perm:
 
 class attribute:
 	def __init__(self, label, perm, default, chk_func_vec):
-		from sets import Set
 		self.__label = label
-		self.__perm = Set(perm)
+		self.__perm = perm
 
 		self.__default = default
 
@@ -69,6 +68,9 @@ class attribute:
 	def set_sql(self, val):
 		self._val = val
 
+	def unset(self):
+		self._val = None
+
 	def set(self, val):
 		for chk_func in self.__chk_func_vec:
 			res = chk_func(val)
@@ -117,6 +119,17 @@ class attribute:
 
 	def perm(self, action):
 		return action in self.__perm
+
+	def dyn_perm(self, action):
+		from germ.lib.misc import always_false, always_true, call_if
+
+		if isinstance(self.__perm, dict):
+			return call_if(self.__perm.get(action, always_false), self)
+		else:
+			from germ.error.error import error
+			error(error.debug, 'dyn_perm: not a dict')
+
+			return self.perm(action)
 
 	def get(self):
 		return self._val

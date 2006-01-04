@@ -270,8 +270,9 @@ def get_content(p_entity, p_action, form, session):
 
 			return error_str
 		else:
-			from boil_out import boil_out
-			return boil_out()
+			import sys
+			exctype, exc, tb = sys.exc_info()
+			raise exctype, exc, tb
 
 	content, errortext = print_handler(entity, p_action, prompt_pk_only,
 			display_errors)
