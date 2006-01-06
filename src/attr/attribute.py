@@ -124,6 +124,7 @@ class attribute:
 		from germ.lib.misc import always_false, always_true, call_if
 
 		if isinstance(self.__perm, dict):
+			# TODO: always return true self.__perm.has_key but PK not set
 			return call_if(self.__perm.get(action, always_false), self)
 		else:
 			from germ.error.error import error

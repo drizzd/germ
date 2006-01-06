@@ -30,10 +30,7 @@ o Additional privilege features.
   Examples:
 
   - 'rank' should be editable, but only to a rank lower than the user's own
-    rank (maybe possible with relations).
-
-  - users privacy. 'view' permission should only be granted for fields as
-    specified in the 'privacy' field.
+    rank (may be possible with relations).
 
   - 'paid' field in 'gamers' should not be editable by users.
 
@@ -47,6 +44,13 @@ o Additional privilege features.
     This also means we cannot know in advance if there will be any allowed
     attributes at all (Okay, that may not be too bad).
 
+    Update: I implemented dynamic attribute permissions as described above.
+    Unfortunately, one has to be very careful when implementing dynamic
+    permisisons. When the permission check functions are called it's not
+    guaranteed that the attributes are set. The current policy is that you have
+    to verify that the attributes you need are set before using them. If they
+    are not, simply grant permission.
+
 o Modularization
 
   - Find a way to to separate germ code, entity specifications and user
@@ -58,10 +62,10 @@ o Modularization
     Example (arrows indicate dependencies):
 
     users
-    `-> news
-    `-> forum
+    |-> news
+    |-> forum
     `-> party
-        `-> tournament
+        |-> tournament
 	`-> voting
 
 o Show disabled values.
