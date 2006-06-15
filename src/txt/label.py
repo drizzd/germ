@@ -4,6 +4,9 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
+dummy = {
+	'en': '' }
+
 username = {
 	'en': 'Username',
 	'de': 'Benutzername' }

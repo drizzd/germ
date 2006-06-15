@@ -33,7 +33,7 @@ def boil_out():
 	print "</PRE>"
 
 	import cf
-	print '<HR>System Administrator: ' \
+	print '<HR>Webmaster: ' \
 			'<A href="mailto:%s">%s</A>' % (cf.admin_email, cf.admin_email)
 
 	from pso.service import OK

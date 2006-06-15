@@ -44,3 +44,6 @@ class attr_act_get(attr_action):
 			self._text = misc.yes
 		else:
 			self._text = misc.no
+
+	def visit_dummy(self, attr):
+		self._text = ''

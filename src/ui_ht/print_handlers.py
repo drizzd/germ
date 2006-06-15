@@ -44,7 +44,11 @@ def print_view(entity, act_str, prompt_pk_only, display_errors):
 
 	viewtext += '<TABLE>\n'
 
+	from germ.attr.dummy import dummy
 	for attr in entity.attr_iter('view'):
+		if isinstance(attr, dummy):
+			continue
+
 		viewtext += '<TR><TH align="left">%s:</TH>' % attr.label()
 
 		viewtext += get_cell(attr, act_view)
@@ -68,7 +72,7 @@ def print_list(entity, act_str, prompt_pk_only, display_errors):
 
 	listtext += "</TR>\n"
 
-	for rec in entity.rsets(act_str):
+	for rec in entity.rsets('view'):
 		listtext += "\t<TR>"
 
 		for attr in rec.attr_iter('view'):
@@ -164,8 +168,8 @@ def print_form(entity, act_str, prompt_pk_only, display_errors):
 				locked = attr.is_locked()
 
 				formtext += '<TR><TD>%s:</TD><TD align="right"><INPUT ' \
-						'type="radio" name="to_lock%u" value="%s"%s%s>' \
-						'</TD><TD>' % \
+						'type="radio" name="to_lock%u" ' \
+						'value="%s"%s%s></TD><TD>' % \
 							(attr.label(), cnt, aid,
 							locked and ' disabled' or '',
 							(not locked and first) and ' checked' or '')
@@ -176,9 +180,20 @@ def print_form(entity, act_str, prompt_pk_only, display_errors):
 					first = False
 
 				parm_name = cf.ht_parm_prefix_attr + aid
+				change_handler = \
+						'var radios = this.form.elements[\'to_lock%u\']; ' \
+						'for (var i = 0; i < radios.length; i++) {' \
+						'	if (radios[i].value == \'%s\') {' \
+						'		radios[i].checked = true; ' \
+						'		break; ' \
+						'	}' \
+						'}' % \
+						(cnt, aid)
+
 
 				if group.has_fk(aid):
-					formtext += '<SELECT name="%s"%s>' % (parm_name,
+					formtext += '<SELECT name="%s" onchange="%s"%s>' % \
+							(parm_name, change_handler,
 							locked and ' disabled' or '')
 
 					if attr.is_set():
@@ -207,6 +222,7 @@ def print_form(entity, act_str, prompt_pk_only, display_errors):
 					formtext += '</SELECT>'
 				else:
 					act_form_field.set_parm_name(parm_name)
+					act_form_field.set_handler('change', change_handler)
 					attr.accept(act_form_field)
 					formtext += act_form_field.get_text()
 

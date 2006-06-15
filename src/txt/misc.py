@@ -20,7 +20,10 @@ action = {
 		'de': 'l"oschen' },
 	'view': {
 		'en': 'view',
-		'de': 'ansehen' } }
+		'de': 'ansehen' },
+	'list': {
+		'en': 'list',
+		'de': 'auflisten' } }
 
 action_report = {
 	'edit': {

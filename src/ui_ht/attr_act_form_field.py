@@ -11,18 +11,31 @@ class attr_act_form_field(attr_act_get):
 		attr_act_get.__init__(self)
 
 		self.__parm_name = None
+		self.__handler = {}
 
 	def set_parm_name(self, name):
 		self.__parm_name = name
 
+	def set_handler(self, handler, value):
+		self.__handler[handler] = value
+
+	def __get_handler_text(self):
+		handler_text = ""
+
+		for i in self.__handler.iteritems():
+			handler_text += ' on%s="%s"' % i
+
+		return handler_text
+
 	def generic_text(self, attr, length = 10, inp_type = 'text'):
 		act_get = attr_act_get()
 		attr.accept(act_get)
-		text = act_get.get_text()
+		#text = act_get.get_text()
 
-		self._text = '<INPUT type="%s" maxlength="%s" name="%s" ' \
+		self._text = '<INPUT type="%s" maxlength="%s" name="%s"%s ' \
 				'value="%s"%s>' % (inp_type, length, self.__parm_name,
-				act_get.get_text(), self.__lock_str(attr.is_locked()))
+				self.__get_handler_text(), act_get.get_text(),
+				self.__lock_str(attr.is_locked()))
 
 		self.__parm_name = None
 

@@ -104,7 +104,7 @@ class entity:
 
 	def rsets(self, act_str):
 		for rec in self.__rset:
-			self._fill(rec, act_str)
+			self._fill(rec, act_str, overwrite = True)
 			yield self
 
 	def pre(self, act_str):
@@ -335,6 +335,9 @@ class entity:
 
 			if attr.dyn_perm(action):
 				yield attr
+			else:
+				from germ.attr.dummy import dummy
+				yield dummy()
 
 	def get_attr_vec(self, action):
 		return [attr for attr in self._attr_ids \
@@ -404,19 +407,28 @@ class entity:
 		return delim.join(sql_vec)
 
 	# fill in attribute values from given record
-	def _fill(self, rec, act_str):
+	def _fill(self, rec, act_str, overwrite = False):
 		for i, aid in enumerate(self._attr_ids):
 			attr = self._attr_map[aid]
 
 			if attr.dyn_perm(act_str):
-				if not attr.is_set():
+				#if not attr.is_set():
+				#	attr.set_sql(rec[i])
+				if overwrite or not attr.is_set():
 					attr.set_sql(rec[i])
+				else:
+					from germ.error.error import error
+					error(error.debug, 'not writing set attribute (%s)' \
+							% aid)
 			elif not aid in self._pk_set:
 				if attr.is_set():
 					from germ.error.error import error
 					error(error.debug, 'overwriting attribute (%s)' % aid)
 
 				attr.set_sql(rec[i])
+			else:
+				from germ.error.error import error
+				error(error.debug, 'not setting attribute (%s)' % aid)
 
 #			if not (attr.is_set() and attr.dyn_perm(act_str)(attr)):
 #				attr.set_sql(rec[i])

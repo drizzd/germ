@@ -13,3 +13,6 @@ class attr_act_view(attr_act_get):
 	def visit_bool(self, attr):
 		self._text = '<INPUT type="checkbox"%s disabled>' % \
 				(attr.get() and ' checked' or '')
+
+	def visit_dummy(self, attr):
+		self._text = '&nbsp;'
