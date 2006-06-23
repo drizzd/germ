@@ -109,6 +109,11 @@ class ref_group:
 
 	#	return '%s.%s' % (self.__ent.get_name(), key)
 
+	def __add_lock_cond_if(self, rel, key, attr, lock_cond):
+		if not rel.is_outer_join() or len(self.__joins) == 0:
+			lock_cond.append("%s = '%s'" % \
+					(rel.get_colref(key), attr.sql_str()))
+
 	def generate_keylist(self, act_str):
 		# generate table references
 
@@ -168,15 +173,11 @@ class ref_group:
 			if attr.is_locked():
 				# TODO: pk_submit_relation should probably do something
 				# different
-				if not rel.is_outer_join() or len(self.__joins) == 0:
-					lock_cond.append("%s = '%s'" % (rel.get_colref(key),
-							attr.sql_str()))
+				self.__add_lock_cond_if(rel, key, attr, lock_cond)
 			elif attr.is_to_be_locked():
-				to_lock_vec.append(key)
+				self.__add_lock_cond_if(rel, key, attr, to_lock_cond)
 
-				if not rel.is_outer_join() or len(self.__joins) == 0:
-					to_lock_cond.append("%s = '%s'" % \
-							(rel.get_colref(key), attr.sql_str()))
+				to_lock_vec.append(key)
 			else:
 				if attr.perm(act_str):
 					missing_lock = True
@@ -200,9 +201,9 @@ class ref_group:
 
 			cond_str = '(%s)' % self.__substitute_vars(cond_str)
 
-			# TODO: think about this
-			# this makes sure a check for uniqueness does not collide with the
-			# entry itself
+			# TODO: Think about this.
+			# This makes sure a check for uniqueness does not collide with the
+			# entry itself.
 			if rel.get_table() == self.__ent.get_name():
 				if self.__ent.pks_locked():
 					cond_str = '(%s OR (%s))' % (cond_str,
@@ -360,6 +361,7 @@ class ref_group:
 			return 'NULL'
 
 		val = self.__session[varname]
+
 		if not isinstance(val, str):
 			from germ.error.error import error
 			raise error(error.fail, "Session variables for use in an " \

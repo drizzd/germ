@@ -13,6 +13,9 @@ class attr_act_get(attr_action):
 	def get_text(self):
 		return self._text
 
+	def visit_sql_id(self, attr):
+		return str(attr.get())
+
 	def visit_plain_pwd(self, attr):
 		self._text = ''
 
@@ -21,6 +24,9 @@ class attr_act_get(attr_action):
 
 	def visit_choice(self, attr):
 		self._text = str(attr)
+
+	def visit_text(self, attr):
+		self.visit_string(attr)
 
 	def visit_string(self, attr):
 		val = attr.get()

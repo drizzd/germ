@@ -1,3 +1,18 @@
+(Pylons: http://pylonshpq.com)
+
+Mighty: templating and session management
+or
+Cheetah: templating and webware
+
+WSGI
+Routes
+AJAX
+i18n
+setuptools
+testing: twill
+
+Widgets: something like zope archetypes or CPS?
+
 HTTP_UI: libcgicc1, cgilib?, libwww?, [need parser], session management?
 DBMS_IF: libgql (GQL), mysqlcppapi?, libgdamm!
 CMS: libstdc++ (STL)

@@ -85,7 +85,8 @@ class attribute:
 		self._do_set(val)
 
 	def _do_set(self, val):
-		raise error(err_fail, errmsg.abstract_func)
+		from germ.error.error import error
+		raise error(error.fail, errmsg.abstract_func, 'class: %s' % self.__class__)
 
 	def is_set(self):
 		return self._val is not None

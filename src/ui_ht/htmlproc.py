@@ -22,10 +22,10 @@ class htmlproc(HTMLParser):
 		except AttributeError:
 			self.handle_data(text)
 		else:
-			if attrs:
-				text = handler(tag, attrs)
+			if attrs is None:
+				text = handler()
 			else:
-				text = handler(tag)
+				text = handler(attrs)
 
 			if text:
 				self._data += text

@@ -13,6 +13,19 @@ class passwd(string):
 
 	def accept(self, attr_act):
 		attr_act.visit_passwd(self)
+
+	def _do_set(self, val):
+		import random
+		py_string = __import__('string')
+
+		salt = ''
+		for i in range(2):
+			salt += random.choice('./' + py_string.letters + py_string.digits)
+
+		from crypt import crypt
+
+		from germ.error.error import error
+		self._val = crypt(val, salt)
 	
 	def check(self, plain_pwd):
 		from crypt import crypt

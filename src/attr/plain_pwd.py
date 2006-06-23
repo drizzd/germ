@@ -17,4 +17,6 @@ class plain_pwd(string):
 	def check(self, crypted_pwd):
 		from crypt import crypt
 
+		from germ.error.error import error
+		error(error.debug, 'checking password %s (%s)' % (self._val, crypted_pwd))
 		return crypted_pwd == crypt(self._val, crypted_pwd)

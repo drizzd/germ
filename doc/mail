@@ -1199,3 +1199,296 @@ You can respond by visiting:
 https://sourceforge.net/tracker/?func=detail&atid=647949&aid=1274133&group_id=1
 
 
+From noreply@sourceforge.net Sat May 13 12:27:23 2006
+Return-path: <noreply@sourceforge.net>
+X-Spam-Flag: YES
+X-Spam-Checker-Version: SpamAssassin 3.1.0 (2005-09-13) on 
+	kzelldran.dyndns.org
+X-Spam-Level: *****
+X-Spam-Status: Yes, score=5.2 required=5.0 tests=BAYES_95,DCC_CHECK,
+	UNPARSEABLE_RELAY autolearn=no version=3.1.0
+X-Spam-Report: 
+	*  0.0 UNPARSEABLE_RELAY Informational: message has unparseable relay
+	*      lines
+	*  3.0 BAYES_95 BODY: Bayesian spam probability is 95 to 99%
+	*      [score: 0.9853]
+	*  2.2 DCC_CHECK Listed in DCC (http://rhyolite.com/anti-spam/dcc/)
+Envelope-to: drizzd@localhost
+Delivery-date: Sat, 13 May 2006 12:27:23 +0200
+Received: from localhost ([127.0.0.1] helo=kzelldran.dyndns.org)
+	by kzelldran.dyndns.org with esmtp (Exim 4.60)
+	(envelope-from <noreply@sourceforge.net>)
+	id 1FerLG-0001JV-Kd
+	for drizzd@localhost; Sat, 13 May 2006 12:27:23 +0200
+Delivered-To: drizzd@aon.at
+Received: from mailbox.aon.at
+	by kzelldran.dyndns.org with POP3 (fetchmail-6.3.2)
+	for <drizzd@localhost> (single-drop); Sat, 13 May 2006 12:27:22 +0200 (CEST)
+Received: (qmail 5271 invoked from network); 12 May 2006 01:04:20 -0000
+Received: from unknown ([172.18.5.79])
+          by mailbox03.aon.at (qmail-ldap-1.03) with QMQP; 12 May 2006 01:04:20 -0000
+Delivered-To: CLUSTERHOST smarthub78.highway.telekom.at drizzd@aon.at
+Received: (qmail 29161 invoked from network); 12 May 2006 01:04:19 -0000
+Received: from lists-outbound.sourceforge.net ([66.35.250.225])
+          (envelope-sender <noreply@sourceforge.net>)
+          by smarthub78.highway.telekom.at (qmail-ldap-1.03) with SMTP
+          for <drizzd@aon.at>; 12 May 2006 01:04:19 -0000
+Received: from sc8-sf-sshgate.sourceforge.net (sc8-sf-sshgate-b.sourceforge.net [10.3.1.1])
+	by sc8-sf-spam1.sourceforge.net (Postfix) with ESMTP id 3868B8D1D7
+	for <drizzd@aon.at>; Thu, 11 May 2006 18:04:19 -0700 (PDT)
+From: "SourceForge.net Team" <noreply@sourceforge.net>
+To: drizzd@aon.at
+Subject: SUBJECT: SourceForge.net: CVS service offering changes 
+Message-Id: <20060512010419.3868B8D1D7@sc8-sf-spam1.sourceforge.net>
+Date: Thu, 11 May 2006 18:04:19 -0700 (PDT)
+Status: RO
+Content-Length: 4867
+Lines: 136
+
+Greetings,
+
+You are receiving this mail because you are a project admin for
+a SourceForge.net-hosted project. One of our primary services,
+CVS, suffered a series of interrelated, critical hardware failures
+in recent weeks. We understand how frustrating this CVS outage
+must be to you and your users; however, our top priority remains
+preservation of the integrity of your data.
+
+The series of CVS hardware failures prompted us to expedite the
+deployment of planed improvements to our CVS infrastructure,
+drawing upon much of the knowledge that we gained from our
+Subversion deployment. Our improved CVS service architecture,
+which we plan to deploy tomorrow afternoon (2006-05-12), will
+offer greater performance and stability and will eliminate several
+single points of failure.
+
+The Site Status page (https://www.sf.net/docs/A04) will be
+updated as soon as the new infrastructure is rolled out. In the
+interim, please read the important information provided below
+to learn about how these changes will affect your project.
+
+
+Summary of changes, effective 2006-05-12:
+
+
+1. Hostname for CVS service
+
+Old: cvs.sourceforge.net
+
+New: PROJECT_UNIX_NAME.cvs.sourceforge.net
+
+This change will require new working copies to be checked out of all
+repositories (so control files in the working copy will point to the
+right place). We will be updating the instructions we supply, but
+instructions that your team has written within documentation, etc. will
+need to be updated.
+
+cvs -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/gaim co gaim
+
+would be changed to
+
+cvs -d:pserver:anonymous@gaim.cvs.sourceforge.net:/cvsroot/gaim co gaim
+
+
+
+2. ViewCVS
+
+We are moving from ViewCVS to its successor, ViewVC. ViewVC is
+currently in use for our Subversion service.
+
+
+
+3. Sync delay
+
+Old: CVS pserver, tarballs and ViewCVS provided against a separate
+server which is a minimum of three hours behind developer CVS.
+
+New: ViewVC will be provided against developer CVS (it will be current).
+CVS pserver will be provided against a secondary server (not developer
+server) with a maximum expected delay of two hours.
+
+Follow-up work is planned (this infrastructure takes us 80% of the way)
+to essentially eliminate the sync delay.
+
+
+
+4. Read-only rsync service
+
+As a new service offering, we are now providing read-only rsync access
+against developer CVS. This allows projects to efficiently make
+on-demand backups of their entire CVS repository.
+
+All projects should be making regular backups of their CVS repository
+contents using this service.
+
+
+
+5. Nightly tarball service
+
+Nightly tarball service is being dropped in lieu of read-only rsync
+service. Projects which currently depend on nightly tarballs for
+repository backups will need to begin using rsync to make a backup copy
+of their repository contents.
+
+We see this as a major functional improvement. For a number of reasons,
+tarballs have fallen out of sync with the data in the repository at
+times in the past few years. Tarballs required a substantial amount of
+additional disk, and I/O to generate. The move to read-only rsync
+allows backups to be produced on-demand, with an update frequency chosen
+by the project.
+
+
+
+6. Points of failure
+
+In the past, developer CVS service for all projects was provided from a
+single host. CVS pserver service was provided from individual backend
+heads based on a split of the data.
+
+Under our new design, developer CVS and most of our CVS-related services
+are provided from one of ten CVS hosts (count subject to increase with
+growth). Each host is independent, and makes a backup copy of the
+repository data of another host (which is used to provide the pserver
+CVS service).
+
+Failure of a single host will impact only the availability of data on
+that host. Since the data is split among a larger number of hosts, the
+size of data impacted by an individual host outage is substantially
+smaller, and the time required for us to restore service will be
+substantially shorter.
+
+This rapid architecture change has been made possible specifically using
+the research we performed for our recent launch of Subversion service.
+We've applied our best practices, produced a substantial amount of
+internal documentation, and kept an eye toward maintainability.
+This effort has allowed us to deploy this new architecture quickly
+once hardware was received, and will permit us to quickly scale
+this service horizontally as growth and demand requires. 
+
+
+
+Many other minor improvements have also been made to improve the service
+offering and make it less trouble-prone. The most important of which are
+listed above. For a full description of the new service offering, and
+for information on how to use the services described above, please refer
+to the site documentation for the CVS service after the service has been
+launched: https://www.sf.net/docs/E04
+
+
+Thank you,
+
+The SourceForge.net Team 
+
+.
+
+
+From noreply@sourceforge.net Tue May 23 15:24:45 2006
+Return-path: <noreply@sourceforge.net>
+X-Spam-Checker-Version: SpamAssassin 3.1.0 (2005-09-13) on 
+	kzelldran.dyndns.org
+X-Spam-Level: ***
+X-Spam-Status: No, score=3.6 required=5.0 tests=AWL,BAYES_80,
+	UNPARSEABLE_RELAY autolearn=no version=3.1.0
+Envelope-to: drizzd@localhost
+Delivery-date: Tue, 23 May 2006 15:24:45 +0200
+Received: from localhost ([127.0.0.1] helo=kzelldran.dyndns.org)
+	by kzelldran.dyndns.org with esmtp (Exim 4.60)
+	(envelope-from <noreply@sourceforge.net>)
+	id 1FiWsP-0008CS-75
+	for drizzd@localhost; Tue, 23 May 2006 15:24:45 +0200
+Delivered-To: drizzd@aon.at
+Received: from mailbox.aon.at
+	by kzelldran.dyndns.org with POP3 (fetchmail-6.3.2)
+	for <drizzd@localhost> (single-drop); Tue, 23 May 2006 15:24:45 +0200 (CEST)
+Received: (qmail 13581 invoked from network); 23 May 2006 13:12:15 -0000
+Received: from unknown ([172.18.5.81])
+          by mailbox03.aon.at (qmail-ldap-1.03) with QMQP; 23 May 2006 13:12:15 -0000
+Delivered-To: CLUSTERHOST smarthub80.highway.telekom.at drizzd@aon.at
+Received: (qmail 15312 invoked from network); 23 May 2006 13:12:14 -0000
+Received: from lists-outbound.sourceforge.net ([66.35.250.225])
+          (envelope-sender <noreply@sourceforge.net>)
+          by smarthub80.highway.telekom.at (qmail-ldap-1.03) with SMTP
+          for <drizzd@aon.at>; 23 May 2006 13:12:14 -0000
+Received: from sc8-sf-sshgate.sourceforge.net (sc8-sf-sshgate-b.sourceforge.net [10.3.1.1])
+	by sc8-sf-spam1.sourceforge.net (Postfix) with ESMTP id 50B848C677
+	for <drizzd@aon.at>; Tue, 23 May 2006 06:12:13 -0700 (PDT)
+From: "SourceForge.net Team" <noreply@sourceforge.net>
+To: drizzd@aon.at
+Subject: SourceForge.net mailing list service upgrade (Mailman)
+Message-Id: <20060523131213.50B848C677@sc8-sf-spam1.sourceforge.net>
+Date: Tue, 23 May 2006 06:12:13 -0700 (PDT)
+Status: RO
+Content-Length: 3133
+Lines: 70
+
+Greetings,
+
+You are receiving this mail because you are listed as an administrator 
+of a SourceForge.net project that has active mailing lists.  As a 
+continued measure to improve our service offering, we are migrating all 
+existing mailing lists to Mailman 2.1.8 (latest stable release).  This 
+is the first major upgrade to the Mailman software used for mailing list 
+service in more than four years.  We expect this upgrade to both improve 
+security and performance, and to provide a number of features not 
+available in our existing Mailman service offering.
+
+We have been testing the new mailing list infrastructure for several 
+weeks with the assistance of a few select projects.  Our general 
+migration of all mailing lists to this new infrastructure will begin 
+2006-05-23.  Migration is being handled in several one-day segments and 
+minimal downtime for list service is expected.
+
+Before the migration begins in earnest, we wanted to provide you this 
+notice of some specific service changes:
+
+1. Our new Mailman install will no longer permit the editing of HTML 
+page templates and existing customizations to these templates will not 
+be migrated.  We made this decision to ensure consistency of the UI 
+among all projects, allow future upgrades without worry about the 
+compatibility of customized templates, eliminate issues related to 
+broken or corrupt templates.
+
+In lieu of template modification, we encourage projects to provide list 
+details and instructions via the "introductory description" list 
+configuration option. This option supports basic HTML, so should be 
+powerful enough for conveying intended information, while adhering to 
+common look and feel.
+
+
+2. List archival is implicitly enabled.  It is not possible to opt-out 
+of mailing list archival.
+
+As per our Mailing List site documentation 
+(http://sf.net/docman/display_doc.php?docid=12983&group_id=1#mlarchives), 
+list archival is mandatory.  In reviewing data to be migrated, we have 
+discovered a small number of older lists which had archiving turned 
+off.  The ability to disable archival is no longer supported, and 
+archives will be maintained for all lists.  If you currently run lists 
+without archival, we encourage you to revisit the perceived need for 
+unarchived lists (for example, we have found unarchived lists that were 
+used for the distribution of centralized team passwords, and upon review 
+by the project, it was clear that this was a practice which should be 
+changed).
+
+Control over access to your mailing list archives is established on a 
+per-list basis from the mailing list administration page for your 
+project on the SourceForge.net site.  Lists in a 'deleted' status will 
+not have web-visible archives.  Individual mailing list posts may be 
+excluded from view by project administrators from the mailing list 
+archive pages.  Additional details on data visibility may be found at: 
+http://sf.net/docs/G03#mailing_lists
+
+
+Questions or concerns regarding the mailing list service upgrade may be 
+raised at: https://sourceforge.net/tracker/?func=add&group_id=1&atid=200001
+
+Thank you,
+
+The SourceForge.net team
+
+
+
+
+.
+
+

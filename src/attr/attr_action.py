@@ -11,6 +11,15 @@ class attr_action:
 	def __init__(self):
 		raise error(error.fail, errmsg.abstract_inst)
 
+	def visit_sql_id(self, attr):
+		raise error(error.fail, errmsg.unimplemented)
+
+	def visit_text(self, attr):
+		raise error(error.fail, errmsg.unimplemented)
+
+	def visit_dummy(self, attr):
+		raise error(error.fail, errmsg.unimplemented)
+
 	def visit_string(self, attr):
 		raise error(error.fail, errmsg.unimplemented)
 

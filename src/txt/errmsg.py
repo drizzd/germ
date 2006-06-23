@@ -87,7 +87,7 @@ unknown_db_type = {
 
 invalid_identifier = {
 	'en':	"Invalid identifier (allowed characters: 'a-z', '_', '0-9'; do " \
-			"not start with number)",
+			"not start with a number)",
 	'de':	"Ung\"ultige Bezeichnung (erlaubte Zeichen: 'a-z', '_', '0-9'; " \
 			"nicht mit einer Zahl beginnen)" }
 

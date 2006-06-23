@@ -341,8 +341,10 @@ class entity:
 
 	def get_attr_vec(self, action):
 		return [attr for attr in self._attr_ids \
-				if attr in self._pk_set or \
-				self._attr_map[attr].dyn_perm(action)]
+				if self._attr_map[attr].dyn_perm(action)]
+		#return [attr for attr in self._attr_ids \
+		#		if attr in self._pk_set or \
+		#		self._attr_map[attr].dyn_perm(action)]
 
 	def set_default(self):
 		from germ.error.invalid_parm import invalid_parm

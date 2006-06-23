@@ -123,3 +123,10 @@ tourney_phase = {
 teamsize = {
 	'en': 'Teamsize',
 	'de': 'Teamgr"o"se' }
+
+content = {
+	'en':	'Content',
+	'de':	'Inhalt' }
+
+sql_id = {
+	'en':	'Id' }

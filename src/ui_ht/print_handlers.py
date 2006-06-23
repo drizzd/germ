@@ -4,6 +4,17 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
+def do_print(handler, entity, action, page, prompt_pk_only, display_errors,
+		error_str):
+	content, errortext = handler(entity, action, page, prompt_pk_only,
+			display_errors)
+	error_str += errortext
+
+	if display_errors:
+		return error_str + content
+	else:
+		return content
+
 def get_error(attr, error_vec):
 	error = attr.get_error()
 
@@ -29,7 +40,7 @@ def get_cell(attr, act_get):
 
 	return text
 
-def print_view(entity, act_str, prompt_pk_only, display_errors):
+def print_view(entity, act_str, page, prompt_pk_only, display_errors):
 	viewtext = ''
 
 	from germ.lib.misc import txt_lang
@@ -59,7 +70,7 @@ def print_view(entity, act_str, prompt_pk_only, display_errors):
 
 	return (viewtext, '')
 
-def print_list(entity, act_str, prompt_pk_only, display_errors):
+def print_list(entity, act_str, page, prompt_pk_only, display_errors):
 	from attr_act_view import attr_act_view
 	act_view = attr_act_view()
 
@@ -84,18 +95,21 @@ def print_list(entity, act_str, prompt_pk_only, display_errors):
 
 	return (listtext, '')
 
-def print_form(entity, act_str, prompt_pk_only, display_errors):
+def print_form(entity, act_str, page, prompt_pk_only, display_errors):
 	import cf
 	formtext = '<FORM method="GET" action="%s" autocomplete="off">\n' % \
 			cf.ht_index
 
-	# give form again until user has seen all the fields, except for a view
+	# Give form again until user has seen all the fields, except for a view.
 	if not prompt_pk_only or act_str == 'view':
 		formtext += '<INPUT type="hidden" name="do_exec">\n'
 
 	formtext += '<INPUT type="hidden" name="entity" value="%s">\n' % \
-			entity.get_name() + \
-			'<INPUT type="hidden" name="action" value="%s">\n' % act_str
+			entity.get_name()
+	formtext += '<INPUT type="hidden" name="action" value="%s">\n' % act_str
+
+	if page is not None:
+		formtext += '<INPUT type="hidden" name="page" value="%s">\n' % page
 
 	formtext += '<TABLE>\n'
 
@@ -130,6 +144,12 @@ def print_form(entity, act_str, prompt_pk_only, display_errors):
 
 			formtext += '<TR><TD colspan="2">%s:</TD><TD>' % attr.label()
 
+			# This can happen if the attribute is already locked for the first
+			# request.
+			if attr.is_locked():
+				formtext += '<INPUT type="hidden" name="lock" ' \
+						'value="%s">' % aid
+
 			parm_name = cf.ht_parm_prefix_attr + aid
 
 			act_form_field.set_parm_name(parm_name)
@@ -146,8 +166,7 @@ def print_form(entity, act_str, prompt_pk_only, display_errors):
 			j = 0
 			first = True
 
-			# also display remaining attributes of the same reference
-			# group
+			# Also display remaining attributes of the same reference group.
 			while j < len(attr_vec):
 				if not group.has_key(attr_vec[j]):
 					j += 1
@@ -220,17 +239,15 @@ def print_form(entity, act_str, prompt_pk_only, display_errors):
 						prev_key = key
 
 					formtext += '</SELECT>'
+
+					if attr.is_locked():
+						formtext += '<INPUT type="hidden" name="%s" ' \
+							'value="%s">' % (parm_name, attr.get())
 				else:
 					act_form_field.set_parm_name(parm_name)
 					act_form_field.set_handler('change', change_handler)
 					attr.accept(act_form_field)
 					formtext += act_form_field.get_text()
-
-				if attr.is_locked():
-					# TODO: make sure this is also necessary for disabled
-					# <SELECT> elements
-					formtext += '<INPUT type="hidden" name="%s" value="%s">' \
-							% (parm_name, attr.get())
 
 				if display_errors:
 					formtext += get_error(attr, error_vec)

@@ -30,17 +30,35 @@ class attr_act_form_field(attr_act_get):
 	def generic_text(self, attr, length = 10, inp_type = 'text'):
 		act_get = attr_act_get()
 		attr.accept(act_get)
-		#text = act_get.get_text()
 
 		self._text = '<INPUT type="%s" maxlength="%s" name="%s"%s ' \
 				'value="%s"%s>' % (inp_type, length, self.__parm_name,
 				self.__get_handler_text(), act_get.get_text(),
 				self.__lock_str(attr.is_locked()))
+		if attr.is_locked():
+			self._text += '<INPUT type="hidden" name="%s" ' \
+				'value="%s">' % (self.__parm_name, attr.get())
 
 		self.__parm_name = None
 
 	def __lock_str(self, is_locked):
 		return is_locked and ' disabled' or ''
+
+	def visit_text(self, attr):
+		act_get = attr_act_get()
+		attr.accept(act_get)
+
+		self._text = '<TEXTAREA name="%s"%s%s>%s</TEXTAREA>' % \
+				(self.__parm_name, self.__get_handler_text(),
+				self.__lock_str(attr.is_locked()), act_get.get_text())
+		if attr.is_locked():
+			self._text += '<INPUT type="hidden" name="%s" ' \
+				'value="%s">' % (self.__parm_name, attr.get())
+
+		self.__parm_name = None
+
+	def visit_sql_id(self, attr):
+		self.visit_int(attr)
 
 	def visit_string(self, attr):
 		self.generic_text(attr, attr.get_length())

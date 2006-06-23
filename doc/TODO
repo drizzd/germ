@@ -7,6 +7,10 @@ o Put a simple demo up on sourceforge
 o pso seems to be unmaintained. Find an alternative (e.g. weblib) or do it
   yourself. Use mysql instead of files to store session data.
 
+  Update: have a look at dataenc
+  (http://www.voidspace.org.uk/python/modules.shtml#dataenc). Maybe move
+  authentication specific data to 'auth' table.
+
 o Add Distutils support
 
 o Find a way to check that all foreign keys have the same type (and length).
