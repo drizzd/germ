@@ -27,6 +27,11 @@ o Save <ITEM> state (no_valid_keys, permission_denied, ...) between requests.
 o Cache entity and action instances (singleton). Provide entity copy for
   manipulations.
 
+o Dynamic permission functions get an attribute passed, even though at the
+  moment it's not used anywhere. Maybe we can drop it altogether. That way,
+  dynamic attributes permissions and dynamic entity permissions would look
+  almost the same.
+
 o rewrite db_iface and add support for databases other than mysql
 
 o Additional privilege features.

@@ -309,12 +309,12 @@ class entity:
 	def __has_attr(self, attr):
 		has_attr = self._attr_map.has_key(attr)
 
-		# Do not raise an error if attribute does not exist. We
-		# do not want the user to spy on secret attributes
-		if not has_attr:
-			from germ.error.error import error
-			error(error.warn, errmsg.nonexistent_attr,
-				'table: %s, attribute: %s' % (self._name, attr))
+		## Do not raise an error if attribute does not exist. We
+		## do not want the user to spy on secret attributes
+		#if not has_attr:
+		#	from germ.error.error import error
+		#	error(error.warn, errmsg.nonexistent_attr,
+		#		'table: %s, attribute: %s' % (self._name, attr))
 
 		return has_attr
 
@@ -370,9 +370,12 @@ class entity:
 			if attr in self._pk_set or a.perm(action):
 				return a
 
-		from germ.error.error import error
-		raise error(error.fail, errmsg.nonexistent_attr,
-			'table: %s, attribute: %s' % (self._name, attr))
+		#from germ.error.error import error
+		#raise error(error.fail, errmsg.nonexistent_attr,
+		#	'table: %s, attribute: %s' % (self._name, attr))
+
+		from germ.attr.dummy import dummy
+		return dummy()
 
 	def __get_attr_items(self):
 		return self._attr_map.iteritems()
@@ -434,3 +437,6 @@ class entity:
 
 #			if not (attr.is_set() and attr.dyn_perm(act_str)(attr)):
 #				attr.set_sql(rec[i])
+
+	def substitute_attr(self, key, attr):
+		self._attr_map[key] = attr

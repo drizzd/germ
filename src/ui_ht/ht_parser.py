@@ -16,6 +16,8 @@ class ht_parser(htmlproc):
 		self._content = ''
 		self._session = {}
 
+		self.__unknown_variable = False
+
 	def set_params(self, content, session):
 		self._content = content
 		self._session = session
@@ -40,11 +42,16 @@ class ht_parser(htmlproc):
 
 		entity = self.__check_item(ent_str, act_str)
 
-		for k in attr_map:
+		for k in attr_map.keys():
 			import re
 
 			attr_map[k] = re.sub(r'\$([A-Za-z_][A-Za-z0-9_]*)',
 					self.__variable, attr_map[k])
+
+			if self.__unknown_variable:
+				attr_map.pop(k)
+
+				self.__unknown_variable = False
 
 		if entity is not None:
 			self.__item_stack.append((attr_map, entity, act_str))
@@ -113,6 +120,7 @@ class ht_parser(htmlproc):
 		varname = match.group(1)
 
 		if not self._session.has_key(varname):
+			self.__unknown_variable = True
 			return ''
 
 		val = self._session[varname]

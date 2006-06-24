@@ -1,3 +1,21 @@
+more or less solved bugs:
+
+- edit news (logged out): I think the problem is that we have PKs without
+  edit/submit permission now.
+  Update: Ok, looks like this was my fault. But it seems to be awfully easy to
+  make a mistake by having a relation condition for an action which is not
+  permitted. I'll have to think about this.
+
+- post news (logged out): Ok, this is really a problem with pre-locking the
+  username if it does not exist. We could solve this by not setting an item
+  parameter with non-existent session variables. If we then let an attempt to
+  lock unset variables fail silently, the pre-locking is simply ignored.
+  On the other hand, pre-locking seems to cause many errors. Maybe it would be
+  better to forget pre-locking and use automatic locking (i.e., locking if
+  there is only one choice) instead. But that still would not lock attributes
+  right away, because we still want the user to be able to see that there is
+  only one choice.
+
 split germ action and entity files into different directories, like this:
 
 action/* (action specific implementation)

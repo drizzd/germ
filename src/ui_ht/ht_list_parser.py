@@ -13,7 +13,7 @@ class ht_list_parser(ht_parser):
 		self.__rec = None
 
 	def set_params(self, content, session, rec):
-		ht_parser.set_params(content, session)
+		ht_parser.set_params(self, content, session)
 
 		self.__rec = rec
 
@@ -26,13 +26,10 @@ class ht_list_parser(ht_parser):
 			from germ.error.error import error
 			raise error(error.warn, 'Invalid attr tag', 'name: %s' % (name))
 
-		try:
-			attr = self.__rec.get_attr(name, 'view')
-		except nonexistent_attr, e:
-			return ''
+		attr = self.__rec.get_attr(name, 'view')
 
 		from attr_act_view import attr_act_view
 		act_view = attr_act_view()
 
 		attr.accept(act_view)
-		return act_get.get_text()
+		return act_view.get_text()

@@ -10,6 +10,9 @@ class attr_act_set(attr_action):
 	def __init__(self, val):
 		self.__val = val
 
+	def visit_sql_id(self, attr):
+		attr.set(self.__val)
+
 	def visit_text(self, attr):
 		attr.set(self.__val)
 

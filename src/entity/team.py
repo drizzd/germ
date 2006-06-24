@@ -4,19 +4,20 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from erm.ent_table import *
-from erm.relation import *
+from germ.erm.ent_table import *
+from germ.erm.relation import *
 
-from txt import label
-from attr.attribute import perm
-from attr.string import *
+from germ.txt import label
+from germ.attr.attribute import perm
+from germ.attr.string import *
 
+# TODO: make 'leader' editable, but only by the leader
 class team(ent_table):
 	def __init__(self):
 		ent_table.__init__(self, attributes = [
-			('party', string(label.party, perm.submit, '', 10)),
-			('tourney', string(label.tourney, perm.submit, '', 32)),
-			('name', string(label.team, perm.submit, None, 32)),
+			('party', string(label.party, perm.all, '', 20)),
+			('tourney', string(label.tourney, perm.all, '', 32)),
+			('name', string(label.team, perm.all, None, 32)),
 			('leader', string(label.leader, perm.all, '', 10))
 			],
 			primary_keys = [ 'party', 'tourney', 'name' ],
@@ -57,7 +58,17 @@ class team(ent_table):
 						# make sure user is not a leader of another team
 						# already
 			cond = {	'submit':	"lt.leader IS NULL" },
-			outer_join =	"LEFT" )
+			outer_join = "LEFT" ),
+				relation(
+			table = 'team',
+			alias = 'urt',
+			keys = {	'party':	'party',
+						'tourney':	'tourney',
+						'name':		'name' },
+						# make sure user is the leader of the team
+			cond = {	'edit':		"urt.leader = $userid" },
+			# has to be an outer join so this relation is ignored for submit
+			outer_join = "LEFT" )
 				],
 			item_txt = {
 				'edit': {

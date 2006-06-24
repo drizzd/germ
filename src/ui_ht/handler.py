@@ -219,9 +219,6 @@ def get_content(form, session):
 			from attr_act_set import attr_act_set
 
 			a.accept(attr_act_set(value))
-
-			if attr == cf.pwd_str:
-				error(error.debug, "password: %s" % a.get())
 		except invalid_parm, e:
 			found_invalid_parm = True
 
@@ -286,10 +283,11 @@ def get_content(form, session):
 				and (not do_exec or found_invalid_parm):
 			display_errors = False
 
-		error_str += str(e) + "<BR />\n<BR />\n"
+		error_str = str(e) + "<BR />\n<BR />\n"
 
 		if isinstance(e, missing_lock):
-			pass
+			if not do_exec:
+				error_str = str(do_not_exec()) + "<BR />\n<BR />\n"
 		elif isinstance(e, invalid_parm):
 			pass
 		elif isinstance(e, do_not_exec):

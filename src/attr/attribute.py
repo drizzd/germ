@@ -57,8 +57,10 @@ class attribute:
 
 	def lock(self):
 		if not self.is_set():
-			from germ.error.error import error
-			raise error(error.fail, errmsg.tried_locking_unset_attr)
+			# Let this pass for now (important for pre-locking).
+			pass
+			#from germ.error.error import error
+			#raise error(error.fail, errmsg.tried_locking_unset_attr)
 		else:
 			self.__locked = True
 
@@ -152,6 +154,9 @@ class attribute:
 
 	def get_error(self):
 		return self.__error_vec
+
+	def __str__(self):
+		return str(self._val)
 
 	def _format_error(self):
 		from germ.error.error import error

@@ -4,14 +4,14 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from erm.ent_table import *
-from erm.relation import *
+from germ.erm.ent_table import *
+from germ.erm.relation import *
 
-from txt import label
-from attr.attribute import perm
-from attr.string import *
-from attr.date import *
-from attr.choice import *
+from germ.txt import label
+from germ.attr.attribute import perm
+from germ.attr.string import *
+from germ.attr.date import *
+from germ.attr.choice import *
 
 class party(ent_table):
 	opt_status = [
@@ -24,7 +24,7 @@ class party(ent_table):
 		from users import rank_check
 
 		ent_table.__init__(self, attributes = [
-			('name', string(label.party, perm.submit, '', 10)),
+			('name', string(label.party, perm.all, '', 20)),
 			('status', choice(label.party_status, self.opt_status, perm.edit, 0)),
 			('date', date(label.date, perm.all)),
 			('organizer', string(label.organizer, perm.all, '', 10)),

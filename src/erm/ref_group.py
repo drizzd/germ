@@ -182,8 +182,8 @@ class ref_group:
 				if attr.perm(act_str):
 					missing_lock = True
 
-				if key in pk_set:
-					missing_lock = missing_pk_lock = True
+					if key in pk_set:
+						missing_pk_lock = True
 
 				if len(self.__joins) == 0:
 					return (missing_lock, missing_pk_lock)

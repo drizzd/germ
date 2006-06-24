@@ -4,14 +4,14 @@
 #  Copyright (C) 2005 Clemens Buchacher <drizzd@aon.at>
 #
 
-from erm.ent_table import *
-from erm.relation import *
+from germ.erm.ent_table import *
+from germ.erm.relation import *
 
-from txt import label
-from attr.attribute import perm
-from attr.string import *
-from attr.choice import *
-from attr.int import *
+from germ.txt import label
+from germ.attr.attribute import perm
+from germ.attr.string import *
+from germ.attr.choice import *
+from germ.attr.int import *
 
 class tourney(ent_table):
 	def __init__(self):
@@ -37,8 +37,8 @@ class tourney(ent_table):
 		from users import rank_check
 
 		ent_table.__init__(self, attributes = [
-			('party', string(label.party, perm.submit, '', 10)),
-			('name', string(label.tourney, perm.submit, None, 32)),
+			('name', string(label.tourney, perm.all, None, 32)),
+			('party', string(label.party, perm.all, '', 20)),
 			('organizer', string(label.organizer, perm.all, '', 10)),
 			('mode', choice(label.tourney_mode, opt_mode, perm.all, 0)),
 			('phase', choice(label.tourney_phase, opt_phase, perm.edit, 0)),
@@ -70,4 +70,5 @@ class tourney(ent_table):
 					'de': 'Turnier l"oschen' } },
 			perm = {
 				'all':	rank_check(self, 2),
-				'view':	True } )
+				'view':	True,
+				'list': True } )

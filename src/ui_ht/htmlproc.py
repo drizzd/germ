@@ -83,7 +83,7 @@ class htmlproc(HTMLParser):
 		self.handle_data('&%s' % name)
 
 		import htmlentitydefs
-		if htmlentitydefs.entitydefs.has_key(ref):
+		if htmlentitydefs.entitydefs.has_key(name):
 			self.handle_data(';')
 
 	def handle_decl(self, decl):
