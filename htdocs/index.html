@@ -3,7 +3,7 @@
 <head>
 	<title>germ - The Generic Entity-Relationship Model</title>
 	<meta name="author" content="Clemens Buchacher">
-	<meta name="date" content="2005-12-31">
+	<meta name="date" content="2006-06-24">
 	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
 </head>
 
@@ -12,6 +12,15 @@
 <center><h2>germ - The Generic Entity-Relationship Model</h2></center>
 
 <h4>News</h4>
+<p><b>2006-06-24</b>: I added a whole lot of small features in the last few
+days. Germ already supports most of the features I need for lpms, so I will
+soon start with the tournament system (single/double elimination), which will
+no doubt pose new challenges to germ. My hope is that the farther development
+goes, the less I will have to change about germ itself. After all, germ is the
+<i>generic</i> ER model.</p>
+<p>The most notable new feature is probably the <q>list</q> action and the
+possibility to customize HTML output by special HTML tags. See <a
+	href="/lpms/htdocs/news.html">news.html</a> as an example.</p>
 <p><b>2005-12-30</b>: I finally came around to install a first demonstration.
 You can view it <a href="/cgi-bin/lpms.py">here</a>. It's quite a complex
 example of how you can use germ. There's also a diagram of the ER model.</p>
@@ -20,9 +29,10 @@ example of how you can use germ. There's also a diagram of the ER model.</p>
 (password equals username). Can you determine <i>testasdf</i>'s identity?</p>
 
 <ul>
-	<li><a href="/lpms">lpms source code</a>: 'cf.py' contains configuration
-	variables used by germ, 'entity' contains the entity-relationship
-	specification, 'htdocs' contains the html template.</li>
+	<li><a href="/lpms">lpms source code</a>: <q>cf.py</q> contains
+	configuration variables used by germ, <q>entity</q> contains the
+	entity-relationship specification, <q>htdocs</q> contains the html
+	template.</li>
 	<li><a href="/cgi-bin/lpms.py">/cgi-bin/lpms.py</a>: This is the start-up
 	script.  It executes germ and points it to lpms.</li>
 </ul>
@@ -86,7 +96,7 @@ to try it nevertheless you need the following:
 			<a href="mailto:drizzd@users.sf.net">Clemens Buchacher</a>
 		</td>
 		<td align="right">
-			2005-12-31
+			2006-06-24
 		</td>
 	</tr>
 </table>

@@ -29,7 +29,7 @@ o Cache entity and action instances (singleton). Provide entity copy for
 
 o Dynamic permission functions get an attribute passed, even though at the
   moment it's not used anywhere. Maybe we can drop it altogether. That way,
-  dynamic attributes permissions and dynamic entity permissions would look
+  dynamic attribute permissions and dynamic entity permissions would look
   almost the same.
 
 o rewrite db_iface and add support for databases other than mysql
@@ -55,7 +55,7 @@ o Additional privilege features.
 
     Update: I implemented dynamic attribute permissions as described above.
     Unfortunately, one has to be very careful when implementing dynamic
-    permisisons. When the permission check functions are called it's not
+    permissions. When the permission check functions are called it's not
     guaranteed that the attributes are set. The current policy is that you have
     to verify that the attributes you need are set before using them. If they
     are not, simply grant permission.
@@ -96,9 +96,13 @@ o JavaScript Focus.
   - Automatically focus the first form element (omitting the lock radio
     button). Or is that annoying?
 
+    Update: Done. And it doesn't annoy me for the moment.
+
   - Automatically select the lock radio button if the corresponding form
     element is edited (onchange="document.to_lockx[myelement].focus() or
     something like that)
+
+    Update: Done. TODO: Make sure it ignores disabled elements.
 
 o 'view' tables.
 
@@ -111,14 +115,14 @@ o Automatic locking.
   Automatically lock fields with only one choice.
   
   Only do this after at least one step to give the user the chance to see that
-  there is only one choice.  Otherwise this could be very confusing (imagine
-  the user locks one field purposely to see which choice he has left for the
-  other fields).
+  there is only one choice. Otherwise this could be very confusing (imagine the
+  user locks one field purposely to see which choice he has left for the other
+  fields).
 
   On the other hand, if the user wants to edit his profile and even though he
   has only one choice, he still has to choose to edit himself. We can fix this,
   though, by providing an <ITEM> which already has the primary key set and
-  locked.
+  locked (pre-locking).
 
 o File Attribute.
 
@@ -142,12 +146,19 @@ o Use more powerful templating for Hypertext User Interface
   - Have a look at albatross/cheetah etc. At least for the 'list' action we
     definitely need more freedom for HTML design.
 
+    Update: Okay, I've implemented ``list'' and ``attr'' tags to allow
+    customized output. It's weird, but the templating engines out there all
+    seem allow execution of python code within html code, which is exactly what
+    I want to avoid with templates.
+
 o User Interfaces
 
   - Tcl/Tk user interface
 
     Would be nice to implement more 'active' elements, like intrusion detection
     or other 'alert' features.
+
+    Note: This could also be done with AJAX for the Hypertext UI.
 
 o Refactor keylist generation algorithm (ref_group.generate_keylist)
 
