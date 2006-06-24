@@ -96,13 +96,20 @@ class table_action:
 		pass
 
 	def __doit(self):
-		sql_query = self._get_sql_query()
+		query_str = self._get_sql_query()
 
-		if sql_query is None:
+		if query_str is None:
 			return
 
 		from germ.lib.db_iface import db_iface
-		rset = db_iface.query(sql_query)
+		from _mysql_exceptions import ProgrammingError
+
+		try:
+			rset = db_iface.query(query_str)
+		except ProgrammingError, e:
+			self._tbl.create()
+
+			rset = db_iface.query(query_str)
 
 		if self.__save_rset:
 			self._tbl.set_rset(rset)

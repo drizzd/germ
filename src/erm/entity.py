@@ -367,7 +367,7 @@ class entity:
 		if self.__has_attr(attr):
 			a = self._attr_map[attr]
 
-			if attr in self._pk_set or a.perm(action):
+			if attr in self._pk_set or a.dyn_perm(action):
 				return a
 
 		#from germ.error.error import error

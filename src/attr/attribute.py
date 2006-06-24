@@ -130,10 +130,7 @@ class attribute:
 			# TODO: always return true self.__perm.has_key but PK not set
 			return call_if(self.__perm.get(action, always_false), self)
 		else:
-			from germ.error.error import error
-			error(error.debug, 'dyn_perm: not a dict')
-
-			return self.perm(action)
+			return action in self.__perm
 
 	def get(self):
 		return self._val

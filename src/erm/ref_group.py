@@ -309,15 +309,18 @@ class ref_group:
 				pass
 				#self.__key_map = dict(zip(key_vec, len(key_vec)*[[]]))
 			else:
-				# ???
 				# This can happen if user tampers with locked parameters or if
 				# the user interface is buggy and changes locked parameters.
-				from germ.error.error import error
-				from germ.txt import errmsg
-				raise error(error.fail, errmsg.invalid_key, 'entity: %s, ' \
-						'action: %s, res_ok: %s, missing_lock: %s' % \
-						(self.__ent.get_name(), act_str,
-						res_ok, missing_lock))
+				# Thus, a reason for this error can be pre-locking (which is
+				# essentially tampering with locked parameters), rasing a
+				# no_valid_keys exception is probably reasonable.
+				pass
+				#from germ.error.error import error
+				#from germ.txt import errmsg
+				#raise error(error.fail, errmsg.invalid_key, 'entity: %s, ' \
+				#		'action: %s, res_ok: %s, missing_lock: %s' % \
+				#		(self.__ent.get_name(), act_str,
+				#		res_ok, missing_lock))
 
 			from germ.error.no_valid_keys import no_valid_keys
 			raise no_valid_keys()

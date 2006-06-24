@@ -78,16 +78,16 @@ def print_list(entity, act_str, page, prompt_pk_only, display_errors):
 
 	listtext += "\t<TR>"
 
-	for attr in entity.attr_iter('view'):
-		listtext += "<TH>%s</TH>" % attr.label()
+	for aid in entity.attr_id_iter('view'):
+		listtext += "<TH>%s</TH>" % entity.get_attr_nocheck(aid).label()
 
 	listtext += "</TR>\n"
 
 	for rec in entity.rsets('view'):
 		listtext += "\t<TR>"
 
-		for attr in rec.attr_iter('view'):
-			listtext += get_cell(attr, act_view)
+		for aid in rec.attr_id_iter('view'):
+			listtext += get_cell(rec.get_attr(aid, 'view'), act_view)
 
 		listtext += "</TR>\n"
 

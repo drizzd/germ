@@ -24,6 +24,7 @@ pwd_str = 'p294e5204'
 ht_root = os.environ.get('DOCUMENT_ROOT')
 ht_index = os.environ.get('SCRIPT_NAME')
 ht_docpath = '/home/myself/lpms/htdocs'
+ht_default_page = None
 ht_default_entity = None
 ht_default_action = None
 ht_parm_prefix_attr = 'a_'
