@@ -1,3 +1,13 @@
+bugs:
+
+- when the tourney settings are edited, for example the status is changed from
+  'in preparation' to 'started', the old status is displayed afterwards, even
+  though the status has been changed successfully.
+
+  I think the problem is that 'edit' responses are handled as lists, i.e. the
+  result is retrieved from some saved rset, which is not up-to-date after the
+  'edit'.
+
 more or less solved bugs:
 
 - edit news (logged out): I think the problem is that we have PKs without

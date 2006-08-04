@@ -19,7 +19,7 @@ class news(ent_table):
 		from germ.lib.chk import greater_equal
 
 		ent_table.__init__(self, attributes = [
-			('id', sql_id(label.sql_id, perm.edit)),
+			('id', sql_id(label.id, perm.edit)),
 			('username', string(label.username, perm.all, '', 10)),
 			('date', date(label.date, perm.submit)),
 			('content', text(label.content, perm.all))

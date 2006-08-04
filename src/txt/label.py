@@ -93,7 +93,7 @@ privacy = {
 	'en': 'Privacy',
 	'de': 'Datenschutz' }
 
-party_status = {
+status = {
 	'en': 'State',
 	'de': 'Status' }
 
@@ -128,5 +128,22 @@ content = {
 	'en':	'Content',
 	'de':	'Inhalt' }
 
-sql_id = {
+id = {
 	'en':	'Id' }
+
+round = {
+	'en':	'Round',
+	'de':	'Runde' }
+
+stage = {
+	'en':	'Stage',
+	'de':	'Stufe' }
+
+bracket = {
+	'en':	'Bracket' }
+
+team1 = {
+	'en': 'Team 1' }
+
+team2 = {
+	'en': 'Team 2' }

@@ -28,7 +28,11 @@ class table_action:
 		# Fill the table with existing values. For some actions, such as 'list'
 		# or 'submit' this would not make any sense.
 		if self.__fill_table:
-			self._tbl._fill(self._tbl.get_rec(), self.__act_str)
+			rec = self._tbl.get_rec()
+			self._tbl._fill(rec, self.__act_str)
+
+		# execute pre-action function
+		self._tbl.pre(self.__act_str)
 
 		if missing_lock and self.__raise_missing_lock:
 			from germ.error.missing_lock import missing_lock
@@ -37,9 +41,6 @@ class table_action:
 		if not do_exec:
 			from germ.error.do_not_exec import do_not_exec
 			raise do_not_exec()
-
-		# execute pre-action function
-		self._tbl.pre(self.__act_str)
 
 		# execute SQL query
 		self.__doit()

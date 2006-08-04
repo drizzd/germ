@@ -73,4 +73,6 @@ class ent_table(entity):
 					"or has multiple records", "number of records: %s" % \
 					len(rset))
 
+		self._rset = rset
+
 		return rset[0]

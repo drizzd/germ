@@ -78,7 +78,7 @@ class attr_act_form_field(attr_act_get):
 		self._text = '<SELECT name="%s"%s>\n' % (self.__parm_name, \
 				self.__lock_str(attr.is_locked()))
 
-		for i, choice in enumerate(attr.get_options()):
+		for i, choice in attr.get_options():
 			self._text += '\t<OPTION value="%s"%s>%s</OPTION>\n' % \
 					(i, i == attr.get() and ' selected' or '',
 						misc.txt_lang(choice))

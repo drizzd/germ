@@ -8,7 +8,7 @@ from attribute import *
 from germ.txt import label
 
 class sql_id(attribute):
-	def __init__(self, label = label.sql_id, perm = []):
+	def __init__(self, label = label.id, perm = []):
 		attribute.__init__(self, label, perm, None, [])
 
 	def _sql_str(self):

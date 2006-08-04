@@ -22,7 +22,7 @@ class entity:
 		for a in attributes:
 			self._attr_ids.append(a[0])
 
-		self.__rset = None
+		self._rset = None
 
 		from sets import Set
 		self._pk_set = Set(primary_keys)
@@ -92,18 +92,19 @@ class entity:
 		return self._session
 
 	def set_rset(self, rset):
-		if self.__rset is not None:
-			from germ.error.error import error
-			raise error(error.fail, "Attempt to set result set twice",
-				"entity: %s" % self._name)
+		if self._rset is not None:
+			pass
+			#from germ.error.error import error
+			#raise error(error.fail, "Attempt to set result set twice",
+			#	"entity: %s" % self._name)
 
-		self.__rset = rset
+		self._rset = rset
 
 	def has_rset(self):
-		return self.__rset is not None
+		return self._rset is not None
 
 	def rsets(self, act_str):
-		for rec in self.__rset:
+		for rec in self._rset:
 			self._fill(rec, act_str, overwrite = True)
 			yield self
 
@@ -413,6 +414,8 @@ class entity:
 
 	# fill in attribute values from given record
 	def _fill(self, rec, act_str, overwrite = False):
+		#rec = self._rset[0]
+
 		for i, aid in enumerate(self._attr_ids):
 			attr = self._attr_map[aid]
 

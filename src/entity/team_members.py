@@ -83,3 +83,21 @@ class team_members(ent_table):
 				'view': {
 					'en': 'Teammembers',
 					'de': 'Teammitglieder' } } )
+
+	def get_teams(cls, party, tourney, size, session, glob):
+		require_activation = size > 1
+
+		query_str = "SELECT team FROM %s WHERE " \
+				"party = '%s' AND tourney = '%s' %s " \
+				"GROUP BY team %s" % \
+				(cls.__name__, party, tourney,
+					require_activation and "AND active = 1" or '',
+					require_activation and "HAVING COUNT(1) >= %s" % size or '')
+
+		from germ.erm.helper import sql_query
+
+		rset = sql_query(query_str, session, glob)
+
+		return [i[0] for i in rset]
+
+	get_teams = classmethod(get_teams)

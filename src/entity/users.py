@@ -78,14 +78,19 @@ class users(ent_table):
 			('last_activity', date(label.last_activity, perm_staff))
 			],
 			primary_keys = [ 'username' ],
-			condition = {
+			relations = [
+				relation(
+			table = 'users',
+			alias = 'u',
+			keys = {	'username':	'username' },
+			cond = {
 				'edit':
-					# TODO: this does not work as it should
 					# user may only edit other users of lower rank, and he may
 					# only change their rank to one lower than his own;
 					# user may only lower own rank (or leave it)
-					"users.username = $userid OR " \
-					"($users.rank > 1 AND users.rank < $users.rank)" },
+					"u.username = $userid OR " \
+					"($users.rank > 1 AND u.rank < $users.rank)" } )
+				],
 			item_txt = {
 				'edit': {
 					'en': 'My Profile',
@@ -186,6 +191,7 @@ class users(ent_table):
 
 	get_rank = classmethod(get_rank)
 	
+	# ???
 	# TODO: move this to ent_table
 	def get_user_attr(cls, userid, attr):
 		if cls.__prev_attr[0] == userid and cls.__prev_attr[1] == attr:

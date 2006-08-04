@@ -25,7 +25,7 @@ class party(ent_table):
 
 		ent_table.__init__(self, attributes = [
 			('name', string(label.party, perm.all, '', 20)),
-			('status', choice(label.party_status, self.opt_status, perm.edit, 0)),
+			('status', choice(label.status, self.opt_status, perm.edit, 0)),
 			('date', date(label.date, perm.all)),
 			('organizer', string(label.organizer, perm.all, '', 10)),
 			('location', string(label.location, perm.all, '', 128)),

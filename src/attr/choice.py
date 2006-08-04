@@ -18,9 +18,16 @@ class choice(attribute):
 			raise error(error.fail, errmsg.attr_choice_nooptions)
 
 		self.__options = options
+		self.__mask = range(1, len(options)+1)
+
+	def set_mask(self, mask):
+		self.__mask = mask
 
 	def get_options(self):
-		return self.__options
+		for i, choice in enumerate(self.__options):
+			i = i + 1
+			if i in self.__mask:
+				yield (i, choice)
 
 	def _sql_str(self):
 		return str(self._val)
@@ -37,7 +44,7 @@ class choice(attribute):
 	def __str__(self):
 		from germ.lib import misc
 
-		return misc.txt_lang(self.__options[self._val])
+		return misc.txt_lang(self.__options[self._val - 1])
 
 	def accept(self, attr_act):
 		attr_act.visit_choice(self)
