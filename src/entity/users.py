@@ -65,8 +65,8 @@ class users(ent_table):
 		ent_table.__init__(self, attributes = [
 			('username', string(label.username, perm.all, None, 10,
 				[chk.identifier])),
-			(cf.pwd_str, passwd(label.passwd, [ 'submit' ], '', 30)),
-			('rank', choice(label.rank, opt_rank, perm_rank, 0)),
+			(cf.pwd_str, passwd(label.passwd, [ 'submit' ], '', 64)),
+			('rank', choice(label.rank, opt_rank, perm_rank, 1)),
 			('privacy', choice(label.privacy, opt_privacy, perm.all, 1)),
 			('surname', string(label.surname, perm_privacy1, '', 64)),
 			('forename', string(label.forename, perm_privacy1, '', 64)),
@@ -74,23 +74,30 @@ class users(ent_table):
 			('email', string(label.email, perm_privacy2, '', 128)),
 			('icquin', string(label.icquin, perm_privacy2, '', 16)),
 			('homepage', string(label.homepage, perm_privacy2, '', 128)),
-			('genre', choice(label.genre, opt_genre, perm_privacy2, 0)),
+			('genre', choice(label.genre, opt_genre, perm_privacy2, 1)),
 			('last_activity', date(label.last_activity, perm_staff))
 			],
 			primary_keys = [ 'username' ],
-			relations = [
-				relation(
-			table = 'users',
-			alias = 'u',
-			keys = {	'username':	'username' },
-			cond = {
+			#relations = [
+			#	relation(
+			#table = 'users',
+			#alias = 'u',
+			#keys = {	'username':	'username' },
+			#cond = {
+			#	'edit':
+			#		# user may only edit other users of lower rank, and he may
+			#		# only change their rank to one lower than his own;
+			#		# user may only lower own rank (or leave it)
+			#		"u.username = $userid OR " \
+			#		"($users.rank > 1 AND u.rank < $users.rank)" } )
+			#	],
+			condition = {
 				'edit':
 					# user may only edit other users of lower rank, and he may
 					# only change their rank to one lower than his own;
 					# user may only lower own rank (or leave it)
-					"u.username = $userid OR " \
-					"($users.rank > 1 AND u.rank < $users.rank)" } )
-				],
+					"username = $userid OR " \
+					"$users.rank > 1" },
 			item_txt = {
 				'edit': {
 					'en': 'My Profile',

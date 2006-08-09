@@ -10,7 +10,7 @@ from germ.error.error import error
 from germ.txt import errmsg
 
 class choice(attribute):
-	def __init__(self, label, options, perm = [], default = 0,
+	def __init__(self, label, options, perm = [], default = 1,
 			chk_func_vec = []):
 		attribute.__init__(self, label, perm, default, chk_func_vec)
 

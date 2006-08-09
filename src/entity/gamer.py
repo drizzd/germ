@@ -90,6 +90,9 @@ class gamer(ent_table):
 					'de': 'Abmelden' },
 				'view': {
 					'en': 'Gamers',
+					'de': 'Spieler' },
+				'list': {
+					'en': 'Gamers',
 					'de': 'Spieler' } },
 			action_txt = {
 				'submit': {

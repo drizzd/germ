@@ -30,6 +30,12 @@
 			float: right;
 			width: 70%;
 		}
+		#header {
+			clear: both;
+			text-align: center;
+			font-size: 2em;
+			padding-bottom: 20px;
+		}
 		#footer {
 			clear: both;
 			border-top: 1px solid silver;
@@ -67,6 +73,10 @@
 
 <body>
 
+<div id="header">
+	Tilt Intranet
+</div>
+
 <div id="menu">
 	<ul>
 	<item entity="auth" action="submit">
@@ -102,7 +112,7 @@
 	<item entity="gamer" action="edit" lock="username" a_username="$userid">
 		<li>$text$
 	</item>
-	<item entity="gamer" action="view">
+	<item entity="gamer" action="list" do_exec="">
 		<li>$text$
 	</item>
 	<item entity="gamer" action="delete" lock="username" a_username="$userid">
@@ -123,7 +133,7 @@
 	<item entity="tourney" action="edit">
 		<li>$text$
 	</item>
-	<item entity="tourney" action="view">
+	<item entity="tourney" action="list" do_exec="">
 		<li>$text$
 	</item>
 	<item entity="team" action="submit">
@@ -132,7 +142,7 @@
 	<item entity="team" action="edit">
 		<li>$text$
 	</item>
-	<item entity="team" action="view">
+	<item entity="team" action="list" do_exec="">
 		<li>$text$
 	</item>
 	<item entity="team_members" action="submit">
@@ -141,7 +151,7 @@
 	<item entity="team_members" action="edit">
 		<li>$text$
 	</item>
-	<item entity="team_members" action="view">
+	<item entity="team_members" action="list" do_exec="">
 		<li>$text$
 	</item>
 	<item entity="double_elimination" action="edit">

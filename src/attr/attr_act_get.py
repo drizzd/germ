@@ -41,7 +41,12 @@ class attr_act_get(attr_action):
 	def visit_date(self, attr):
 		from germ.lib import misc
 
-		self._text = misc.date_str_nice(attr.get())
+		date = attr.get()
+
+		if date is None:
+			self._text = ''
+		else:
+			self._text = misc.date_str_nice(attr.get())
 
 	def visit_bool(self, attr):
 		import germ.txt.misc

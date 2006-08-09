@@ -55,8 +55,8 @@ class team_members(ent_table):
 			keys = {	'party':	'party',
 						'tourney':	'name' },
 						# Make sure tournament is in preparation phase.
-			cond = {	'submit':	"tn.phase = '1'",
-						'edit':		"tn.phase = '1'" } ),
+			cond = {	'submit':	"tn.phase = '2'",
+						'edit':		"tn.phase = '2'" } ),
 				relation(
 			table =	'users',
 			keys = {	'username':		'username' },
@@ -82,10 +82,15 @@ class team_members(ent_table):
 					'de': 'Team beitreten' },
 				'view': {
 					'en': 'Teammembers',
+					'de': 'Teammitglieder' },
+				'list': {
+					'en': 'Teammembers',
 					'de': 'Teammitglieder' } } )
 
 	def get_teams(cls, party, tourney, size, session, glob):
-		require_activation = size > 1
+		# TODO: undo this
+		#require_activation = size > 1
+		require_activation = False
 
 		query_str = "SELECT team FROM %s WHERE " \
 				"party = '%s' AND tourney = '%s' %s " \

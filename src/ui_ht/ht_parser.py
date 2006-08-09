@@ -102,11 +102,15 @@ class ht_parser(htmlproc):
 			from germ.error.no_valid_keys import no_valid_keys
 			from germ.error.perm_denied import perm_denied
 			from germ.error.do_not_exec import do_not_exec
+			from germ.error.missing_lock import missing_lock
+			from germ.error.missing_pk_lock import missing_pk_lock
 
 			if isinstance(e, no_valid_keys) or isinstance(e, perm_denied):
 				self._hide += 1
 				return None
-			elif not isinstance(e, do_not_exec):#elif e.lvl() > error.notice:
+			elif not (isinstance(e, do_not_exec) or \
+					isinstance(e, missing_lock) or \
+					isinstance(e, missing_pk_lock)):
 				import sys
 				exctype, exc, tb = sys.exc_info()
 				raise exctype, exc, tb

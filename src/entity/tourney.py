@@ -44,19 +44,21 @@ class tourney(ent_table):
 			('name', string(label.tourney, perm.all + ['delete'], None, 32)),
 			('party', string(label.party, perm.all + ['delete'], '', 20)),
 			('organizer', string(label.organizer, perm.all, '', 10)),
-			('mode', choice(label.tourney_mode, opt_mode, perm.all, 0)),
-			('phase', choice(label.tourney_phase, opt_phase, perm.edit, 0)),
+			('mode', choice(label.tourney_mode, opt_mode, perm.all, 1)),
+			('phase', choice(label.tourney_phase, opt_phase, perm.edit, 1)),
 			('teamsize', int(label.teamsize, perm.all, 1, 2)) ],
 			primary_keys = [ 'party', 'name' ],
+			condition = {
+				'delete':	"phase = 2" },
 			relations = [
-				relation(
-			table = 'tourney',
-			alias = 'tn',
-			keys = {	'party':	'party',
-						'name':		'name' },
-			cond =	{
-				'delete':	"tn.phase = 1",
-				'edit':		"tn.phase = 1 OR tn.phase = 2" } ),
+			#	relation(
+			#table = 'tourney',
+			#alias = 'tn',
+			#keys = {	'party':	'party',
+			#			'name':		'name' },
+			#cond =	{
+			#	'delete':	"tn.phase = 1",
+			#	'edit':		"tn.phase = 1 OR tn.phase = 2" } ),
 				relation(
 			table =	'users',
 			alias = 'orga',
@@ -67,8 +69,8 @@ class tourney(ent_table):
 			keys =	{ 'party':	'name' },
 			# party must be on
 			cond =	{
-				'submit':	"party.status = 1 OR party.status = 2",
-				'edit':		"party.status = 1 OR party.status = 2" })
+				'submit':	"party.status = 2 OR party.status = 3",
+				'edit':		"party.status = 2 OR party.status = 3" })
 				],
 			item_txt = {
 				'edit': {
@@ -78,6 +80,9 @@ class tourney(ent_table):
 					'en': 'New Tourney',
 					'de': 'Turnier hinzuf"ugen' },
 				'view': {
+					'en': 'Tourneys',
+					'de': 'Turniere' },
+				'list': {
 					'en': 'Tourneys',
 					'de': 'Turniere' },
 				'delete': {

@@ -1,4 +1,42 @@
+- nmap -> seatplan
+- auto-locking
+- check for possible pre-locking errors, also with item selection
+  enabled
+- disable need for teammember activation
+- automatically add team creator to team members and activate him
+- fix problem with view after edit (becomes a list instead)
+- add custom list actions, e.g. a custom tourney list
+
+<list>
+<entry>
+	<p>
+		<item action='edit'>
+		<attr id='party'>
+		<attr id='name'>
+		<item action='list' table='$type'>,
+		<item action='submit' table='teams'>
+	</p>
+</entry>
+</list>
+
+- add pre_edit/pre_submit/post_edit/post_submit methods
+- add single elimination
+- add manual
+- add ranking for SE, DE (view table)
+- 'head' feature for custom lists
+
+future:
+
+- allow selecting certain values in lists to limit the result (not only with
+  PKs)
+- possibly combine view and list action; a view is a list action which
+  gradually reduces the results to one record
+- allow german umlauts
+- display tournament tree
+
 bugs:
+
+- prohibit team creation if already member of different team
 
 - when the tourney settings are edited, for example the status is changed from
   'in preparation' to 'started', the old status is displayed afterwards, even

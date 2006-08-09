@@ -28,7 +28,7 @@ class team(ent_table):
 			keys = {	'party':	'party',
 						'tourney':	'name' },
 						# make sure tournament is in preparation phase
-			cond = {	'submit':	"tn.phase = '1'" } ),
+			cond = {	'submit':	"tn.phase = '2'" } ),
 				relation(
 			table = 'gamer',
 			keys = {	'party':	'party',
@@ -47,8 +47,19 @@ class team(ent_table):
 						'name':		'team',
 						'leader':	'username' },
 			cond = {
-				'edit':		"tm.party IS NOT NULL OR leader.username = $userid" },
+						# ???
+				'edit':	"tm.party IS NOT NULL OR leader.username = $userid" },
 			outer_join = "LEFT" ),
+						# make sure user is not a member of another team
+			#	relation(
+			#table = 'team_members',
+			#alias = 'tm2',
+			#keys = {	'party':	'party',
+			#			'tourney':	'tourney',
+			#			'leader':	'username' },
+			#cond = {
+			#	'edit':		"tm.party IS NOT NULL OR leader.username = $userid" },
+			#outer_join = "LEFT" ),
 				relation(
 			table =	'team',
 			alias =	'lt',
@@ -78,4 +89,21 @@ class team(ent_table):
 					'en':	'Form New Team',
 					'de':	'Team bilden' },
 				'view': {
+					'en':	'Teams' },
+				'list': {
 					'en':	'Teams' } } )
+
+	def post(self, act_str):
+		if act_str == 'submit':
+			leader = self._attr_map['leader'].get()
+			party = self._attr_map['party'].get()
+			tourney = self._attr_map['tourney'].get()
+			team = self._attr_map['name'].get()
+
+			from germ.erm.helper import sql_query
+
+			sql_query("INSERT INTO team_members SET party = '%s', " \
+					"username = '%s', tourney = '%s', team = '%s', " \
+					"active = 1" % \
+					(party, leader, tourney, team), self._session,
+					self._globals)

@@ -238,6 +238,10 @@ class ref_group:
 			else:
 				search_cond.append(cond_str)
 
+		condition = self.__ent.get_condition(act_str)
+		if condition is not None:
+			search_cond.append('(%s)' % self.__substitute_vars(condition))
+
 		# generate sort order specification
 
 		# preserve order given by entity definition

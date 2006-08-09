@@ -59,11 +59,11 @@ class double_elimination(ent_table):
 					"(t1.bracket = 2 AND (2*t1.round + t1.stage) = " \
 					"(SELECT MAX(2*t2.round + t2.stage) " \
 					"FROM double_elimination AS t2 " \
-					"WHERE t1.bracket = t2.bracket)) OR " \
+					"WHERE t1.party = t2.party AND t1.tourney = t2.tourney AND t1.bracket = t2.bracket)) OR " \
 					"(t1.bracket = 1 AND (2*t1.round + t1.stage) = " \
 					"(SELECT MAX(2*t2.round + t2.stage) " \
 					"FROM double_elimination AS t2 " \
-					"WHERE 1))" } ),
+					"WHERE t1.party = t2.party AND t1.tourney = t2.tourney))" } ),
 				relation(
 			table =	'team',
 			alias = 'tm1',
@@ -236,11 +236,11 @@ class double_elimination(ent_table):
 
 		byes = 2**py_int(ceil(log(nr_teams,2))) - nr_teams
 
-		spacing = py_int(floor((byes + nr_teams)/byes))
+		if byes > 0:
+			spacing = (byes + nr_teams)/byes/2
 
-		# TODO: Distribute byes more evenly.
 		for i in xrange(byes):
-			teams.insert(spacing*i | 1, 'bye')
+			teams.insert(2*py_int(floor(spacing*i)) + 1, 'bye')
 
 		for i in xrange(len(teams)/2):
 			t1 = teams[2*i]
