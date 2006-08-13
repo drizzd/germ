@@ -13,8 +13,13 @@ class tbl_act_list(table_action):
 
 	def _get_sql_query(self):
 		name = self._tbl.get_name()
+		key = self._tbl.get_attr_sql()
 
-		return "SELECT * FROM %s" % name
+		if key == '':
+			key = '1'
+
+		#return "SELECT * FROM %s" % name
+		return "SELECT * FROM %s WHERE %s" % (name, key)
 # TODO: remove, this has already been done in fill_table
 #		name = self._tbl.get_name()
 #		pk = self._tbl.get_attr_sql_pk()

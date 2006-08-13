@@ -21,7 +21,7 @@ class news(ent_table):
 		ent_table.__init__(self, attributes = [
 			('id', sql_id(label.id, perm.edit)),
 			('username', string(label.username, perm.all, '', 10)),
-			('date', date(label.date, perm.submit)),
+			('date', date(label.date, perm.submit + ['list'])),
 			('content', text(label.content, perm.all))
 			],
 			primary_keys = [ 'id' ],
@@ -31,11 +31,11 @@ class news(ent_table):
 			keys = {	'username':	'username' },
 			cond = {
 				'edit':
-					"users.username = $userid",
+					"users.username = $userid OR $users.rank > users.rank",
 				'submit':
-					"users.username = $userid AND $users.rank > 1",
+					"users.username = $userid AND $users.rank > 0",
 				'delete':
-					"users.username = $userid" }),
+					"users.username = $userid OR $users.rank > users.rank" }),
 				],
 			item_txt = {
 				'edit': {

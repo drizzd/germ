@@ -1,10 +1,9 @@
+- use get_cur_attr in dynamic permissions
+
+- 'list' does not provide keys for limiting non-key attributes
 - nmap -> seatplan
 - auto-locking
-- check for possible pre-locking errors, also with item selection
-  enabled
-- disable need for teammember activation
-- automatically add team creator to team members and activate him
-- fix problem with view after edit (becomes a list instead)
+- check for possible pre-locking errors
 - add custom list actions, e.g. a custom tourney list
 
 <list>
@@ -33,18 +32,7 @@ future:
   gradually reduces the results to one record
 - allow german umlauts
 - display tournament tree
-
-bugs:
-
-- prohibit team creation if already member of different team
-
-- when the tourney settings are edited, for example the status is changed from
-  'in preparation' to 'started', the old status is displayed afterwards, even
-  though the status has been changed successfully.
-
-  I think the problem is that 'edit' responses are handled as lists, i.e. the
-  result is retrieved from some saved rset, which is not up-to-date after the
-  'edit'.
+- hash permission results
 
 more or less solved bugs:
 
@@ -63,9 +51,3 @@ more or less solved bugs:
   there is only one choice) instead. But that still would not lock attributes
   right away, because we still want the user to be able to see that there is
   only one choice.
-
-split germ action and entity files into different directories, like this:
-
-action/* (action specific implementation)
-entity/* (entity specific implementation)
-erm/* (entity specifications)

@@ -25,7 +25,7 @@ class party(ent_table):
 
 		ent_table.__init__(self, attributes = [
 			('name', string(label.party, perm.all, '', 20)),
-			('status', choice(label.status, self.opt_status, perm.edit, 1)),
+			('status', choice(label.status, self.opt_status, perm.edit)),
 			('date', date(label.date, perm.all)),
 			('organizer', string(label.organizer, perm.all, '', 10)),
 			('location', string(label.location, perm.all, '', 128)),
@@ -52,5 +52,5 @@ class party(ent_table):
 					'en': 'Delete Party',
 					'de': 'Party l"oschen' } },
 			perm = {
-				'all':	rank_check(self, 2),
+				'all':	rank_check(self, 1),
 				'view':	True } )

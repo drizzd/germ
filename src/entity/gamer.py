@@ -16,18 +16,24 @@ from germ.attr.bool import *
 # TODO: make sure user can not change the 'paid' field
 class gamer(ent_table):
 	def __init__(self):
-		from users import rank_check
+		#from users import rank_check
 
+		#perm_paid = {
+		#		'view': True,
+		#		'edit': rank_check(self, 1) }
 		perm_paid = {
 				'view': True,
-				'edit': rank_check(self, 2) }
+				'edit': self.check_paid }
+
+		perm_seat = {
+				'edit': self.check_seat }
 
 		from germ.lib.chk import greater_equal
 
 		ent_table.__init__(self, attributes = [
 			('party', string(label.party, perm.all + ['delete'], '', 20)),
 			('username', string(label.username, perm.all + ['delete'], '', 10)),
-			('seat', int(label.seat, perm.edit, 0, 8, [greater_equal(0)])),
+			('seat', int(label.seat, perm_seat, 0, 8, [greater_equal(0)])),
 			('paid', bool(label.paid, perm_paid, 0))
 			],
 			primary_keys = [ 'party', 'username' ],
@@ -37,40 +43,30 @@ class gamer(ent_table):
 			keys = {	'username':	'username' },
 			cond = {
 				'edit':
-					"(users.username = $userid AND " \
-						# make sure user has paid
-						"(gamer.paid = 1 OR $users.rank > 1)) OR " \
-					"($users.rank > 1 AND users.rank < $users.rank)",
-				'submit':
 					"users.username = $userid OR " \
-					"($users.rank > 1 AND users.rank < $users.rank)",
+					"users.rank < $users.rank",
+					#"(users.username = $userid AND " \
+					#	# make sure user has paid
+					#	"(gamer.paid = TRUE OR $users.rank > 0)) OR " \
+					#"users.rank < $users.rank",
+				'submit':
+					"users.username = $userid OR users.rank < $users.rank",
 				'delete':
 					# The 'gamer.paid = 0' condition should make sure that the
 					# gamer is not subscribed to any tournaments yet, so that
 					# cancelling the registration does not violate any
 					# dependencies. Cancelling a registration after the gamer
 					# has paid requires special considerations.
-					"(users.username = $userid OR " \
-					"($users.rank > 1 AND users.rank < $users.rank)) " \
-					"AND gamer.paid = 0" }),
+					"(users.username = $userid OR users.rank < $users.rank) " \
+					"AND gamer.paid = FALSE" }),
 				relation(
 			table =	'party',
 			keys = {	'party':	'name' },
-			cond = {		# party has to be in registration phase
-				'submit':	"party.status = 1 OR $users.rank > 1",
-				'edit':		"party.status = 1 OR $users.rank > 1" }),
-			# Ok, I don't think this will work. We could handle this with
-			# dynamic permissions though. That way, the user will be able to
-			# enter the edit form, even if he can't change anything.
-#				relation(
-#			table = 'gamer',
-#			alias = 'haspaid',
-#			keys = {	'party':	'party',
-#						'username':	'username' },
-#			cond = {	# make sure user can not change the 'paid' field
-#				'edit':	"$users.rank > 1 OR gamer.paid = haspaid.paid" },
-#			# has to be an outer join so this relation is ignored for submit
-#			outer_join = "LEFT"),
+			cond = {
+				# party has to be in registration phase or
+				# running phase
+				'submit':	"party.status IN (1, 2)",
+				'edit':		"party.status IN (1, 2)" }),
 				relation(
 			table = 'gamer',
 			alias = 'seats',
@@ -108,6 +104,41 @@ class gamer(ent_table):
 				'delete': {
 					'en': 'You have cancelled your party registration',
 					'de': 'Sie sind abgemeldet' } })
+
+	def check_paid(self, attrs):
+		if not self.pks_locked():
+			return True
+
+		if self.has_paid():
+			return False
+
+		from users import rank_check
+
+		if rank_check(self, 1)():
+			return True
+
+	def check_seat(self, attrs):
+		if not self.pks_locked():
+			return True
+
+		return self.has_paid()
+
+	def has_paid(self):
+		# TODO: This is very similar to ent_table.get_rec().
+
+		from germ.erm.helper import sql_query
+
+		rset = sql_query("SELECT paid FROM %s WHERE %s" % \
+				(self._name, self.get_attr_sql_pk()), self._session,
+				self._globals)
+
+		if len(rset) != 1:
+			from germ.error.error import error
+			raise error(error.fail, "Invalid primary key: result is empty " + \
+					"or has multiple records", "number of records: %s" % \
+					len(rset))
+
+		return rset[0][0] == 1
 
 #	def check_rank(self, attrs):
 #		from germ.erm.helper import get_entity

@@ -16,9 +16,8 @@ class ent_table(entity):
 		args = vars()
 		del args['self']
 		entity.__init__(self, **args)
-#		entity.__init__(self, attributes, primary_keys, relations, condition,
-#				item_txt, action_txt, action_report, perm, pre, post,
-#				magic_var)
+
+		self._rec = None
 
 	def do_accept(self, action):
 		action.visit_table(self)
@@ -73,6 +72,13 @@ class ent_table(entity):
 					"or has multiple records", "number of records: %s" % \
 					len(rset))
 
-		self._rset = rset
+		rec = rset[0]
 
-		return rset[0]
+		self._rec = rec
+
+		return rec
+
+	def get_cur_attr(self, attr):
+		i = self._attr_ids.index(attr)
+
+		return self._rec[i]

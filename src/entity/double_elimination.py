@@ -11,7 +11,7 @@ from germ.txt import label
 from germ.attr.attribute import perm
 from germ.attr.string import string
 from germ.attr.bool import bool
-from germ.attr.int import int
+from germ.attr.int import int as attr_int
 from germ.attr.choice import choice
 
 class double_elimination(ent_table):
@@ -33,10 +33,10 @@ class double_elimination(ent_table):
 		ent_table.__init__(self, attributes = [
 			('party', string(label.party, perm.all, '', 20)),
 			('tourney', string(label.tourney, perm.all, '', 32)),
-			('round', int(label.round, perm.edit)),
-			('stage', int(label.stage, perm.edit)),
+			('round', attr_int(label.round, perm.edit)),
+			('stage', attr_int(label.stage, perm.edit)),
 			('bracket', choice(label.bracket, opt_bracket, perm.edit)),
-			('id', int(label.id, perm.edit)),
+			('id', attr_int(label.id, perm.edit)),
 			('team1', string(label.team1, perm.view, '', 32)),
 			('team2', string(label.team2, perm.view, '', 32)),
 			('status', choice(label.status, opt_status, perm.edit))
@@ -56,11 +56,11 @@ class double_elimination(ent_table):
 			# TODO: Is there a neater way to do this and can we get rid of the
 			# nested SELECT?
 			cond = {	'edit':
-					"(t1.bracket = 2 AND (2*t1.round + t1.stage) = " \
+					"(t1.bracket = 1 AND (2*t1.round + t1.stage) = " \
 					"(SELECT MAX(2*t2.round + t2.stage) " \
 					"FROM double_elimination AS t2 " \
 					"WHERE t1.party = t2.party AND t1.tourney = t2.tourney AND t1.bracket = t2.bracket)) OR " \
-					"(t1.bracket = 1 AND (2*t1.round + t1.stage) = " \
+					"(t1.bracket = 0 AND (2*t1.round + t1.stage) = " \
 					"(SELECT MAX(2*t2.round + t2.stage) " \
 					"FROM double_elimination AS t2 " \
 					"WHERE t1.party = t2.party AND t1.tourney = t2.tourney))" } ),
@@ -109,10 +109,10 @@ class double_elimination(ent_table):
 			round = [ [0, 0], [0, 0] ]
 
 			for bracket, rnd, stage, status in rset:
-				if status > 1:
-					round[bracket-1][stage] = rnd
+				if status > 0:
+					round[bracket][stage] = rnd
 				else:
-					round[bracket-1][stage] = -rnd
+					round[bracket][stage] = -rnd
 
 			if abs(round[1][0]) > abs(round[0][0]):
 				# Tourney is finished.
@@ -129,12 +129,12 @@ class double_elimination(ent_table):
 
 				rnd = round[0][0]
 
-				rset = sql_query("SELECT CASE status - 2 " \
-						"WHEN 0 THEN team1 " \
-						"WHEN 1 THEN team2 " \
+				rset = sql_query("SELECT CASE status - 1 " \
+						"WHEN 1 THEN team1 " \
+						"WHEN 2 THEN team2 " \
 						"ELSE NULL END " \
 						"FROM %s WHERE party = '%s' AND tourney = '%s' AND " \
-						"round = %s AND bracket = 1 " \
+						"round = %s AND bracket = 0 " \
 						"ORDER BY id" % \
 						(self._name, party, tourney, rnd),
 						self._session, self._globals)
@@ -153,14 +153,14 @@ class double_elimination(ent_table):
 				# Align losers of winner bracket and winners of loser
 				# bracket. Also swap neighbouring loser positions to reduce
 				# the chance of rematches.
-				rset = sql_query("SELECT CASE status-2 XOR bracket-1 " \
+				rset = sql_query("SELECT CASE (status - 1) XOR bracket " \
 						"WHEN 0 THEN team2 " \
 						"WHEN 1 THEN team1 " \
 						"ELSE NULL END " \
 						"FROM %s WHERE " \
 						"party = '%s' AND tourney = '%s' AND " \
 						"round = %s " \
-						"ORDER BY id - (bracket - 1) * (2 * (id %% 2) - 1), " \
+						"ORDER BY id - bracket * (2 * (id %% 2) - 1), " \
 						"bracket" % (self._name, party, tourney, rnd),
 						self._session, self._globals)
 
@@ -171,13 +171,13 @@ class double_elimination(ent_table):
 
 				rnd = round[1][1]
 
-				rset = sql_query("SELECT CASE status - 2 " \
-						"WHEN 0 THEN team1 " \
-						"WHEN 1 THEN team2 " \
+				rset = sql_query("SELECT CASE status " \
+						"WHEN 1 THEN team1 " \
+						"WHEN 2 THEN team2 " \
 						"ELSE NULL END " \
 						"FROM %s WHERE " \
 						"party = '%s' AND tourney = '%s' AND " \
-						"round = %s AND bracket = 2 AND stage = 1 " \
+						"round = %s AND bracket = 1 AND stage = 1 " \
 						"ORDER BY id" % \
 						(self._name, party, tourney, rnd),
 						self._session, self._globals)
@@ -190,13 +190,13 @@ class double_elimination(ent_table):
 
 				rnd = 1
 
-				rset = sql_query("SELECT CASE status - 2 " \
-						"WHEN 0 THEN team2 " \
-						"WHEN 1 THEN team1 " \
+				rset = sql_query("SELECT CASE status " \
+						"WHEN 1 THEN team2 " \
+						"WHEN 2 THEN team1 " \
 						"ELSE NULL END " \
 						"FROM %s WHERE " \
 						"party = '%s' AND tourney = '%s' AND " \
-						"round = %s AND bracket = 1 " \
+						"round = %s AND bracket = 0 " \
 						"ORDER BY id" % \
 						(self._name, party, tourney, rnd),
 						self._session, self._globals)
@@ -209,14 +209,14 @@ class double_elimination(ent_table):
 			if final:
 				# Create final round.
 
-				rset = sql_query("SELECT CASE status - 2 " \
-						"WHEN 0 THEN team1 " \
-						"WHEN 1 THEN team2 " \
+				rset = sql_query("SELECT CASE status " \
+						"WHEN 1 THEN team1 " \
+						"WHEN 2 THEN team2 " \
 						"ELSE NULL END " \
 						"FROM %s WHERE " \
 						"party = '%s' AND tourney = '%s' AND " \
 						"round = %s AND " \
-						"(bracket = 1 OR (bracket = 2 AND stage = 1)) " \
+						"(bracket = 0 OR (bracket = 1 AND stage = 1)) " \
 						"ORDER BY bracket" % \
 						(self._name, party, tourney, rnd),
 						self._session, self._globals)
@@ -230,59 +230,48 @@ class double_elimination(ent_table):
 
 		nr_teams = len(teams)
 
-		py_int = type(0)
-
 		from math import ceil, log, floor
 
-		byes = 2**py_int(ceil(log(nr_teams,2))) - nr_teams
+		byes = 2**int(ceil(log(nr_teams,2))) - nr_teams
 
 		if byes > 0:
 			spacing = (byes + nr_teams)/byes/2
 
 		for i in xrange(byes):
-			teams.insert(2*py_int(floor(spacing*i)) + 1, 'bye')
+			teams.insert(2*int(floor(spacing*i)) + 1, 'bye')
 
-		for i in xrange(len(teams)/2):
-			t1 = teams[2*i]
-			t2 = teams[2*i+1]
+		rnd = 1
+		bracket = 0
+		stage = 0
 
-			if t1 == 'bye':
-				# team 2 wins
-				status = 3
-			elif t2 == 'bye':
-				# team 1 wins
-				status = 2
-			else:
-				# pending
-				status = 1
-
-			query_str = "INSERT INTO %s SET tourney = '%s', party = '%s', " \
-					"round = 1, stage = 0, bracket = 1, id = %s, " \
-					"team1 = '%s', team2 = '%s', status = '%s' " \
-					% (cls.__name__, tourney, party, i, t1, t2, status)
-
-			from germ.erm.helper import sql_query
-
-			sql_query(query_str, session, glob)
+		cls.insert_round(teams, party, tourney, rnd, bracket, stage, session,
+				glob)
 
 	start = classmethod(start)
 
-	def _create_round(self, rset, party, tourney, rnd, bracket = 1, stage = 0):
-		py_int = type(0)
+	def _create_round(self, rset, party, tourney, rnd, bracket = 0, stage = 0):
+		rnd = rnd + int(not stage)
 
-		rnd = rnd + py_int(not stage)
+		teams = []
+		for i in rset:
+			teams.append(i[0])
 
+		self.insert_round(teams, party, tourney, rnd, bracket, stage,
+				self._session, self._globals)
+
+	def insert_round(cls, teams, party, tourney, rnd, bracket, stage,
+			session, glob):
 		recs = []
-		for i in xrange(len(rset)/2):
-			team1 = rset[2*i][0]
-			team2 = rset[2*i+1][0]
+		for i in xrange(len(teams)/2):
+			team1 = teams[2*i]
+			team2 = teams[2*i+1]
 
-			if team2 == 'bye':
+			if team1 == 'bye':
 				status = 2
-			elif team1 == 'bye':
-				status = 3
-			else:
+			elif team2 == 'bye':
 				status = 1
+			else:
+				status = 0
 			
 			recs.append('(' + ', '.join(["'" + str(i) + "'" for i in [party,
 				tourney, rnd, stage, bracket, i, team1, team2, status]]) + \
@@ -293,4 +282,6 @@ class double_elimination(ent_table):
 		return sql_query("INSERT INTO %s " \
 				"(party, tourney, round, stage, bracket, id, team1, team2, " \
 				"status) VALUES %s" %
-				(self._name, ', '.join(recs)), self._session, self._globals)
+				(self._name, ', '.join(recs)), session, glob)
+
+	insert_round = classmethod(insert_round)

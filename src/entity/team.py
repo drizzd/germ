@@ -28,38 +28,49 @@ class team(ent_table):
 			keys = {	'party':	'party',
 						'tourney':	'name' },
 						# make sure tournament is in preparation phase
-			cond = {	'submit':	"tn.phase = '2'" } ),
+			cond = {	'submit':	"tn.phase = 1" } ),
+				# NB: The following three relations depend on each other (The
+				# second one uses the first in its condition string).
 				relation(
 			table = 'gamer',
 			keys = {	'party':	'party',
 						'leader':	'username' },
-			cond = {	'submit':	"gamer.username = $userid" } ),
+			cond = {
+				'submit':	"(gamer.username = $userid AND " \
+									"gamer.paid = TRUE) OR " \
+							"$users.rank > 0" } ),
 				relation(
-			table =	'users',
-			alias = 'leader',
-			keys = {	'leader':	'username' },
-						# make sure user has paid
-			cond = {	'submit':	"gamer.paid = TRUE OR leader.rank > 1" } ),
+			table = 'team',
+			alias = 'current',
+			keys = {	'party':	'party',
+						'tourney':	'tourney',
+						'name':		'name' },
+						# make sure user is the leader of the team
+			cond = { 'edit':	"current.leader = $userid"
+				},
+			outer_join = "LEFT" ),
 				relation(
 			table = 'team_members',
 			alias = 'tm',
 			keys = {	'party':	'party',
+						'tourney':	'tourney',
 						'name':		'team',
 						'leader':	'username' },
 			cond = {
-						# ???
-				'edit':	"tm.party IS NOT NULL OR leader.username = $userid" },
+						# make sure leader is a member of the team or the
+						# current leader
+				'edit':	"tm.party IS NOT NULL OR gamer.username = current.leader" },
 			outer_join = "LEFT" ),
+				relation(
+			table = 'team_members',
+			alias = 'tm2',
+			keys = {	'party':	'party',
+						'tourney':	'tourney',
+						'leader':	'username' },
+			cond = {
 						# make sure user is not a member of another team
-			#	relation(
-			#table = 'team_members',
-			#alias = 'tm2',
-			#keys = {	'party':	'party',
-			#			'tourney':	'tourney',
-			#			'leader':	'username' },
-			#cond = {
-			#	'edit':		"tm.party IS NOT NULL OR leader.username = $userid" },
-			#outer_join = "LEFT" ),
+				'submit':	"tm2.party IS NULL" },
+			outer_join = "LEFT" ),
 				relation(
 			table =	'team',
 			alias =	'lt',
@@ -69,16 +80,6 @@ class team(ent_table):
 						# make sure user is not a leader of another team
 						# already
 			cond = {	'submit':	"lt.leader IS NULL" },
-			outer_join = "LEFT" ),
-				relation(
-			table = 'team',
-			alias = 'urt',
-			keys = {	'party':	'party',
-						'tourney':	'tourney',
-						'name':		'name' },
-						# make sure user is the leader of the team
-			cond = {	'edit':		"urt.leader = $userid" },
-			# has to be an outer join so this relation is ignored for submit
 			outer_join = "LEFT" )
 				],
 			item_txt = {

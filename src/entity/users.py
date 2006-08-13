@@ -66,38 +66,31 @@ class users(ent_table):
 			('username', string(label.username, perm.all, None, 10,
 				[chk.identifier])),
 			(cf.pwd_str, passwd(label.passwd, [ 'submit' ], '', 64)),
-			('rank', choice(label.rank, opt_rank, perm_rank, 1)),
-			('privacy', choice(label.privacy, opt_privacy, perm.all, 1)),
+			('rank', choice(label.rank, opt_rank, perm_rank)),
+			('privacy', choice(label.privacy, opt_privacy, perm.all)),
 			('surname', string(label.surname, perm_privacy1, '', 64)),
 			('forename', string(label.forename, perm_privacy1, '', 64)),
 			('residence', string(label.residence, perm_privacy1, '', 128)),
 			('email', string(label.email, perm_privacy2, '', 128)),
 			('icquin', string(label.icquin, perm_privacy2, '', 16)),
 			('homepage', string(label.homepage, perm_privacy2, '', 128)),
-			('genre', choice(label.genre, opt_genre, perm_privacy2, 1)),
+			('genre', choice(label.genre, opt_genre, perm_privacy2)),
 			('last_activity', date(label.last_activity, perm_staff))
 			],
 			primary_keys = [ 'username' ],
-			#relations = [
-			#	relation(
-			#table = 'users',
-			#alias = 'u',
-			#keys = {	'username':	'username' },
-			#cond = {
-			#	'edit':
-			#		# user may only edit other users of lower rank, and he may
-			#		# only change their rank to one lower than his own;
-			#		# user may only lower own rank (or leave it)
-			#		"u.username = $userid OR " \
-			#		"($users.rank > 1 AND u.rank < $users.rank)" } )
-			#	],
-			condition = {
+			relations = [
+				relation(
+			table = 'users',
+			alias = 'u',
+			keys = {	'username':	'username' },
+			cond = {
 				'edit':
 					# user may only edit other users of lower rank, and he may
 					# only change their rank to one lower than his own;
 					# user may only lower own rank (or leave it)
-					"username = $userid OR " \
-					"$users.rank > 1" },
+					"u.username = $userid OR u.rank < $users.rank" },
+			outer_join = "LEFT" )
+				],
 			item_txt = {
 				'edit': {
 					'en': 'My Profile',
@@ -162,11 +155,15 @@ class users(ent_table):
 		username = userattr.sql_str()
 		userrank = self.get_rank(username)
 
-		if not rank > userrank:
+		if not (username == userid or rank > userrank):
 			return False
 
-		if attr.is_set() and attr.get() >= rank:
-			attr.set(rank - 1)
+		mask = range(rank)
+
+		if username == userid:
+			mask.append(rank)
+
+		self._attr_map['rank'].set_mask(mask)
 
 		return True
 

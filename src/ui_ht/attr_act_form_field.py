@@ -90,8 +90,10 @@ class attr_act_form_field(attr_act_get):
 
 		input_vec = []
 		for val, length in [('year', 4), ('month', 2), ('day', 2)]:
-			date_val = date is None and '' or \
-					('%%0%sd' % length) % getattr(date, val)
+			date_val = ''
+
+			if date is not None:
+				date_val = ('%%0%sd' % length) % getattr(date, val)
 
 			input_vec.append('<INPUT type="text" name="%s__%s" length="%s" ' \
 					'size="%s" value="%s"%s>' % \

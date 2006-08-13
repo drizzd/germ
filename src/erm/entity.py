@@ -379,9 +379,9 @@ class entity:
 		return dummy()
 
 	def __get_attr_items(self):
-		return self._attr_map.iteritems()
-		#return [i for i in self._attr_map.iteritems() \
-		#		if i[1].is_set()]
+		#return self._attr_map.iteritems()
+		return [i for i in self._attr_map.iteritems() \
+				if i[1].is_set()]
 
 	def __get_attr_items_nopk(self):
 		return [i for i in self._attr_map.iteritems() \

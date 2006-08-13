@@ -179,7 +179,7 @@ class ref_group:
 
 				to_lock_vec.append(key)
 			else:
-				if attr.perm(act_str):
+				if attr.dyn_perm(act_str):
 					missing_lock = True
 
 					if key in pk_set:

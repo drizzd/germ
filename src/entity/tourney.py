@@ -16,9 +16,9 @@ from germ.attr.int import *
 class tourney(ent_table):
 	def __init__(self):
 		opt_mode = [
+			{ 'en': 'manual', 'de': 'manuell' },
 			{ 'en': 'single elimination' },
-			{ 'en': 'double elimination' },
-			{ 'en': 'manual', 'de': 'manuell' } ]
+			{ 'en': 'double elimination' } ]
 
 		opt_phase = [
 			# 1
@@ -44,33 +44,32 @@ class tourney(ent_table):
 			('name', string(label.tourney, perm.all + ['delete'], None, 32)),
 			('party', string(label.party, perm.all + ['delete'], '', 20)),
 			('organizer', string(label.organizer, perm.all, '', 10)),
-			('mode', choice(label.tourney_mode, opt_mode, perm.all, 1)),
-			('phase', choice(label.tourney_phase, opt_phase, perm.edit, 1)),
+			('mode', choice(label.tourney_mode, opt_mode, perm.all)),
+			('phase', choice(label.tourney_phase, opt_phase, perm.edit)),
 			('teamsize', int(label.teamsize, perm.all, 1, 2)) ],
 			primary_keys = [ 'party', 'name' ],
-			condition = {
-				'delete':	"phase = 2" },
 			relations = [
-			#	relation(
-			#table = 'tourney',
-			#alias = 'tn',
-			#keys = {	'party':	'party',
-			#			'name':		'name' },
-			#cond =	{
-			#	'delete':	"tn.phase = 1",
-			#	'edit':		"tn.phase = 1 OR tn.phase = 2" } ),
+				relation(
+			table = 'tourney',
+			alias = 'tn',
+			keys = {	'party':	'party',
+						'name':		'name' },
+			cond =	{
+				'delete':	"tn.phase IN (0)",
+				'edit':		"tn.phase IN (0, 1)" },
+			outer_join = "LEFT" ),
 				relation(
 			table =	'users',
 			alias = 'orga',
 			keys =	{ 'organizer':		'username' },
-			cond = {	'all':	"orga.rank > 1" } ),
+			cond = {	'all':	"orga.rank > 0" } ),
 				relation(
 			table =	'party',
 			keys =	{ 'party':	'name' },
 			# party must be on
 			cond =	{
-				'submit':	"party.status = 2 OR party.status = 3",
-				'edit':		"party.status = 2 OR party.status = 3" })
+				'submit':	"party.status IN (1, 2)",
+				'edit':		"party.status IN (1, 2)" } )
 				],
 			item_txt = {
 				'edit': {
@@ -95,21 +94,20 @@ class tourney(ent_table):
 
 	def pre(self, act_str):
 		if act_str == 'submit':
-			self._attr_map['phase'].set_mask([1])
+			self._attr_map['phase'].set_mask([0])
 		elif act_str == 'edit':
-			i = self._attr_ids.index('phase')
-			phase = self._rset[0][i]
+			phase = self.get_cur_attr('phase')
 
 			mask = []
 
-			if phase == 1:
+			if phase == 0:
 				mask = [phase, phase + 1]
-			elif phase == 2:
+			elif phase == 1:
 				from team_members import team_members
 
-				party = self._attr_map['party'].get()
-				tourney = self._attr_map['name'].get()
-				size = self._attr_map['teamsize'].get()
+				party = self.get_attr_nocheck('party').get()
+				tourney = self.get_attr_nocheck('name').get()
+				size = self.get_attr_nocheck('teamsize').get()
 
 				self.__teams = team_members.get_teams(party, tourney, size,
 						self._session, self._globals)
@@ -121,35 +119,37 @@ class tourney(ent_table):
 			else:
 				from germ.error.error import error
 				raise error(error.error, 'Attempt to edit tourney in ' \
-						'phase %i.' % phase)
+						'phase %i' % phase)
 
-			attr = self._attr_map['phase']
+			attr = self.get_attr_nocheck('phase')
 			attr.set_mask(mask)
-			if attr.get() not in mask:
-				attr.set(phase)
 
 			self.__prev_phase = phase
 			self.__next_phase = attr.get()
 
 	def post(self, act_str):
 		if act_str == 'edit':
-			if self.__prev_phase == 2 and self.__next_phase == 3:
-				attr = self._attr_map['mode']
+			if self.__prev_phase == 1 and self.__next_phase == 2:
+				attr = self.get_attr_nocheck('mode')
 				mode = attr.get()
 
-				if mode == 2:
+				if mode == 0:
+					# TODO: Create ranking table if necessary.
+					pass
+				elif mode == 1:
+					from germ.error.error import error
+					raise error(error.error, 'Not yet implemented: %s' %
+							str(attr))
+				elif mode == 2:
 					# double elimination
 
-					party = self._attr_map['party'].get()
-					tourney = self._attr_map['name'].get()
+					party = self.get_attr_nocheck('party').get()
+					tourney = self.get_attr_nocheck('name').get()
 
 					from double_elimination import double_elimination
 
 					double_elimination.start(party, tourney, self.__teams,
 							self._session, self._globals)
-				elif mode == 3:
-					pass
 				else:
 					from germ.error.error import error
-					raise error(error.error, 'Not yet implemented: %s' %
-							str(attr))
+					raise error(error.error, 'Unknown mode %i' % mode)
