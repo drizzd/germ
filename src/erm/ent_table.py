@@ -10,14 +10,12 @@ class ent_table(entity):
 	from germ.txt import misc
 
 	def __init__(self, attributes, primary_keys, relations = [],
-			condition = {}, item_txt = {}, action_txt = misc.action,
+			item_txt = {}, action_txt = misc.action,
 			action_report = misc.action_report, perm = {}, pre = {},
 			post = {}, magic_var = {}):
 		args = vars()
 		del args['self']
 		entity.__init__(self, **args)
-
-		self._rec = None
 
 	def do_accept(self, action):
 		action.visit_table(self)
@@ -58,27 +56,21 @@ class ent_table(entity):
 			from germ.error.missing_pk_lock import missing_pk_lock
 			raise missing_pk_lock()
 
-		from germ.lib.db_iface import db_iface
+		return self.get_rec_explicit(self._name, self.get_attr_sql_pk())
 
-		rset = db_iface.query("SELECT * FROM %s WHERE %s" % \
-			(self._name, self.get_attr_sql_pk()))
+	# retrieve record specified by unique key
+	def get_rec_explicit(self, table, key, attrs = '*'):
+		from germ.erm.helper import sql_query
+
+		rset = sql_query("SELECT %s FROM %s WHERE %s" % (attrs, table, key),
+				self._session, self._globals)
 
 		if len(rset) != 1:
 			# TODO: Make this an invalid_key exception. This could very well
 			# occur by a user 'mistake'. On the other hand, can it still occur
 			# if ref_group.generate_keylist did not complain?
 			from germ.error.error import error
-			raise error(error.fail, "Invalid primary key: result is empty " + \
-					"or has multiple records", "number of records: %s" % \
+			raise error(error.fail, "Invalid key", "number of records: %s" % \
 					len(rset))
 
-		rec = rset[0]
-
-		self._rec = rec
-
-		return rec
-
-	def get_cur_attr(self, attr):
-		i = self._attr_ids.index(attr)
-
-		return self._rec[i]
+		return rset[0]

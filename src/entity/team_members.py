@@ -14,15 +14,23 @@ from germ.attr.bool import bool
 
 class team_members(ent_table):
 	def __init__(self):
+		import cf
+
+		perm_active = []
+		if cf.require_activation:
+			perm_active = perm.edit
+
 		ent_table.__init__(self, attributes = [
 			('party', string(label.party, perm.all + ['delete'], '', 20)),
 			('username', string(label.username, perm.all + ['delete'], '', 10)),
 			('tourney', string(label.tourney, perm.all + ['delete', 'list'], '', 32)),
 			# Editing the team must not be allowed, because the 'active' status
-			# would remain unchanged. The only legal way is to delete the entry
+			# would remain unchanged. Also, the user may be leader of the
+			# current team, which would not allow him to be a member of a
+			# different team. The only legal way is to delete the entry
 			# altogether and rejoin the other team.
 			('team', string(label.team, perm.submit, '', 32)),
-			('active', bool(label.active, perm.edit, 0))
+			('active', bool(label.active, perm_active, 0))
 			],
 			primary_keys = [ 'party', 'username', 'tourney' ],
 			relations = [

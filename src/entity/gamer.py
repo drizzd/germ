@@ -23,10 +23,10 @@ class gamer(ent_table):
 		#		'edit': rank_check(self, 1) }
 		perm_paid = {
 				'view': True,
-				'edit': self.check_paid }
+				'edit': self.perm_paid }
 
 		perm_seat = {
-				'edit': self.check_seat }
+				'edit': self.perm_seat }
 
 		from germ.lib.chk import greater_equal
 
@@ -105,7 +105,7 @@ class gamer(ent_table):
 					'en': 'You have cancelled your party registration',
 					'de': 'Sie sind abgemeldet' } })
 
-	def check_paid(self, attrs):
+	def perm_paid(self, attrs):
 		if not self.pks_locked():
 			return True
 
@@ -117,7 +117,7 @@ class gamer(ent_table):
 		if rank_check(self, 1)():
 			return True
 
-	def check_seat(self, attrs):
+	def perm_seat(self, attrs):
 		if not self.pks_locked():
 			return True
 

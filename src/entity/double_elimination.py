@@ -235,7 +235,7 @@ class double_elimination(ent_table):
 		byes = 2**int(ceil(log(nr_teams,2))) - nr_teams
 
 		if byes > 0:
-			spacing = (byes + nr_teams)/byes/2
+			spacing = (0.0 + byes + nr_teams)/byes/2
 
 		for i in xrange(byes):
 			teams.insert(2*int(floor(spacing*i)) + 1, 'bye')
@@ -282,6 +282,6 @@ class double_elimination(ent_table):
 		return sql_query("INSERT INTO %s " \
 				"(party, tourney, round, stage, bracket, id, team1, team2, " \
 				"status) VALUES %s" %
-				(self._name, ', '.join(recs)), session, glob)
+				(cls.__name__, ', '.join(recs)), session, glob)
 
 	insert_round = classmethod(insert_round)

@@ -9,8 +9,8 @@ from germ.txt import errmsg
 from ref_group import *
 
 class entity:
-	def __init__(self, attributes, primary_keys, relations, condition,
-			item_txt, action_txt, action_report, perm, pre, post, magic_var):
+	def __init__(self, attributes, primary_keys, relations, item_txt,
+			action_txt, action_report, perm, pre, post, magic_var):
 		self._name = self.__class__.__name__
 
 		self.__item_txt = item_txt
@@ -23,11 +23,11 @@ class entity:
 			self._attr_ids.append(a[0])
 
 		self._rset = None
+		self._rec = None
 
 		from sets import Set
 		self._pk_set = Set(primary_keys)
 		self.__rel_vec = relations
-		self.__condition = condition
 		self.__lock_map = {}
 
 		self.__perm = perm
@@ -83,11 +83,6 @@ class entity:
 
 		return report
 		
-	def get_condition(self, act_str):
-		from germ.lib import misc
-
-		return misc.get_cond(self.__condition, act_str)
-
 	def get_session(self):
 		return self._session
 
@@ -414,32 +409,38 @@ class entity:
 
 	# fill in attribute values from given record
 	def _fill(self, rec, act_str, overwrite = False):
-		#rec = self._rset[0]
+		self._rec = rec
 
 		for i, aid in enumerate(self._attr_ids):
 			attr = self._attr_map[aid]
 
 			if attr.dyn_perm(act_str):
-				#if not attr.is_set():
-				#	attr.set_sql(rec[i])
 				if overwrite or not attr.is_set():
 					attr.set_sql(rec[i])
-				else:
-					from germ.error.error import error
-					error(error.debug, 'not writing set attribute (%s)' \
-							% aid)
+				#else:
+				#	from germ.error.error import error
+				#	error(error.debug, 'not writing set attribute (%s)' \
+				#			% aid)
 			elif not aid in self._pk_set:
-				if attr.is_set():
-					from germ.error.error import error
-					error(error.debug, 'overwriting attribute (%s)' % aid)
+				#if attr.is_set():
+				#	from germ.error.error import error
+				#	error(error.debug, 'overwriting attribute (%s)' % aid)
 
 				attr.set_sql(rec[i])
-			else:
-				from germ.error.error import error
-				error(error.debug, 'not setting attribute (%s)' % aid)
+			#else:
+			#	from germ.error.error import error
+			#	error(error.debug, 'not setting attribute (%s)' % aid)
 
 #			if not (attr.is_set() and attr.dyn_perm(act_str)(attr)):
 #				attr.set_sql(rec[i])
 
 	def substitute_attr(self, key, attr):
 		self._attr_map[key] = attr
+
+	def has_rec(self):
+		return self._rec is not None
+
+	def get_cur_attr(self, attr):
+		i = self._attr_ids.index(attr)
+
+		return self._rec[i]

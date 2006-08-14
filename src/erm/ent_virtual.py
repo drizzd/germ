@@ -10,7 +10,7 @@ class ent_virtual(entity):
 	from germ.txt import misc
 
 	def __init__(self, attributes, primary_keys, relations = [],
-			condition = {}, item_txt = {}, action_txt = misc.action,
+			item_txt = {}, action_txt = misc.action,
 			action_report = misc.action_report, perm = {}, pre = {},
 			post = {}, magic_var = {}):
 		args = vars()

@@ -14,10 +14,12 @@ from germ.attr.string import *
 # TODO: make 'leader' editable, but only by the leader
 class team(ent_table):
 	def __init__(self):
+		from germ.lib import chk
+
 		ent_table.__init__(self, attributes = [
 			('party', string(label.party, perm.all, '', 20)),
 			('tourney', string(label.tourney, perm.all, '', 32)),
-			('name', string(label.team, perm.all, None, 32)),
+			('name', string(label.team, perm.all, None, 32, [chk.identifier])),
 			('leader', string(label.leader, perm.all, '', 10))
 			],
 			primary_keys = [ 'party', 'tourney', 'name' ],

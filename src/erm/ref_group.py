@@ -128,31 +128,27 @@ class ref_group:
 			# This should only happen if there are only non-relational
 			# PKs.
 
+			rel0 = self.__outer_joins.pop(0)
+
+			# make sure the relation is registerated in the rel_map
+			self.__get_join_cond(rel0)
+
+			table_ref = rel0.get_table_spec()
+
 			# TODO: find out if this is possible and handle it appropriately
-			if len(self.__outer_joins) > 1:
-				from germ.error.error import error
-				raise error(error.warn, "No inner joins, multiple outer joins",
-						'number of outer joins: %s' % len(self.__outer_joins))
+			if len(self.__outer_joins) > 0:
+				rel1 = self.__outer_joins.pop(0)
 
-			#table_ref_vec = []
-			#for rel in self.__outer_joins:
-			#	table_ref_vec.append(rel.get_table_spec() + \
-			#			self.__get_join_cond(rel))
+				table_ref += "\n   OUTER JOIN " + rel1.get_table_spec() + \
+						self.__get_join_cond(rel1)
 
-			#table_ref += "\n   JOIN ".join(table_ref_vec)
-
-			rel = self.__outer_joins[0]
-
-			# make sure the relation is registerated in the rel_map, but
-			# discard the join condition
-			self.__get_join_cond(rel)
-
-			table_ref = rel.get_table_spec()
+			for rel in self.__outer_joins:
+				table_ref += "\n   " + rel.get_outer_join() + " JOIN " + \
+						rel.get_table_spec() + self.__get_join_cond(rel)
 		else:
 			for rel in self.__outer_joins:
 				table_ref += "\n   " + rel.get_outer_join() + " JOIN " + \
-					rel.get_table_spec() + \
-					self.__get_join_cond(rel)
+						rel.get_table_spec() + self.__get_join_cond(rel)
 
 		# generate search condition
 
@@ -237,10 +233,6 @@ class ref_group:
 				to_lock_search_cond.append(cond_str)
 			else:
 				search_cond.append(cond_str)
-
-		condition = self.__ent.get_condition(act_str)
-		if condition is not None:
-			search_cond.append('(%s)' % self.__substitute_vars(condition))
 
 		# generate sort order specification
 

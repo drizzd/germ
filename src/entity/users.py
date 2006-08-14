@@ -17,9 +17,9 @@ from germ.attr.date import *
 # TODO: rank should be editable, but only if user rank >= staff, and only if edited
 # rank < user rank
 class users(ent_table):
-	__prev_attr = (None, None)
-
 	def __init__(self):
+		self.__prev_attr = (None, None, None)
+
 		opt_rank = [
 			{ 'en': 'Gamer', 'de': 'Spieler' },
 			{ 'en': 'Assistant', 'de': 'Hilfsorga' },
@@ -117,22 +117,22 @@ class users(ent_table):
 		return self.get_rank(userid)
 
 	def check_privacy1(self, attr, privacy = 1):
-		if self.check_superior(attr):
+		if not self.has_rec():
 			return True
 
-		userattr = self._attr_map['username']
-
-		if not userattr.is_set():
+		rank = self.get_cur_attr('rank')
+		
+		if self.superior(rank):
 			return True
 
-		username = userattr.sql_str()
+		username = self.get_cur_attr('username')
 
 		userid = self._session.get('userid')
 
 		if userid is not None and userid == username:
 			return True
 
-		userprivacy = self.get_user_attr(username, 'privacy')
+		userprivacy = self.get_cur_attr('privacy')
 
 		return userprivacy < privacy
 	
@@ -145,15 +145,13 @@ class users(ent_table):
 		if userid is None:
 			return False
 
-		rank = self.get_rank(userid)
-
-		userattr = self._attr_map['username']
-
-		if not userattr.is_set():
+		if not self.has_rec():
 			return True
 
-		username = userattr.sql_str()
-		userrank = self.get_rank(username)
+		rank = self.get_rank(userid)
+
+		username = self.get_cur_attr('username')
+		userrank = self.get_cur_attr('rank')
 
 		if not (username == userid or rank > userrank):
 			return False
@@ -163,61 +161,39 @@ class users(ent_table):
 		if username == userid:
 			mask.append(rank)
 
-		self._attr_map['rank'].set_mask(mask)
+		self.get_attr_nocheck('rank').set_mask(mask)
 
 		return True
 
-	def check_superior(self, attr):
+	def superior(self, rank):
 		userid = self._session.get('userid')
 
 		if userid is None:
 			return False
 
-		rank = self.get_rank(userid)
+		userrank = self.get_rank(userid)
 
-		userattr = self._attr_map['username']
-		
-		if not userattr.is_set():
-			return True
-
-		username = userattr.sql_str()
-		userrank = self.get_rank(username)
-
-		return rank > userrank
+		return userrank > rank
 
 	def check_staff(self, attr):
 		userid = self._session.get('userid')
 
-		return userid is not None and self.get_rank(userid) >= 2
+		return userid is not None and self.get_rank(userid) > 0
 
-	def get_rank(cls, userid):
-		return cls.get_user_attr(userid, 'rank')
+	def get_rank(self, userid):
+		return self.get_user_attr(userid, 'rank')
 
-	get_rank = classmethod(get_rank)
-	
-	# ???
-	# TODO: move this to ent_table
-	def get_user_attr(cls, userid, attr):
-		if cls.__prev_attr[0] == userid and cls.__prev_attr[1] == attr:
-			return cls.__prev_attr[2]
+	def get_user_attr(self, userid, attr):
+		if self.__prev_attr[0] == userid and self.__prev_attr[1] == attr:
+			return self.__prev_attr[2]
 
-		from germ.lib.db_iface import db_iface
+		rec = self.get_rec_explicit('users', "username = '%s'" % userid, attr)
 
-		rset = db_iface.query("SELECT %s FROM users WHERE username = '%s'" \
-				% (attr, userid))
-
-		if len(rset) != 1:
-			from germ.error.error import error
-			raise error(error.fail, "Invalid userid", 'userid: %s' % userid)
-
-		rec = rset[0]
 		res = rec[0]
 
-		cls.__prev_attr = (userid, attr, res)
+		self.__prev_attr = (userid, attr, res)
 
 		return res
-
-	get_user_attr = classmethod(get_user_attr)
 
 class rank_check:
 	def __init__(self, entity, rank):
@@ -230,5 +206,6 @@ class rank_check:
 		if userid is None:
 			return False
 
-		rank = users.get_rank(userid)
+		rank = self.__entity.get_rec_explicit('users', "username = '%s'" % \
+				userid, 'rank')
 		return rank >= self.__rank
