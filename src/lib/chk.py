@@ -14,6 +14,16 @@ def identifier(val):
 
 	return val.lower()
 
+def name(val):
+	import re
+
+	if re.match(r'^[a-z_][a-z0-9_ ]*[a-z0-9_]?$', val.lower()) is None:
+		from germ.error.error import error
+		from germ.txt import errmsg
+		return error(error.fail, errmsg.invalid_name)
+
+	return val.lower()
+
 class greater_equal:
 	err_msg = {
 		'en': 'Only values greater or equal %s',

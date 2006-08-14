@@ -184,15 +184,23 @@ def print_form(entity, act_str, page, prompt_pk_only, display_errors):
 				prev_group = group
 				prev_was_key = True
 
+				from sets import Set as set
+
+				keyset = group.has_fk(aid) and \
+						set(group.get_keys(aid)) or set()
+
 				locked = attr.is_locked()
+
+				lock = locked or len(keyset) == 1
 
 				formtext += '<TR><TD>%s:</TD><TD align="right"><INPUT ' \
 						'type="radio" name="to_lock%u" ' \
 						'value="%s"%s%s></TD><TD>' % \
 							(attr.label(), cnt, aid,
-							locked and ' disabled' or '',
-							(not locked and first) and ' checked' or '')
-				if locked:
+							(lock) and ' disabled' or '',
+							(not lock and first) and ' checked' or '')
+
+				if lock:
 					formtext += '<INPUT type="hidden" name="lock" ' \
 							'value="%s">' % aid
 				elif first:
@@ -209,7 +217,6 @@ def print_form(entity, act_str, page, prompt_pk_only, display_errors):
 						'}' % \
 						(cnt, aid)
 
-
 				if group.has_fk(aid):
 					formtext += '<SELECT name="%s" onchange="%s"%s>' % \
 							(parm_name, change_handler,
@@ -222,10 +229,8 @@ def print_form(entity, act_str, page, prompt_pk_only, display_errors):
 
 					tmp_attr = attr.copy()
 
-					from sets import Set
-
 					prev_key = None
-					for key in Set(group.get_keys(aid)):
+					for key in keyset:
 						formtext += '\t<OPTION value="%s"%s>' % \
 								(key, key == cur_key and ' selected' or '')
 

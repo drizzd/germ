@@ -19,7 +19,7 @@ class team(ent_table):
 		ent_table.__init__(self, attributes = [
 			('party', string(label.party, perm.all, '', 20)),
 			('tourney', string(label.tourney, perm.all, '', 32)),
-			('name', string(label.team, perm.all, None, 32, [chk.identifier])),
+			('name', string(label.team, perm.all, None, 32, [chk.name])),
 			('leader', string(label.leader, perm.all, '', 10))
 			],
 			primary_keys = [ 'party', 'tourney', 'name' ],

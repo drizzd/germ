@@ -136,11 +136,11 @@ class ref_group:
 			table_ref = rel0.get_table_spec()
 
 			# TODO: find out if this is possible and handle it appropriately
-			if len(self.__outer_joins) > 0:
-				rel1 = self.__outer_joins.pop(0)
+			#if len(self.__outer_joins) > 0:
+			#	rel1 = self.__outer_joins.pop(0)
 
-				table_ref += "\n   OUTER JOIN " + rel1.get_table_spec() + \
-						self.__get_join_cond(rel1)
+			#	table_ref += "\n   OUTER JOIN " + rel1.get_table_spec() + \
+			#			self.__get_join_cond(rel1)
 
 			for rel in self.__outer_joins:
 				table_ref += "\n   " + rel.get_outer_join() + " JOIN " + \

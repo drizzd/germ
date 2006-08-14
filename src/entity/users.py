@@ -206,6 +206,8 @@ class rank_check:
 		if userid is None:
 			return False
 
-		rank = self.__entity.get_rec_explicit('users', "username = '%s'" % \
+		res = self.__entity.get_rec_explicit('users', "username = '%s'" % \
 				userid, 'rank')
+		rank = res[0]
+
 		return rank >= self.__rank

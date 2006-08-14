@@ -85,10 +85,16 @@ attr_choice_nooptions = {
 unknown_db_type = {
 	'en': 'Unkown database type' }
 
+invalid_name = {
+	'en':	"Invalid name (allowed characters: 'a-z', '0-9', '_', ' '; do " \
+			"not start with a space)",
+	'de':	"Ung\"ultiger Name (erlaubte Zeichen: 'a-z', '0-9', '_', ' '; " \
+			"nicht mit einem Leerzeichen beginnen)" }
+
 invalid_identifier = {
-	'en':	"Invalid identifier (allowed characters: 'a-z', '_', '0-9'; do " \
+	'en':	"Invalid identifier (allowed characters: 'a-z', '0-9', '_'; do " \
 			"not start with a number)",
-	'de':	"Ung\"ultige Bezeichnung (erlaubte Zeichen: 'a-z', '_', '0-9'; " \
+	'de':	"Ung\"ultige Bezeichnung (erlaubte Zeichen: 'a-z', '0-9', '_'; " \
 			"nicht mit einer Zahl beginnen)" }
 
 attr_error = {
