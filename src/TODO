@@ -1,8 +1,5 @@
-- use get_cur_attr in dynamic permissions
-
 - 'list' does not provide keys for limiting non-key attributes
 - nmap -> seatplan
-- auto-locking
 - check for possible pre-locking errors
 - add custom list actions, e.g. a custom tourney list
 
@@ -12,17 +9,45 @@
 		<item action='edit'>
 		<attr id='party'>
 		<attr id='name'>
-		<item action='list' table='$type'>,
-		<item action='submit' table='teams'>
+		<item action='list' entity='$type'>,
+		<item action='submit' entity='team'>
 	</p>
 </entry>
 </list>
 
-- add pre_edit/pre_submit/post_edit/post_submit methods
+For this it will also be necessary to construct an intermediate representation
+of the parsed html text to allow iterating through list entries. (It's all in
+my head.) The only open question is how to pass the PK mapping (kind of a join
+condition) in the item tag. Currently, it's possible to specify attributes
+directly using variables (like the entity='$type' example above), but using
+that is not satisfying, because we would have to construct the entity object
+for each entry. It would be much better to do that only once and to check if
+the current entry corresponds to a PK in the result record.
+
+So how can we do that syntactically without ruining the simple item concept?
+
+Maybe, it would be enough to recognize our environment as a list and to
+re-evaluate PKs for each entry.
+
+The best solution would be one big join, which gives all the required
+information. I'll have to think about that. I'm not sure this is even possible.
+
+Another question is whether or not we should use a different syntax for
+attribute variables, something like $a.type instead of simply $type, because
+that could collide with regular variables like $userid.
+
+- add pre_edit/pre_submit/post_edit/post_submit methods (see, for example,
+  double_elimination)
 - add single elimination
 - add manual
 - add ranking for SE, DE (view table)
 - 'head' feature for custom lists
+
+bugs:
+
+- The 'date' type won't work as a key. It can not be set by a single string.
+
+  Status: Solved, but untested.
 
 future:
 
@@ -30,7 +55,7 @@ future:
   PKs)
 - possibly combine view and list action; a view is a list action which
   gradually reduces the results to one record
-- allow german umlauts
+- allow german umlauts (and other special characters)
 - display tournament tree
 - hash permission results
 
