@@ -38,6 +38,19 @@ class date(attribute):
 				self._error(e)
 			except IndexError:
 				self._format_error()
+		elif isinstance(val, str):
+			import re
+
+			m = re.match('^(\d+)-(\d+)-(\d+)$', val)
+
+			if m is None:
+				self._format_error()
+				return
+
+			try:
+				self._val = py_date(*m.groups())
+			except e:
+				self._error(e)
 		else:
 			self._format_error()
 

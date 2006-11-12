@@ -35,7 +35,8 @@ def date_str_nice(day):
 	return day.strftime(txt_lang(format))
 
 def date_str_iso(day):
-	return day.strftime("%Y-%m-%d")
+	return day.isoformat()
+	#return day.strftime("%Y-%m-%d")
 
 # same as [i for i in a_vec if i not in b_vec]
 # or list(Set(a) - Set(b))
