@@ -22,9 +22,10 @@ class party(ent_table):
 
 	def __init__(self):
 		from users import rank_check
+		from germ.lib import chk
 
 		ent_table.__init__(self, attributes = [
-			('name', string(label.party, perm.all, '', 20)),
+			('name', string(label.party, perm.all, '', 20, [chk.name])),
 			('status', choice(label.status, self.opt_status, perm.edit)),
 			('date', date(label.date, perm.all)),
 			('organizer', string(label.organizer, perm.all, '', 10)),

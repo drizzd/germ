@@ -71,8 +71,7 @@ class ht_parser(htmlproc):
 		import cf
 		from germ.lib.misc import txt_lang
 		self._data = re.sub('\$text\$', '<A href="%s?%s">%s</A>' % (
-				cf.ht_index, '&'.join(['%s=%s' % attr for attr in
-					attrs.iteritems()]),
+				cf.ht_index, '&'.join(['%s=%s' % attr for attr in attrs]),
 				txt_lang(entity.item_txt(act_str))), self._data)
 
 	def end_item(self):

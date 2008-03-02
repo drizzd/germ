@@ -1,0 +1,25 @@
+Problems:
+
+* database model
+
+compound keys
+
+access model (both permissions and structure/relations)
+
+complex joins?
+
+nested selects?
+
+* frontend
+
+non-http based frontend
+
+* development model
+
+source code versioning
+
+license
+
+contributions
+
+maintaining

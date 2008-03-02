@@ -20,13 +20,13 @@ class ht_list_parser(ht_parser):
 	def startend_attr(self, attrs):
 		attr_map = dict(attrs)
 
-		name = attr_map.get('name')
+		aid = attr_map.get('id')
 
-		if name is None:
+		if aid is None:
 			from germ.error.error import error
-			raise error(error.warn, 'Invalid attr tag', 'name: %s' % (name))
+			raise error(error.warn, 'Invalid attr tag', 'id: %s' % (aid))
 
-		attr = self.__rec.get_attr(name, 'view')
+		attr = self.__rec.get_attr(aid, 'view')
 
 		from attr_act_view import attr_act_view
 		act_view = attr_act_view()

@@ -28,12 +28,12 @@ class gamer(ent_table):
 		perm_seat = {
 				'edit': self.perm_seat }
 
-		from germ.lib.chk import greater_equal
+		from germ.lib import chk
 
 		ent_table.__init__(self, attributes = [
 			('party', string(label.party, perm.all + ['delete'], '', 20)),
 			('username', string(label.username, perm.all + ['delete'], '', 10)),
-			('seat', int(label.seat, perm_seat, 0, 8, [greater_equal(0)])),
+			('seat', int(label.seat, perm_seat, 0, 8, [chk.greater_equal(0)])),
 			('paid', bool(label.paid, perm_paid, 0))
 			],
 			primary_keys = [ 'party', 'username' ],

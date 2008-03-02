@@ -1492,3 +1492,187 @@ The SourceForge.net team
 .
 
 
+From Clemens.Buchacher@infineon.com Wed Jan 17 11:15:11 2007
+Return-path: <Clemens.Buchacher@infineon.com>
+X-Spam-Checker-Version: SpamAssassin 3.1.7 (2006-10-05) on 
+	kzelldran.dyndns.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-2.4 required=5.0 tests=ALL_TRUSTED,AWL,BAYES_00,
+	NO_REAL_NAME autolearn=ham version=3.1.7
+Envelope-to: drizzd@localhost
+Delivery-date: Wed, 17 Jan 2007 11:15:11 +0100
+Received: from localhost ([127.0.0.1] helo=kzelldran.dyndns.org)
+	by kzelldran.dyndns.org with esmtp (Exim 4.63)
+	(envelope-from <Clemens.Buchacher@infineon.com>)
+	id 1H77p1-0007Ke-7N
+	for drizzd@localhost; Wed, 17 Jan 2007 11:15:11 +0100
+Delivered-To: drizzd@aon.at
+Received: from mailbox.aon.at
+	by kzelldran.dyndns.org with POP3 (fetchmail-6.3.6-rc3)
+	for <drizzd@localhost> (single-drop); Wed, 17 Jan 2007 11:15:11 +0100 (CET)
+Received: (qmail 4121 invoked from network); 17 Jan 2007 09:57:19 -0000
+Received: from unknown ([172.18.5.73])
+          by mailbox03.aon.at (qmail-ldap-1.03) with QMQP; 17 Jan 2007 09:57:19 -0000
+Delivered-To: CLUSTERHOST smarthub75.highway.telekom.at drizzd@aon.at
+Received: (qmail 18992 invoked from network); 17 Jan 2007 09:57:18 -0000
+Received: from smtp1.infineon.com ([217.10.60.22])
+          (envelope-sender <Clemens.Buchacher@infineon.com>)
+          by smarthub75.highway.telekom.at (qmail-ldap-1.03) with SMTP
+          for <drizzd@aon.at>; 17 Jan 2007 09:57:18 -0000
+Received: from unknown (HELO mucse311.eu.infineon.com) ([172.23.30.11])
+  by smtp1.infineon.com with ESMTP; 17 Jan 2007 10:57:19 +0100
+X-SBRS: None
+Received: from mucse304.eu.infineon.com ([172.23.30.4]) by mucse311.eu.infineon.com over TLS secured channel with Microsoft SMTPSVC(6.0.3790.1830);
+	 Wed, 17 Jan 2007 10:57:18 +0100
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Subject: germ architecture
+Date: Wed, 17 Jan 2007 10:57:17 +0100
+Message-ID: <7F2020DA6274424F9DB368236C47B1B10459A2C5@mucse304.eu.infineon.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: germ architecture
+Thread-Index: Acc6Hd7sNEr/87HZST6FcaSyBtC30w==
+From: <Clemens.Buchacher@infineon.com>
+To: <drizzd@aon.at>
+X-OriginalArrivalTime: 17 Jan 2007 09:57:19.0007 (UTC) FILETIME=[E0027AF0:01C73A1D]
+Status: RO
+Content-Length: 547
+Lines: 16
+
+1. Germ as server forking off a process/thread for each cgi request
+(initiated by apache), possibly restarting itself if changes are
+detected.
+
+Reason: Initialization (computationally intensive and possibly including
+db requests)
+Issues: Reentrant entities vs. copies from initialization
+
+2. If (1) is done, we could allow FKs to be simply references to other
+tables, where they get their info.
+
+3. If (2) is done, join tables should be easy to do.
+
+Issues: Resolve relation conditions from joined tables. I think this is
+the real challenge. :-$
+
+
+From nobody@sourceforge.net Tue Feb 06 09:36:56 2007
+Return-path: <nobody@sourceforge.net>
+X-Spam-Checker-Version: SpamAssassin 3.1.7 (2006-10-05) on 
+	kzelldran.dyndns.org
+X-Spam-Level: *
+X-Spam-Status: No, score=1.8 required=5.0 tests=AWL,BAYES_50 autolearn=ham 
+	version=3.1.7
+Envelope-to: drizzd@localhost
+Delivery-date: Tue, 06 Feb 2007 09:36:56 +0100
+Received: from localhost ([127.0.0.1] helo=kzelldran.dyndns.org)
+	by kzelldran.dyndns.org with esmtp (Exim 4.63)
+	(envelope-from <nobody@sourceforge.net>)
+	id 1HELot-0006kS-Ra
+	for drizzd@localhost; Tue, 06 Feb 2007 09:36:55 +0100
+Delivered-To: drizzd@aon.at
+Received: from mailbox.aon.at
+	by kzelldran.dyndns.org with POP3 (fetchmail-6.3.6)
+	for <drizzd@localhost> (single-drop); Tue, 06 Feb 2007 09:36:55 +0100 (CET)
+Received: (qmail 31418 invoked from network); 6 Feb 2007 08:27:21 -0000
+Received: from unknown ([172.18.5.82])
+          by mailbox03.aon.at (qmail-ldap-1.03) with QMQP; 6 Feb 2007 08:27:21 -0000
+Delivered-To: CLUSTERHOST smarthub81.highway.telekom.at drizzd@aon.at
+Received: (qmail 28569 invoked from network); 6 Feb 2007 08:27:21 -0000
+Received: from lists.sourceforge.net (HELO mail.sourceforge.net) ([66.35.250.206])
+          (envelope-sender <nobody@sourceforge.net>)
+          by smarthub81.highway.telekom.at (qmail-ldap-1.03) with SMTP
+          for <drizzd@aon.at>; 6 Feb 2007 08:27:21 -0000
+Received: from sc8-sf-web2-b.sourceforge.net ([10.3.1.72] helo=sc8-sf-web2.sourceforge.net)
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1HELfb-0002hV-Se
+	for drizzd@aon.at; Tue, 06 Feb 2007 00:27:20 -0800
+Received: from nobody by sc8-sf-web2.sourceforge.net with local (Exim 4.43)
+	id 1HELfb-0002VL-Mg
+	for drizzd@aon.at; Tue, 06 Feb 2007 00:27:19 -0800
+To: drizzd@aon.at
+Subject: SourceForge.net Verification
+From: "SourceForge.net" <noreply@sourceforge.net>
+Message-Id: <E1HELfb-0002VL-Mg@sc8-sf-web2.sourceforge.net>
+Sender: Nobody <nobody@sc8-sf-web2.sourceforge.net>
+Date: Tue, 06 Feb 2007 00:27:19 -0800
+Status: RO
+Content-Length: 382
+Lines: 13
+
+
+Someone (presumably you) on the SourceForge.net site requested a 
+password change through email verification. If this was not you, 
+ignore this message and nothing will happen.
+
+If you requested this verification, visit the following URL 
+to change your password:
+
+https://sourceforge.net/account/lostlogin.php?ch=_ab0ccbff79ce0ac329b8de4a3c0a7f56
+
+ -- the SourceForge.net staff
+
+
+
+From Clemens.Buchacher@infineon.com Tue Dec 19 14:26:44 2006
+Return-path: <Clemens.Buchacher@infineon.com>
+X-Spam-Checker-Version: SpamAssassin 3.1.7 (2006-10-05) on 
+	kzelldran.dyndns.org
+X-Spam-Level: 
+X-Spam-Status: No, score=-1.4 required=5.0 tests=AWL,BAYES_00,NO_REAL_NAME 
+	autolearn=no version=3.1.7
+Envelope-to: drizzd@localhost
+Delivery-date: Tue, 19 Dec 2006 14:26:44 +0100
+Received: from [127.0.0.1] (helo=ip6-localhost)
+	by kzelldran.dyndns.org with esmtp (Exim 4.63)
+	(envelope-from <Clemens.Buchacher@infineon.com>)
+	id 1GwezT-00076B-VB
+	for drizzd@localhost; Tue, 19 Dec 2006 14:26:44 +0100
+Delivered-To: drizzd@aon.at
+Received: from mailbox.aon.at
+	by ip6-localhost with POP3 (fetchmail-6.3.6-rc3)
+	for <drizzd@localhost> (single-drop); Tue, 19 Dec 2006 14:26:43 +0100 (CET)
+Received: (qmail 24610 invoked from network); 19 Dec 2006 13:24:41 -0000
+Received: from unknown ([172.18.5.81])
+          by mailbox03.aon.at (qmail-ldap-1.03) with QMQP; 19 Dec 2006 13:24:41 -0000
+Delivered-To: CLUSTERHOST smarthub80.highway.telekom.at drizzd@aon.at
+Received: (qmail 13926 invoked from network); 19 Dec 2006 13:24:41 -0000
+Received: from smtp1.infineon.com ([217.10.60.22])
+          (envelope-sender <Clemens.Buchacher@infineon.com>)
+          by smarthub80.highway.telekom.at (qmail-ldap-1.03) with SMTP
+          for <drizzd@aon.at>; 19 Dec 2006 13:24:41 -0000
+Received: from unknown (HELO mucse311.eu.infineon.com) ([172.23.30.11])
+  by smtp1.infineon.com with ESMTP; 19 Dec 2006 14:24:32 +0100
+X-SBRS: None
+Received: from mucse304.eu.infineon.com ([172.23.30.4]) by mucse311.eu.infineon.com over TLS secured channel with Microsoft SMTPSVC(6.0.3790.1830);
+	 Tue, 19 Dec 2006 14:24:31 +0100
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Subject: lpms notes
+Date: Tue, 19 Dec 2006 14:24:29 +0100
+Message-ID: <7F2020DA6274424F9DB368236C47B1B10405A661@mucse304.eu.infineon.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: lpms notes
+Thread-Index: AccjcQK2lGlJ9gIcRNSXr4HllNixiQ==
+From: <Clemens.Buchacher@infineon.com>
+To: <drizzd@aon.at>
+X-OriginalArrivalTime: 19 Dec 2006 13:24:31.0767 (UTC) FILETIME=[04885A70:01C72371]
+Status: RO
+Content-Length: 80
+Lines: 3
+
+in case of an edit action, if there is only one choice, take it
+automatically.
+
+

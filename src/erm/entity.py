@@ -40,9 +40,9 @@ class entity:
 		self._globals = None
 
 	# this has to be called immediately after instantiation
-	def init(self, session, globals):
+	def init(self, session, glob):
 		self._session = session
-		self._globals = globals
+		self._globals = glob
 
 		self.__build_ref_groups()
 

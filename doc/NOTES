@@ -1,3 +1,6 @@
+Use pyweblib for session management. Set sessionid manually using HTTP GET and
+Cookies, if available.
+
 (Pylons: http://pylonshpq.com)
 
 Mighty: templating and session management

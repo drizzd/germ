@@ -1,3 +1,5 @@
+- put all classes from one hierarchy into one file
+- rename error to exception
 - 'list' does not provide keys for limiting non-key attributes
 - nmap -> seatplan
 - check for possible pre-locking errors
@@ -32,6 +34,11 @@ re-evaluate PKs for each entry.
 The best solution would be one big join, which gives all the required
 information. I'll have to think about that. I'm not sure this is even possible.
 
+ Update: Yes I think it is possible. We simply make the join very dumb and tell
+ it to do a LEFT JOIN of, for example 'gamers list' and 'gamers submit' on the
+ PKs.  Then we can link to a submit action in the list entries where the joined
+ submit table is NOT NULL.
+
 Another question is whether or not we should use a different syntax for
 attribute variables, something like $a.type instead of simply $type, because
 that could collide with regular variables like $userid.
@@ -53,8 +60,10 @@ future:
 
 - allow selecting certain values in lists to limit the result (not only with
   PKs)
+[
 - possibly combine view and list action; a view is a list action which
   gradually reduces the results to one record
+]
 - allow german umlauts (and other special characters)
 - display tournament tree
 - hash permission results
@@ -63,6 +72,7 @@ more or less solved bugs:
 
 - edit news (logged out): I think the problem is that we have PKs without
   edit/submit permission now.
+
   Update: Ok, looks like this was my fault. But it seems to be awfully easy to
   make a mistake by having a relation condition for an action which is not
   permitted. I'll have to think about this.
@@ -75,4 +85,4 @@ more or less solved bugs:
   better to forget pre-locking and use automatic locking (i.e., locking if
   there is only one choice) instead. But that still would not lock attributes
   right away, because we still want the user to be able to see that there is
-  only one choice.
+  only one choice. Or don't we?
